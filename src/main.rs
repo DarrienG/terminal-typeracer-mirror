@@ -215,6 +215,9 @@ fn main() -> Result<(), Error> {
         }
 
         for c in stdin.keys() {
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
             match c.unwrap() {
                 Key::Ctrl('c') => return Ok(()),
                 Key::Backspace => {
@@ -242,9 +245,6 @@ fn main() -> Result<(), Error> {
                         user_input.push(c);
                         write!(terminal.backend_mut(), "{}", Right(1))?;
                     }
-                    let now = SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .expect("Time went backwards");
                     let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
                     let word_count_float = current_word_idx as f64;
                     wpm = (word_count_float / minute_float) as u64;
