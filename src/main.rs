@@ -1,4 +1,5 @@
 use std::io::{stdin, stdout, Error, Write};
+use std::time::{SystemTime, UNIX_EPOCH};
 use termion::cursor::{Left, Right};
 use termion::event::Key;
 use termion::input::TermRead;
@@ -13,12 +14,22 @@ use tui::Terminal;
 
 // TODO: Calculate constraints based on terminal size
 // e.g. smaller terminal means smaller padding on top and bottom
-fn get_bounds() -> [Constraint; 4] {
+fn get_typing_bounds() -> [Constraint; 4] {
     [
         Constraint::Percentage(20),
         Constraint::Percentage(30),
         Constraint::Percentage(30),
         Constraint::Percentage(20),
+    ]
+}
+
+// TODO: Calculate constraints based on terminal size
+// e.g. smaller terminal means smaller padding on top and bottom
+fn get_wpm_bounds() -> [Constraint; 3] {
+    [
+        Constraint::Percentage(20),
+        Constraint::Percentage(30),
+        Constraint::Percentage(60),
     ]
 }
 
@@ -118,6 +129,16 @@ fn get_formatted_texts(
     (formatted_text, formatted_user_input)
 }
 
+fn get_complete_string() -> Vec<Text<'static>> {
+    vec![
+        Text::styled(
+            "COMPLETE\n",
+            Style::default().bg(Color::Green).fg(Color::White),
+        ),
+        Text::raw("^C to quit"),
+    ]
+}
+
 fn main() -> Result<(), Error> {
     // Initialize the terminal
     let stdout = stdout().into_raw_mode()?;
@@ -138,19 +159,27 @@ fn main() -> Result<(), Error> {
     let words: Vec<&str> = raw_passage.split(' ').collect();
     let mut current_word_idx = 0;
 
-    loop {
-        if current_word_idx == words.len() {
-            break;
-        }
+    // Timing and wpm
+    let mut wpm = 0;
+    let mut start_time = 0;
 
+    loop {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
         let stdin = stdin();
-        terminal
-            .draw(|mut f| {
+        terminal.draw(|mut f| {
+            let root_layout = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+                .split(f.size());
+            {
+                // Typing layout
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .margin(10)
-                    .constraints(get_bounds().as_ref())
-                    .split(f.size());
+                    .margin(5)
+                    .constraints(get_typing_bounds().as_ref())
+                    .split(root_layout[0]);
                 let passage_block = Block::default()
                     .borders(Borders::ALL)
                     .title_style(Style::default());
@@ -163,11 +192,30 @@ fn main() -> Result<(), Error> {
                     .borders(Borders::ALL)
                     .title_style(Style::default().modifier(Modifier::BOLD));
                 Paragraph::new(formatted_user_input.iter())
-                    .block(typing_block.clone().title("Fellas type here"))
+                    .block(typing_block.clone().title("Type out passage here"))
                     .alignment(Alignment::Left)
                     .render(&mut f, chunks[3]);
-            })
-            .unwrap();
+            }
+            {
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .margin(5)
+                    .constraints(get_wpm_bounds().as_ref())
+                    .split(root_layout[1]);
+
+                let wpm_block = Block::default()
+                    .borders(Borders::ALL)
+                    .title_style(Style::default());
+                Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
+                    .block(wpm_block.clone().title("WPM"))
+                    .alignment(Alignment::Center)
+                    .render(&mut f, chunks[2]);
+            }
+        })?;
+
+        if current_word_idx == words.len() {
+            break;
+        }
 
         for c in stdin.keys() {
             match c.unwrap() {
@@ -180,13 +228,26 @@ fn main() -> Result<(), Error> {
                     break;
                 }
                 Key::Char(c) => {
+                    if start_time == 0 {
+                        start_time = now.as_secs() - 1;
+                    }
+
                     if c == ' ' && check_word(words[current_word_idx], &user_input) {
                         current_word_idx += 1;
+                        // BUG: Cursor stays in a forward position after clearing
+                        // As soon as the user types it goes back to the beginning position
+                        // Moving the cursor manually to the left does not fix
                         user_input.clear();
+                    } else if c == '\n' || c == '\t' {
+                        // Ignore a few types that can put the user in a weird spot
+                        break;
                     } else {
                         user_input.push(c);
                         write!(terminal.backend_mut(), "{}", Right(1))?;
                     }
+                    let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
+                    let word_count_float = current_word_idx as f64;
+                    wpm = (word_count_float / minute_float) as u64;
                     break;
                 }
                 _ => {
@@ -195,15 +256,23 @@ fn main() -> Result<(), Error> {
             }
         }
 
-        let (return_passage, return_input) = get_formatted_texts(
-            &words,
-            &user_input.to_string(),
-            &current_word_idx,
-            formatted_passage,
-        );
+        if current_word_idx == words.len() {
+            // We want one more render cycle at the end.
+            // Ignore the dangerous function call, and then do another bounds check and break
+            // before taking user input again.
+            user_input.clear();
+            formatted_user_input = get_complete_string();
+        } else {
+            let (return_passage, return_input) = get_formatted_texts(
+                &words,
+                &user_input.to_string(),
+                &current_word_idx,
+                formatted_passage,
+            );
 
-        formatted_passage = return_passage;
-        formatted_user_input = return_input;
+            formatted_passage = return_passage;
+            formatted_user_input = return_input;
+        }
     }
 
     loop {

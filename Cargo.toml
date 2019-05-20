@@ -5,6 +5,7 @@ authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-tui = { path = "../tui-rs" }
+# Temporarily use fork while waiting for clone in Text
+tui = { git = "https://github.com/darrieng/tui-rs", branch = "master" }
 termion = "1.5"
 unicode-width = "0.1.5"
