@@ -5,6 +5,8 @@ An open source terminal based version of Typeracer written in rust.
 Gives you a random passage and you type it out. While you type it will tell you
 where you're making errors and give you a set of words per minute.
 
+![User typing away having a great time in their terminal][assets/typing.jpg]
+
 Later I'll post some binaries here too.
 
 ## Running
