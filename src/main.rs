@@ -41,7 +41,7 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
     let idx_word_count = indexable_word.len();
-    let idx_input_count = indexable_word.len();
+    let idx_input_count = indexable_input.len();
 
     let mut formatted_word: Vec<Text> = Vec::new();
     let mut formatted_input: Vec<Text> = Vec::new();
@@ -97,7 +97,7 @@ fn get_starting_idx(words: &Vec<&str>, current_word_idx: &usize) -> usize {
     for i in 0..*current_word_idx {
         passage_starting_idx += words[i].chars().count() + 1
     }
-    passage_starting_idx + 1
+    passage_starting_idx
 }
 
 // Get fully formatted versions of the passage, and the user's input.
@@ -139,6 +139,10 @@ fn main() -> Result<(), Error> {
     let mut current_word_idx = 0;
 
     loop {
+        if current_word_idx == words.len() {
+            break;
+        }
+
         let stdin = stdin();
         terminal
             .draw(|mut f| {
@@ -165,10 +169,6 @@ fn main() -> Result<(), Error> {
             })
             .unwrap();
 
-        if current_word_idx == words.len() - 1 {
-            break;
-        }
-
         for c in stdin.keys() {
             match c.unwrap() {
                 Key::Ctrl('c') => return Ok(()),
@@ -180,11 +180,9 @@ fn main() -> Result<(), Error> {
                     break;
                 }
                 Key::Char(c) => {
-                    if c == ' ' {
-                        if check_word(words[current_word_idx], &user_input) {
-                            current_word_idx += 1;
-                            user_input.clear();
-                        }
+                    if c == ' ' && check_word(words[current_word_idx], &user_input) {
+                        current_word_idx += 1;
+                        user_input.clear();
                     } else {
                         user_input.push(c);
                         write!(terminal.backend_mut(), "{}", Right(1))?;
@@ -208,16 +206,12 @@ fn main() -> Result<(), Error> {
         formatted_user_input = return_input;
     }
 
-    let mut exit = false;
-
-    while !exit {
+    loop {
         let stdin = stdin();
         for c in stdin.keys() {
-            match c.unwrap() {
-                Key::Ctrl('c') => exit = true,
-                _ => exit = false,
+            if c.unwrap() == Key::Ctrl('c') {
+                return Ok(());
             }
         }
     }
-    Ok(())
 }
