@@ -6,6 +6,6 @@ edition = "2018"
 
 [dependencies]
 # Temporarily use fork while waiting for clone in Text
-tui = { git = "https://github.com/darrieng/tui-rs", branch = "master" }
+tui = { git = "https://github.com/DarrienG/tui-rs.git" }
 termion = "1.5"
 unicode-width = "0.1.5"
