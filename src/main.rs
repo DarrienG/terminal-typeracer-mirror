@@ -164,9 +164,6 @@ fn main() -> Result<(), Error> {
     let mut start_time = 0;
 
     loop {
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
         let stdin = stdin();
         terminal.draw(|mut f| {
             let root_layout = Layout::default()
@@ -245,6 +242,9 @@ fn main() -> Result<(), Error> {
                         user_input.push(c);
                         write!(terminal.backend_mut(), "{}", Right(1))?;
                     }
+                    let now = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .expect("Time went backwards");
                     let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
                     let word_count_float = current_word_idx as f64;
                     wpm = (word_count_float / minute_float) as u64;
