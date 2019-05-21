@@ -9,3 +9,4 @@ edition = "2018"
 tui = { git = "https://github.com/DarrienG/tui-rs.git" }
 termion = "1.5"
 unicode-width = "0.1.5"
+flate2 = "1.0"

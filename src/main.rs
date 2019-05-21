@@ -182,6 +182,7 @@ fn main() -> Result<(), Error> {
                     .title_style(Style::default());
                 Paragraph::new(formatted_passage.iter())
                     .block(passage_block.clone().title("Passage to type"))
+                    .wrap(true)
                     .alignment(Alignment::Left)
                     .render(&mut f, chunks[2]);
 
@@ -190,6 +191,7 @@ fn main() -> Result<(), Error> {
                     .title_style(Style::default().modifier(Modifier::BOLD));
                 Paragraph::new(formatted_user_input.iter())
                     .block(typing_block.clone().title("Type out passage here"))
+                    .wrap(true)
                     .alignment(Alignment::Left)
                     .render(&mut f, chunks[3]);
             }
