@@ -31,3 +31,10 @@ I'd love to have more contributors! This is my first "real" not hello world
 program in rust.
 
 License is GPLv3 in the spirit of open source.
+
+## TODO
+
+Play again
+Fix language pack
+Split into separate files
+Detect last word no space

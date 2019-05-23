@@ -117,7 +117,7 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
         if err_first_char {
             formatted_word.push(Text::styled(
                 indexable_word[i].to_string(),
-                Style::default().bg(Color::Red),
+                Style::default().bg(Color::Red).fg(Color::White),
             ));
             err_first_char = false;
         } else {
@@ -129,7 +129,7 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
     for i in word_dex..idx_input_count {
         formatted_input.push(Text::styled(
             indexable_input[i].to_string(),
-            Style::default().fg(Color::Red),
+            Style::default().bg(Color::Red).fg(Color::White),
         ));
     }
 
@@ -169,15 +169,15 @@ fn get_complete_string() -> Vec<Text<'static>> {
             "COMPLETE\n",
             Style::default().bg(Color::Green).fg(Color::White),
         ),
-        Text::raw("^C to quit"),
+        Text::raw("^A to play again, ^C to quit"),
     ]
 }
 
-fn start_game() -> Result<(), Error> {
-    let stdout = stdout().into_raw_mode()?;
+fn start_game() -> bool{
+    let stdout = stdout().into_raw_mode().expect("Failed to manipulate terminal to raw mode");
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
-    let mut terminal = Terminal::new(backend)?;
+    let mut terminal = Terminal::new(backend).expect("Failed to get handle to terminal");
 
     let (raw_passage, raw_title) = get_passage();
     let mut formatted_passage: Vec<Text> = raw_passage
@@ -243,7 +243,7 @@ fn start_game() -> Result<(), Error> {
                     .alignment(Alignment::Center)
                     .render(&mut f, chunks[2]);
             }
-        })?;
+        }).expect("Failed to draw terminal widgets.");
 
         if current_word_idx == words.len() {
             break;
@@ -254,11 +254,11 @@ fn start_game() -> Result<(), Error> {
                 .duration_since(UNIX_EPOCH)
                 .expect("Time went backwards");
             match c.unwrap() {
-                Key::Ctrl('c') => return Ok(()),
+                Key::Ctrl('c') => return false,
                 Key::Backspace => {
                     user_input.pop();
                     if user_input.chars().count() > 0 {
-                        write!(terminal.backend_mut(), "{}", Left(1))?;
+                        write!(terminal.backend_mut(), "{}", Left(1)).expect("Failed to write to terminal.");
                     }
                     break;
                 }
@@ -278,10 +278,10 @@ fn start_game() -> Result<(), Error> {
                         break;
                     } else {
                         user_input.push(c);
-                        write!(terminal.backend_mut(), "{}", Right(1))?;
+                        write!(terminal.backend_mut(), "{}", Right(1)).expect("Failed to write to terminal.");
                     }
                     let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
-                    let word_count_float = current_word_idx as f64;
+                    let word_count_float = (current_word_idx + 1) as f64;
                     wpm = (word_count_float / minute_float) as u64;
                     break;
                 }
@@ -313,8 +313,12 @@ fn start_game() -> Result<(), Error> {
     loop {
         let stdin = stdin();
         for c in stdin.keys() {
-            if c.unwrap() == Key::Ctrl('c') {
-                return Ok(());
+            let checked = c.unwrap();
+            if checked == Key::Ctrl('c') {
+                return false;
+            }
+            if checked == Key::Ctrl('a') {
+                return true;
             }
         }
     }
@@ -464,7 +468,7 @@ fn retrieve_lang_pack() -> Result<(), Error> {
                     step_instruction.push_str(&format!("\nMaking data dir at: {}\n", data_dir));
                     break;
                 }
-                if checked == Key::Ctrl('n') {
+                if checked == Key::Char('n') {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "User wants to exit",
@@ -512,7 +516,7 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        return start_game();
+        while start_game() {}
     }
     Ok(())
 }
