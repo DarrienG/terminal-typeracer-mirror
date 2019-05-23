@@ -5,8 +5,21 @@ authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 
 [dependencies]
+# For rendering in the terminal
 # Temporarily use fork while waiting for clone in Text
 tui = { git = "https://github.com/DarrienG/tui-rs.git" }
 termion = "1.5"
 unicode-width = "0.1.5"
+
+# For storing lang pack
+directories = "1.0"
+
+# For downloading lang pack
+reqwest = "0.9.17"
+
+# For deflating lang pack
 flate2 = "1.0"
+tar = "0.4.26"
+
+# For picking random files
+rand = "0.6.5"

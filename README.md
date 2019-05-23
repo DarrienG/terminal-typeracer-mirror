@@ -16,7 +16,8 @@ $ cargo run --release
 ```
 
 ## Building
-You need rust version 1.33.0 or higher (using some newer time APIs).
+You need rust version 1.33.0 or higher (using some newer time APIs) and OpenSSL.
+Generally the package you're looking for is libssl-dev
 
 ```
 $ cargo build release
