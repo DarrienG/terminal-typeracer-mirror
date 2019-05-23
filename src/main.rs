@@ -394,7 +394,7 @@ fn resolution_check() -> Result<(), Error> {
 }
 
 fn get_quote_dir() -> String {
-    return format!("{}/{}", create_data_dir(), "quote-pack").to_string();
+    format!("{}/{}", create_data_dir(), "quote-pack").to_string()
 }
 
 fn create_data_dir() -> String {
@@ -500,8 +500,8 @@ fn retrieve_lang_pack() -> Result<(), Error> {
 }
 
 fn check_lang_pack() -> bool {
-    let quote_dir = get_quote_dir();
-    return fs::read_dir(quote_dir).unwrap().count() > 0;
+    let data_dir = create_data_dir();
+    return fs::read_dir(data_dir).unwrap().count() > 0;
 }
 
 fn main() -> Result<(), Error> {
