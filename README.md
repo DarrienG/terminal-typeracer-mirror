@@ -34,7 +34,6 @@ License is GPLv3 in the spirit of open source.
 
 ## TODO
 
-Play again
 Fix language pack
 Split into separate files
 Detect last word no space
