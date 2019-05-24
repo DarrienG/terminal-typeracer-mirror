@@ -5,7 +5,7 @@ use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
-use tui::style::{Style};
+use tui::style::Style;
 use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use tui::Terminal;
 
@@ -60,6 +60,7 @@ pub fn resolution_check() -> Result<(), Error> {
         })?;
 
         if need_input {
+            need_input = false;
             let stdin = stdin();
             for c in stdin.keys() {
                 let checked = c.unwrap();
