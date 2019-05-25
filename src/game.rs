@@ -1,17 +1,17 @@
 use rand::Rng;
+use std::fs;
+use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, Write};
 use std::time::{SystemTime, UNIX_EPOCH};
 use termion::cursor::{Left, Right};
-use tui::style::Color;
-use tui::style::{Modifier, Style};
-use std::fs::File;
-use std::{fs};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
+use tui::style::Color;
+use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use tui::Terminal;
 
@@ -172,13 +172,19 @@ fn get_complete_string() -> Vec<Text<'static>> {
     ]
 }
 
-pub fn start_game() -> bool{
-    let stdout = stdout().into_raw_mode().expect("Failed to manipulate terminal to raw mode");
+pub fn play_game(input: &str) -> bool {
+    let stdout = stdout()
+        .into_raw_mode()
+        .expect("Failed to manipulate terminal to raw mode");
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
     let mut terminal = Terminal::new(backend).expect("Failed to get handle to terminal");
 
-    let (raw_passage, raw_title) = get_passage();
+    let (raw_passage, raw_title) = match input {
+        "" => get_passage(),
+        _ => (input.to_string(), "Terminal Typeracer".to_string()),
+    };
+
     let mut formatted_passage: Vec<Text> = raw_passage
         .chars()
         .map(|it| Text::raw(it.to_string()))
@@ -197,52 +203,54 @@ pub fn start_game() -> bool{
 
     loop {
         let stdin = stdin();
-        terminal.draw(|mut f| {
-            let root_layout = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
-                .split(f.size());
-            {
-                // Typing layout
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .margin(5)
-                    .constraints(get_typing_bounds().as_ref())
-                    .split(root_layout[0]);
-                let passage_block = Block::default()
-                    .borders(Borders::ALL)
-                    .title_style(Style::default());
-                Paragraph::new(formatted_passage.iter())
-                    .block(passage_block.clone().title(&raw_title))
-                    .wrap(true)
-                    .alignment(Alignment::Left)
-                    .render(&mut f, chunks[2]);
+        terminal
+            .draw(|mut f| {
+                let root_layout = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+                    .split(f.size());
+                {
+                    // Typing layout
+                    let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .margin(5)
+                        .constraints(get_typing_bounds().as_ref())
+                        .split(root_layout[0]);
+                    let passage_block = Block::default()
+                        .borders(Borders::ALL)
+                        .title_style(Style::default());
+                    Paragraph::new(formatted_passage.iter())
+                        .block(passage_block.clone().title(&raw_title))
+                        .wrap(true)
+                        .alignment(Alignment::Left)
+                        .render(&mut f, chunks[2]);
 
-                let typing_block = Block::default()
-                    .borders(Borders::ALL)
-                    .title_style(Style::default().modifier(Modifier::BOLD));
-                Paragraph::new(formatted_user_input.iter())
-                    .block(typing_block.clone().title("Type out passage here"))
-                    .wrap(true)
-                    .alignment(Alignment::Left)
-                    .render(&mut f, chunks[3]);
-            }
-            {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .margin(5)
-                    .constraints(get_wpm_bounds().as_ref())
-                    .split(root_layout[1]);
+                    let typing_block = Block::default()
+                        .borders(Borders::ALL)
+                        .title_style(Style::default().modifier(Modifier::BOLD));
+                    Paragraph::new(formatted_user_input.iter())
+                        .block(typing_block.clone().title("Type out passage here"))
+                        .wrap(true)
+                        .alignment(Alignment::Left)
+                        .render(&mut f, chunks[3]);
+                }
+                {
+                    let chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .margin(5)
+                        .constraints(get_wpm_bounds().as_ref())
+                        .split(root_layout[1]);
 
-                let wpm_block = Block::default()
-                    .borders(Borders::ALL)
-                    .title_style(Style::default());
-                Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
-                    .block(wpm_block.clone().title("WPM"))
-                    .alignment(Alignment::Center)
-                    .render(&mut f, chunks[2]);
-            }
-        }).expect("Failed to draw terminal widgets.");
+                    let wpm_block = Block::default()
+                        .borders(Borders::ALL)
+                        .title_style(Style::default());
+                    Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
+                        .block(wpm_block.clone().title("WPM"))
+                        .alignment(Alignment::Center)
+                        .render(&mut f, chunks[2]);
+                }
+            })
+            .expect("Failed to draw terminal widgets.");
 
         if current_word_idx == words.len() {
             break;
@@ -257,7 +265,8 @@ pub fn start_game() -> bool{
                 Key::Backspace => {
                     user_input.pop();
                     if user_input.chars().count() > 0 {
-                        write!(terminal.backend_mut(), "{}", Left(1)).expect("Failed to write to terminal.");
+                        write!(terminal.backend_mut(), "{}", Left(1))
+                            .expect("Failed to write to terminal.");
                     }
                     break;
                 }
@@ -277,7 +286,8 @@ pub fn start_game() -> bool{
                         break;
                     } else {
                         user_input.push(c);
-                        write!(terminal.backend_mut(), "{}", Right(1)).expect("Failed to write to terminal.");
+                        write!(terminal.backend_mut(), "{}", Right(1))
+                            .expect("Failed to write to terminal.");
                     }
                     let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
                     let word_count_float = (current_word_idx + 1) as f64;

@@ -1,3 +1,4 @@
+use clap;
 use std::io::Error;
 
 mod game;
@@ -8,6 +9,40 @@ mod dirs {
 }
 
 fn main() -> Result<(), Error> {
+    let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
+        .version("1.0.0")
+        .author("Darrien Glasser <me@darrien.dev>")
+        .setting(clap::AppSettings::TrailingVarArg)
+        .arg(
+            clap::Arg::with_name("READ_TEXT")
+            .short("r")
+            .long("read-text")
+            .multiple(true)
+            .required(false)
+            .takes_value(true)
+            .help("Read passage as an arg rather than from local set of passages.")
+        )
+        .get_matches();
+
+    // Get user input text and strip out characters that are difficult to type
+    let read_text = if args.is_present("READ_TEXT") {
+        let mut constructed_string = "".to_owned();
+        let input = args.values_of("READ_TEXT").unwrap();
+
+        for word in input {
+            if word == " " || word == "\n" {
+                continue;
+            } else {
+                constructed_string.push_str(word);
+                constructed_string.push_str(" ");
+            }
+        }
+        (&constructed_string[0..constructed_string.chars().count() - 1]).to_string()
+    } else {
+        "".to_string()
+    };
+
+    assert!(read_text.chars().count() != 0);
     if !term_check::resolution_check().is_err() {
         if !lang::check_lang_pack() {
             let result = lang::retrieve_lang_pack();
@@ -15,7 +50,7 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while game::start_game() {}
+        while game::play_game(&read_text) {}
     }
     Ok(())
 }

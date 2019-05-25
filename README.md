@@ -12,7 +12,9 @@ Later I'll post some binaries here too.
 ## Running
 
 ```
-$ cargo run --release
+$ typeracer
+# Or if you want to take the passage from somewhere else
+$ typeracer -r $(echo 'racing using a passage from elsewhere')
 ```
 
 ## Building
@@ -20,7 +22,7 @@ You need rust version 1.33.0 or higher (using some newer time APIs) and OpenSSL.
 Generally the package you're looking for is libssl-dev
 
 ```
-$ cargo build release
+$ cargo build --release
 ```
 
 The binary you'll get is called `typeracer` and runnable immediately!
@@ -34,6 +36,4 @@ License is GPLv3 in the spirit of open source.
 
 ## TODO
 
-Fix language pack
-Split into separate files
 Detect last word no space

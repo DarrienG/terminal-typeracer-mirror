@@ -1,5 +1,5 @@
 use directories::ProjectDirs;
-use std::{fs};
+use std::fs;
 
 pub fn create_data_dir() -> String {
     let dirs = ProjectDirs::from("org", "darrienglasser.com", "typeracer").unwrap();

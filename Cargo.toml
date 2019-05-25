@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 
@@ -23,3 +23,6 @@ tar = "0.4.26"
 
 # For picking random files
 rand = "0.6.5"
+
+# Command line optoins
+clap = "2.33.0"
