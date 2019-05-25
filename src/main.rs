@@ -42,7 +42,6 @@ fn main() -> Result<(), Error> {
         "".to_string()
     };
 
-    assert!(read_text.chars().count() != 0);
     if !term_check::resolution_check().is_err() {
         if !lang::check_lang_pack() {
             let result = lang::retrieve_lang_pack();
