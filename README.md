@@ -7,6 +7,8 @@ where you're making errors and give you a set of words per minute.
 
 ![User typing away having a great time in their terminal](/assets/typing.jpg)
 
+![Or see it in action here!](https://asciinema.org/a/248451)
+
 Later I'll post some binaries here too.
 
 ## Running
