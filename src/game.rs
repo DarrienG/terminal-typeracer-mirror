@@ -262,6 +262,7 @@ pub fn play_game(input: &str) -> bool {
                 .expect("Time went backwards");
             match c.unwrap() {
                 Key::Ctrl('c') => return false,
+                Key::Ctrl('n') => return true,
                 Key::Backspace => {
                     user_input.pop();
                     if user_input.chars().count() > 0 {

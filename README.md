@@ -19,6 +19,9 @@ $ typeracer
 $ typeracer -r $(echo 'racing using a passage from elsewhere')
 ```
 
+Hit ^C at any time to quit. If you don't like the passage you're typing out,
+hit ^N (next) for another passage!
+
 ## Building
 You need rust version 1.33.0 or higher (using some newer time APIs) and OpenSSL.
 Generally the package you're looking for is libssl-dev
