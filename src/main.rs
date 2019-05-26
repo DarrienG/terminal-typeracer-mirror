@@ -25,7 +25,7 @@ fn main() -> Result<(), Error> {
         .get_matches();
 
     // Get user input text and strip out characters that are difficult to type
-    let read_text = if args.is_present("READ_TEXT") {
+    let mut read_text = if args.is_present("READ_TEXT") {
         let mut constructed_string = "".to_owned();
         let input = args.values_of("READ_TEXT").unwrap();
 
@@ -49,7 +49,10 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while game::play_game(&read_text) {}
+        while game::play_game(&read_text) {
+            // Ensure the text passed is only played the first time
+            read_text = "".to_string();
+        }
     }
     Ok(())
 }
