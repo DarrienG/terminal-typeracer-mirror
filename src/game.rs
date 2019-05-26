@@ -38,12 +38,16 @@ fn get_wpm_bounds() -> [Constraint; 3] {
     ]
 }
 
+fn get_wpm(word_count: usize, duration: u64, start_time: u64) -> u64 {
+    let minute_float = ((duration - start_time) as f64) / 60.0;
+    let word_count_float = (word_count + 1) as f64;
+    (word_count_float / minute_float) as u64
+}
+
 fn check_word(word: &str, input: &String) -> bool {
     return *word == *input;
 }
 
-// TODO: Read in passage from somewhere
-// Or allow the user to pass it as an arg/stdin
 fn get_passage() -> (String, String) {
     let quote_dir = setup_dirs::get_quote_dir().to_string();
     let num_files = fs::read_dir(quote_dir).unwrap().count();
@@ -290,9 +294,7 @@ pub fn play_game(input: &str) -> bool {
                         write!(terminal.backend_mut(), "{}", Right(1))
                             .expect("Failed to write to terminal.");
                     }
-                    let minute_float = ((now.as_secs() - start_time) as f64) / 60.0;
-                    let word_count_float = (current_word_idx + 1) as f64;
-                    wpm = (word_count_float / minute_float) as u64;
+                    wpm = get_wpm(current_word_idx, now.as_secs(), start_time);
                     break;
                 }
                 _ => {
@@ -305,6 +307,18 @@ pub fn play_game(input: &str) -> bool {
             // We want one more render cycle at the end.
             // Ignore the dangerous function call, and then do another bounds check and break
             // before taking user input again.
+            user_input.clear();
+            formatted_user_input = get_complete_string();
+        } else if current_word_idx + 1 == words.len()
+            && check_word(words[current_word_idx], &user_input)
+        {
+            // Special case for the last word so the user doesn't need to hit space
+            let now = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards");
+
+            current_word_idx += 1;
+            wpm = get_wpm(current_word_idx, now.as_secs(), start_time);
             user_input.clear();
             formatted_user_input = get_complete_string();
         } else {
