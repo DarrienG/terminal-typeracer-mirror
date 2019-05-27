@@ -4,6 +4,14 @@ version = "1.0.1"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 
+[package]
+# Packaging for crates.io
+# We don't want assets included and the like
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
 [dependencies]
 # For rendering in the terminal
 # Temporarily use fork while waiting for clone in Text
