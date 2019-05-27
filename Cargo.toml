@@ -3,8 +3,6 @@ name = "typeracer"
 version = "1.0.1"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
-
-[package]
 # Packaging for crates.io
 # We don't want assets included and the like
 include = [
