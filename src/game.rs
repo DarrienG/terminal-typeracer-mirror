@@ -61,8 +61,9 @@ fn get_passage() -> (String, String) {
         let mut count = 0;
         let read_dir_iter = setup_dirs::get_quote_dir().to_string();
         for path in fs::read_dir(read_dir_iter).unwrap() {
-            if count == random_file_num {
-                let file = File::open(path.unwrap().path()).expect("File somehow did not exist.");
+            let path = path.unwrap().path();
+            if count == random_file_num && path.file_stem().unwrap() != "version" {
+                let file = File::open(path).expect("File somehow did not exist.");
                 let mut passage: Vec<String> = vec![];
                 for line in BufReader::new(file).lines() {
                     passage.push(line.unwrap());
