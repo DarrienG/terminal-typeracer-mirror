@@ -15,10 +15,10 @@ use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use tui::Terminal;
 
+use crate::actions;
+
 use crate::dirs::setup_dirs;
 
-// TODO: Calculate constraints based on terminal size
-// e.g. smaller terminal means smaller padding on top and bottom
 fn get_typing_bounds() -> [Constraint; 4] {
     [
         Constraint::Percentage(20),
@@ -28,8 +28,6 @@ fn get_typing_bounds() -> [Constraint; 4] {
     ]
 }
 
-// TODO: Calculate constraints based on terminal size
-// e.g. smaller terminal means smaller padding on top and bottom
 fn get_wpm_bounds() -> [Constraint; 3] {
     [
         Constraint::Percentage(20),
@@ -176,7 +174,7 @@ fn get_complete_string() -> Vec<Text<'static>> {
     ]
 }
 
-pub fn play_game(input: &str) -> bool {
+pub fn play_game(input: &str) -> actions::Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
@@ -288,8 +286,8 @@ pub fn play_game(input: &str) -> bool {
                 .duration_since(UNIX_EPOCH)
                 .expect("Time went backwards");
             match c.unwrap() {
-                Key::Ctrl('c') => return false,
-                Key::Ctrl('n') => return true,
+                Key::Ctrl('c') => return actions::Action::Quit,
+                Key::Ctrl('n') => return actions::Action::NextPassage,
                 Key::Backspace => {
                     user_input.pop();
                     if user_input.chars().count() > 0 {
@@ -362,10 +360,10 @@ pub fn play_game(input: &str) -> bool {
         for c in stdin.keys() {
             let checked = c.unwrap();
             if checked == Key::Ctrl('c') {
-                return false;
+                return actions::Action::Quit;
             }
             if checked == Key::Ctrl('a') {
-                return true;
+                return actions::Action::NextPassage;
             }
         }
     }

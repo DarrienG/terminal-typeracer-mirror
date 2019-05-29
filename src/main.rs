@@ -8,6 +8,8 @@ mod dirs {
     pub mod setup_dirs;
 }
 
+pub mod actions;
+
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version("1.0.1")
@@ -49,10 +51,10 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while game::play_game(&read_text) {
-            // Ensure the text passed is only played the first time
-            read_text = "".to_string();
-        }
+        while match game::play_game(&read_text) {
+            actions::Action::Quit => false,
+            actions::Action::NextPassage => true,
+        }{ read_text = "".to_string(); }
     }
     Ok(())
 }
