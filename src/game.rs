@@ -219,6 +219,7 @@ pub fn play_game(input: &str) -> actions::Action {
                         .as_ref(),
                     )
                     .split(f.size());
+
                 let base_layout = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
