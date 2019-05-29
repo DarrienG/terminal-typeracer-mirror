@@ -209,49 +209,72 @@ pub fn play_game(input: &str) -> bool {
         let stdin = stdin();
         terminal
             .draw(|mut f| {
-                let root_layout = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+                let base_layout = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
                     .split(f.size());
                 {
-                    // Typing layout
-                    let chunks = Layout::default()
-                        .direction(Direction::Vertical)
-                        .margin(5)
-                        .constraints(get_typing_bounds().as_ref())
-                        .split(root_layout[0]);
-                    let passage_block = Block::default()
-                        .borders(Borders::ALL)
-                        .title_style(Style::default());
-                    Paragraph::new(formatted_passage.iter())
-                        .block(passage_block.clone().title(&raw_title))
-                        .wrap(true)
-                        .alignment(Alignment::Left)
-                        .render(&mut f, chunks[2]);
+                    let root_layout = Layout::default()
+                        .direction(Direction::Horizontal)
+                        .constraints(
+                            [Constraint::Percentage(80), Constraint::Percentage(20)].as_ref(),
+                        )
+                        .split(base_layout[0]);
+                    {
+                        // Typing layout
+                        let chunks = Layout::default()
+                            .direction(Direction::Vertical)
+                            .margin(1)
+                            .constraints(get_typing_bounds().as_ref())
+                            .split(root_layout[0]);
+                        let passage_block = Block::default()
+                            .borders(Borders::ALL)
+                            .title_style(Style::default());
+                        Paragraph::new(formatted_passage.iter())
+                            .block(passage_block.clone().title(&raw_title))
+                            .wrap(true)
+                            .alignment(Alignment::Left)
+                            .render(&mut f, chunks[2]);
 
-                    let typing_block = Block::default()
-                        .borders(Borders::ALL)
-                        .title_style(Style::default().modifier(Modifier::BOLD));
-                    Paragraph::new(formatted_user_input.iter())
-                        .block(typing_block.clone().title("Type out passage here"))
-                        .wrap(true)
-                        .alignment(Alignment::Left)
-                        .render(&mut f, chunks[3]);
-                }
-                {
-                    let chunks = Layout::default()
-                        .direction(Direction::Vertical)
-                        .margin(5)
-                        .constraints(get_wpm_bounds().as_ref())
-                        .split(root_layout[1]);
+                        let typing_block = Block::default()
+                            .borders(Borders::ALL)
+                            .title_style(Style::default().modifier(Modifier::BOLD));
+                        Paragraph::new(formatted_user_input.iter())
+                            .block(typing_block.clone().title("Type out passage here"))
+                            .wrap(true)
+                            .alignment(Alignment::Left)
+                            .render(&mut f, chunks[3]);
+                    }
+                    {
+                        let chunks = Layout::default()
+                            .direction(Direction::Vertical)
+                            .margin(1)
+                            .constraints(get_wpm_bounds().as_ref())
+                            .split(root_layout[1]);
 
-                    let wpm_block = Block::default()
-                        .borders(Borders::ALL)
-                        .title_style(Style::default());
-                    Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
-                        .block(wpm_block.clone().title("WPM"))
-                        .alignment(Alignment::Center)
-                        .render(&mut f, chunks[2]);
+                        let wpm_block = Block::default()
+                            .borders(Borders::ALL)
+                            .title_style(Style::default());
+                        Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
+                            .block(wpm_block.clone().title("WPM"))
+                            .alignment(Alignment::Center)
+                            .render(&mut f, chunks[2]);
+                    }
+                    if user_input == "" && current_word_idx == 0 {
+                        let chunks = Layout::default()
+                            .direction(Direction::Vertical)
+                            .margin(0)
+                            .constraints([Constraint::Percentage(100)].as_ref())
+                            .split(base_layout[1]);
+
+                        let shortcut_block = Block::default()
+                            .borders(Borders::NONE)
+                            .title_style(Style::default());
+                        Paragraph::new([Text::raw("^C exit  ^N next passage")].iter())
+                            .block(shortcut_block.clone())
+                            .alignment(Alignment::Center)
+                            .render(&mut f, chunks[0]);
+                    }
                 }
             })
             .expect("Failed to draw terminal widgets.");
