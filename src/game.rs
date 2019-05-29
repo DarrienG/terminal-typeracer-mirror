@@ -207,10 +207,22 @@ pub fn play_game(input: &str) -> actions::Action {
         let stdin = stdin();
         terminal
             .draw(|mut f| {
+                // Because there is no way to specify vertical but not horizontal margins
+                let padding_layout = Layout::default()
+                    .direction(Direction::Horizontal)
+                    .constraints(
+                        [
+                            Constraint::Percentage(5),
+                            Constraint::Percentage(90),
+                            Constraint::Percentage(5),
+                        ]
+                        .as_ref(),
+                    )
+                    .split(f.size());
                 let base_layout = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
-                    .split(f.size());
+                    .split(padding_layout[1]);
                 {
                     let root_layout = Layout::default()
                         .direction(Direction::Horizontal)
