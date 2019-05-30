@@ -32,6 +32,31 @@ $ cargo build --release
 
 The binary you'll get is called `typeracer` and runnable immediately!
 
+If you're trying to cross compile to macOS from Linux you'll need:
+
+```
+clang
+g++
+gcc
+git
+zlib1g-dev
+libmpc-dev
+libmpfr-dev
+libgmp-dev
+```
+
+and to add the apple target via rustup:
+
+```bash
+$ rustup target add x86_64-apple-darwin
+```
+
+You can then build just the macOS target with
+
+```
+$ make mac
+```
+
 ## Contributing
 
 I'd love to have more contributors! This is my first "real" not hello world
