@@ -6,3 +6,6 @@ BIN_PATH=target/release
 release:
 	$(CC) build $(CFLAGS)
 	strip $(BIN_PATH)/$(BIN)
+
+mac:
+	bash build-macos.sh
