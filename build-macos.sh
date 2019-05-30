@@ -1,4 +1,8 @@
 
+if [ ! -d "./osxcross" ]; then
+  bash setup-macos.sh
+fi
+
 MACOS_TARGET="x86_64-apple-darwin"
 
 echo "Building target for platform ${MACOS_TARGET}"

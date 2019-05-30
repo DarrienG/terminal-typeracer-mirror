@@ -338,6 +338,16 @@ pub fn play_game(input: &str) -> actions::Action {
             }
         }
 
+        let (return_passage, return_input) = get_formatted_texts(
+            &words,
+            &user_input.to_string(),
+            &current_word_idx,
+            formatted_passage,
+        );
+
+        formatted_passage = return_passage;
+        formatted_user_input = return_input;
+
         if current_word_idx == words.len() {
             // We want one more render cycle at the end.
             // Ignore the dangerous function call, and then do another bounds check and break
@@ -356,16 +366,6 @@ pub fn play_game(input: &str) -> actions::Action {
             wpm = get_wpm(current_word_idx, now.as_secs(), start_time);
             user_input.clear();
             formatted_user_input = get_complete_string();
-        } else {
-            let (return_passage, return_input) = get_formatted_texts(
-                &words,
-                &user_input.to_string(),
-                &current_word_idx,
-                formatted_passage,
-            );
-
-            formatted_passage = return_passage;
-            formatted_user_input = return_input;
         }
     }
 
