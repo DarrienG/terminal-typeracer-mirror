@@ -3,6 +3,8 @@ CFLAGS=--release
 BIN=typeracer
 BIN_PATH=target/release
 
+all: release mac
+
 release:
 	$(CC) build $(CFLAGS)
 	strip $(BIN_PATH)/$(BIN)

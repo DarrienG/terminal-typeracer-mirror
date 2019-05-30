@@ -12,7 +12,7 @@ pub mod actions;
 
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version("1.0.2")
+        .version("1.0.3")
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
