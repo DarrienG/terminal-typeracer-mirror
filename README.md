@@ -66,4 +66,4 @@ License is GPLv3 in the spirit of open source.
 
 ## TODO
 
-Detect last word no space
+Write some docs for each of the functions!
