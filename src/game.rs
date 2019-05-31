@@ -36,10 +36,15 @@ fn get_wpm_bounds() -> [Constraint; 3] {
     ]
 }
 
-fn get_wpm(word_count: usize, duration: u64, start_time: u64) -> u64 {
+fn get_wpm(word_idx: &usize, word_vec: &Vec<&str>, duration: u64, start_time: u64) -> u64 {
+    let mut char_count = 0;
+    for idx in 0..*word_idx {
+        // add 1 for space
+        char_count += word_vec[idx].chars().count() + 1;
+    }
     let minute_float = ((duration - start_time) as f64) / 60.0;
-    let word_count_float = (word_count + 1) as f64;
-    (word_count_float / minute_float) as u64
+    let word_count_float = char_count as f64 / 5.0;
+    (word_count_float / minute_float).ceil() as u64
 }
 
 fn check_word(word: &str, input: &String) -> bool {
@@ -329,7 +334,7 @@ pub fn play_game(input: &str) -> actions::Action {
                         write!(terminal.backend_mut(), "{}", Right(1))
                             .expect("Failed to write to terminal.");
                     }
-                    wpm = get_wpm(current_word_idx, now.as_secs(), start_time);
+                    wpm = get_wpm(&current_word_idx, &words, now.as_secs(), start_time);
                     break;
                 }
                 _ => {
@@ -363,7 +368,7 @@ pub fn play_game(input: &str) -> actions::Action {
                 .expect("Time went backwards");
 
             current_word_idx += 1;
-            wpm = get_wpm(current_word_idx, now.as_secs(), start_time);
+            wpm = get_wpm(&current_word_idx, &words, now.as_secs(), start_time);
             user_input.clear();
             formatted_user_input = get_complete_string();
         }
