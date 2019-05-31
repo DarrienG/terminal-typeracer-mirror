@@ -12,8 +12,8 @@ include = [
 
 [dependencies]
 # For rendering in the terminal
-# Temporarily use fork while waiting for clone in Text
-tui = { git = "https://github.com/DarrienG/tui-rs.git" }
+# Build at HEAD until clone is put into a release
+tui = { git = "https://github.com/fdehau/tui-rs.git" }
 termion = "1.5"
 unicode-width = "0.1.5"
 
