@@ -36,6 +36,19 @@ fn get_wpm_bounds() -> [Constraint; 3] {
     ]
 }
 
+fn derive_wpm(
+    word_idx: &usize,
+    word_vec: &Vec<&str>,
+    duration: u64,
+    start_time: u64,
+    legacy: &bool,
+) -> u64 {
+    match legacy {
+        true => get_legacy_wpm(word_idx, duration, start_time),
+        false => get_wpm(word_idx, word_vec, duration, start_time),
+    }
+}
+
 fn get_wpm(word_idx: &usize, word_vec: &Vec<&str>, duration: u64, start_time: u64) -> u64 {
     let mut char_count = 0;
     for idx in 0..*word_idx {
@@ -44,6 +57,12 @@ fn get_wpm(word_idx: &usize, word_vec: &Vec<&str>, duration: u64, start_time: u6
     }
     let minute_float = ((duration - start_time) as f64) / 60.0;
     let word_count_float = char_count as f64 / 5.0;
+    (word_count_float / minute_float).ceil() as u64
+}
+
+fn get_legacy_wpm(word_idx: &usize, duration: u64, start_time: u64) -> u64 {
+    let minute_float = ((duration - start_time) as f64) / 60.0;
+    let word_count_float = (word_idx + 1) as f64;
     (word_count_float / minute_float).ceil() as u64
 }
 
@@ -180,7 +199,7 @@ fn get_complete_string() -> Vec<Text<'static>> {
     ]
 }
 
-pub fn play_game(input: &str) -> actions::Action {
+pub fn play_game(input: &str, legacy_wpm: &bool) -> actions::Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
@@ -334,7 +353,13 @@ pub fn play_game(input: &str) -> actions::Action {
                         write!(terminal.backend_mut(), "{}", Right(1))
                             .expect("Failed to write to terminal.");
                     }
-                    wpm = get_wpm(&current_word_idx, &words, now.as_secs(), start_time);
+                    wpm = derive_wpm(
+                        &current_word_idx,
+                        &words,
+                        now.as_secs(),
+                        start_time,
+                        legacy_wpm,
+                    );
                     break;
                 }
                 _ => {
@@ -368,7 +393,13 @@ pub fn play_game(input: &str) -> actions::Action {
                 .expect("Time went backwards");
 
             current_word_idx += 1;
-            wpm = get_wpm(&current_word_idx, &words, now.as_secs(), start_time);
+            wpm = derive_wpm(
+                &current_word_idx,
+                &words,
+                now.as_secs(),
+                start_time,
+                legacy_wpm,
+            );
             user_input.clear();
             formatted_user_input = get_complete_string();
         }

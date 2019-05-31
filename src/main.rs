@@ -24,6 +24,14 @@ fn main() -> Result<(), Error> {
             .takes_value(true)
             .help("Read passage as an arg rather than from local set of passages.")
         )
+        .arg(
+            clap::Arg::with_name("LEGACY_WPM")
+            .short("l")
+            .long("legacy-wpm")
+            .required(false)
+            .takes_value(false)
+            .help("Derive words per minute as actual words/minute instead of letters/5 over minute")
+        )
         .get_matches();
 
     // Get user input text and strip out characters that are difficult to type
@@ -44,6 +52,8 @@ fn main() -> Result<(), Error> {
         "".to_string()
     };
 
+    let legacy_wpm = args.is_present("LEGACY_WPM");
+
     if !term_check::resolution_check().is_err() {
         if !lang::check_lang_pack() {
             let result = lang::retrieve_lang_pack();
@@ -51,7 +61,7 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text) {
+        while match game::play_game(&read_text, &legacy_wpm) {
             actions::Action::Quit => false,
             actions::Action::NextPassage => true,
         }{ read_text = "".to_string(); }
