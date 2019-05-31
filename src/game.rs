@@ -37,11 +37,11 @@ fn get_wpm_bounds() -> [Constraint; 3] {
 }
 
 fn derive_wpm(
-    word_idx: &usize,
-    word_vec: &Vec<&str>,
+    word_idx: usize,
+    word_vec: &[&str],
     duration: u64,
     start_time: u64,
-    legacy: &bool,
+    legacy: bool,
 ) -> u64 {
     match legacy {
         true => get_legacy_wpm(word_idx, duration, start_time),
@@ -49,9 +49,9 @@ fn derive_wpm(
     }
 }
 
-fn get_wpm(word_idx: &usize, word_vec: &Vec<&str>, duration: u64, start_time: u64) -> u64 {
+fn get_wpm(word_idx: usize, word_vec: &[&str], duration: u64, start_time: u64) -> u64 {
     let mut char_count = 0;
-    for idx in 0..*word_idx {
+    for idx in 0..word_idx {
         // add 1 for space
         char_count += word_vec[idx].chars().count() + 1;
     }
@@ -60,14 +60,14 @@ fn get_wpm(word_idx: &usize, word_vec: &Vec<&str>, duration: u64, start_time: u6
     (word_count_float / minute_float).ceil() as u64
 }
 
-fn get_legacy_wpm(word_idx: &usize, duration: u64, start_time: u64) -> u64 {
+fn get_legacy_wpm(word_idx: usize, duration: u64, start_time: u64) -> u64 {
     let minute_float = ((duration - start_time) as f64) / 60.0;
     let word_count_float = (word_idx + 1) as f64;
     (word_count_float / minute_float).ceil() as u64
 }
 
 fn check_word(word: &str, input: &String) -> bool {
-    return *word == *input;
+    *word == *input
 }
 
 fn get_passage() -> (String, String) {
@@ -199,7 +199,7 @@ fn get_complete_string() -> Vec<Text<'static>> {
     ]
 }
 
-pub fn play_game(input: &str, legacy_wpm: &bool) -> actions::Action {
+pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
@@ -354,7 +354,7 @@ pub fn play_game(input: &str, legacy_wpm: &bool) -> actions::Action {
                             .expect("Failed to write to terminal.");
                     }
                     wpm = derive_wpm(
-                        &current_word_idx,
+                        current_word_idx,
                         &words,
                         now.as_secs(),
                         start_time,
@@ -394,7 +394,7 @@ pub fn play_game(input: &str, legacy_wpm: &bool) -> actions::Action {
 
             current_word_idx += 1;
             wpm = derive_wpm(
-                &current_word_idx,
+                current_word_idx,
                 &words,
                 now.as_secs(),
                 start_time,

@@ -61,7 +61,7 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text, &legacy_wpm) {
+        while match game::play_game(&read_text, legacy_wpm) {
             actions::Action::Quit => false,
             actions::Action::NextPassage => true,
         }{ read_text = "".to_string(); }
