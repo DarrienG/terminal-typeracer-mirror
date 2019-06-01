@@ -19,6 +19,9 @@ use crate::actions;
 
 use crate::dirs::setup_dirs;
 
+// Convenience method for retrieving constraints for the typing layout.
+// At some point this may be refactored to be more dynamic based on
+// terminal layout size so we can skip resolution checks.
 fn get_typing_bounds() -> [Constraint; 4] {
     [
         Constraint::Percentage(20),
@@ -28,6 +31,9 @@ fn get_typing_bounds() -> [Constraint; 4] {
     ]
 }
 
+// Convenience method for retrieving constraints for the wpm layout.
+// At some point this may be refactored to be more dynamic based on
+// terminal layout size so we can skip resolution checks.
 fn get_wpm_bounds() -> [Constraint; 3] {
     [
         Constraint::Percentage(20),
@@ -36,6 +42,9 @@ fn get_wpm_bounds() -> [Constraint; 3] {
     ]
 }
 
+// Get the words per minute based on a words per minute algorithm.
+// If legacy is set to true, use the actual words per minute, otherwise use chars/5 per minute.
+// See: https://en.wikipedia.org/wiki/Words_per_minute#Alphanumeric_entry
 fn derive_wpm(
     word_idx: usize,
     word_vec: &[&str],
@@ -49,6 +58,7 @@ fn derive_wpm(
     }
 }
 
+// Get words per minute where a word is 5 chars.
 fn get_wpm(word_idx: usize, word_vec: &[&str], duration: u64, start_time: u64) -> u64 {
     let mut char_count = 0;
     for idx in 0..word_idx {
@@ -60,16 +70,21 @@ fn get_wpm(word_idx: usize, word_vec: &[&str], duration: u64, start_time: u64) -
     (word_count_float / minute_float).ceil() as u64
 }
 
+// Get words per minute where a word is a set of characters delimited by a space.
 fn get_legacy_wpm(word_idx: usize, duration: u64, start_time: u64) -> u64 {
     let minute_float = ((duration - start_time) as f64) / 60.0;
     let word_count_float = (word_idx + 1) as f64;
     (word_count_float / minute_float).ceil() as u64
 }
 
-fn check_word(word: &str, input: &String) -> bool {
+// Determine if two words are the same.
+fn check_word(word: &str, input: &str) -> bool {
     *word == *input
 }
 
+// Retrieve a random passage and title from quote database.
+// Defaults to boring passage if no files are found.
+// Returns (passage, author/title)
 fn get_passage() -> (String, String) {
     let quote_dir = setup_dirs::get_quote_dir().to_string();
     let num_files = fs::read_dir(quote_dir).unwrap().count();
@@ -104,10 +119,10 @@ fn get_passage() -> (String, String) {
 }
 
 // Get formatted version of a single word in a passage and the user's current input
-// All similar characters up until the first different character are highlighted with green
+// All similar characters up until the first different character are highlighted with green/
 // The first error character in the word is highlighted with red and the rest unformatted.
 // The entire error is colored red on the user's input.
-// returns a tuple with the formatted version of the: word and the input
+// returns a tuple with the formatted version of the: word and the input.
 fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text<'static>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
@@ -189,6 +204,7 @@ fn get_formatted_texts(
     (formatted_text, formatted_user_input)
 }
 
+// Get default string to display when user completes a passage.
 fn get_complete_string() -> Vec<Text<'static>> {
     vec![
         Text::styled(
@@ -199,6 +215,8 @@ fn get_complete_string() -> Vec<Text<'static>> {
     ]
 }
 
+// Event loop: Displays the typing input and renders keypresses.
+// This is the entrance to the main game.
 pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     let stdout = stdout()
         .into_raw_mode()
