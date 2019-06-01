@@ -52,18 +52,19 @@ fn derive_wpm(
     start_time: u64,
     legacy: bool,
 ) -> u64 {
-    match legacy {
-        true => get_legacy_wpm(word_idx, duration, start_time),
-        false => get_wpm(word_idx, word_vec, duration, start_time),
+    if legacy {
+        get_legacy_wpm(word_idx, duration, start_time)
+    } else {
+        get_wpm(word_idx, word_vec, duration, start_time)
     }
 }
 
 // Get words per minute where a word is 5 chars.
 fn get_wpm(word_idx: usize, word_vec: &[&str], duration: u64, start_time: u64) -> u64 {
     let mut char_count = 0;
-    for idx in 0..word_idx {
+    for item in word_vec.iter().take(word_idx) {
         // add 1 for space
-        char_count += word_vec[idx].chars().count() + 1;
+        char_count += item.chars().count() + 1;
     }
     let minute_float = ((duration - start_time) as f64) / 60.0;
     let word_count_float = char_count as f64 / 5.0;
@@ -97,9 +98,8 @@ fn get_passage() -> (String, String) {
     if num_files == 0 {
         return fallback;
     } else {
-        let mut count = 0;
         let read_dir_iter = setup_dirs::get_quote_dir().to_string();
-        for path in fs::read_dir(read_dir_iter).unwrap() {
+        for (count, path) in fs::read_dir(read_dir_iter).unwrap().enumerate() {
             let path = path.unwrap().path();
             if count == random_file_num && path.file_stem().unwrap() != "version" {
                 let file = File::open(path).expect("File somehow did not exist.");
@@ -111,7 +111,6 @@ fn get_passage() -> (String, String) {
                     return (passage[0].trim().to_string(), passage[1].clone());
                 }
             }
-            count += 1;
         }
     }
 
@@ -154,22 +153,22 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
 
     // Only show the first error the user made in the passage (if there is any)
     let mut err_first_char = idx_input_count >= idx_word_count;
-    for i in word_dex..idx_word_count {
+    for word in indexable_word.iter().skip(word_dex).take(idx_word_count) {
         if err_first_char {
             formatted_word.push(Text::styled(
-                indexable_word[i].to_string(),
+                word.to_string(),
                 Style::default().bg(Color::Red).fg(Color::White),
             ));
             err_first_char = false;
         } else {
-            formatted_word.push(Text::raw(indexable_word[i].to_string()));
+            formatted_word.push(Text::raw(word.to_string()));
         }
     }
 
     // Make all of the user's typed error red
-    for i in word_dex..idx_input_count {
+    for input in indexable_input.iter().skip(word_dex).take(idx_input_count) {
         formatted_input.push(Text::styled(
-            indexable_input[i].to_string(),
+            input.to_string(),
             Style::default().bg(Color::Red).fg(Color::White),
         ));
     }
@@ -178,29 +177,28 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
 }
 
 // Gets index of fully formatted text where the word the user is typing starts.
-fn get_starting_idx(words: &Vec<&str>, current_word_idx: &usize) -> usize {
+fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     let mut passage_starting_idx: usize = 0;
-    for i in 0..*current_word_idx {
-        passage_starting_idx += words[i].chars().count() + 1
+    for word in words.iter().take(current_word_idx) {
+        passage_starting_idx += word.chars().count() + 1
     }
     passage_starting_idx
 }
 
 // Get fully formatted versions of the passage, and the user's input.
 fn get_formatted_texts(
-    words: &Vec<&str>,
-    user_input: &String,
-    current_word_idx: &usize,
+    words: &[&str],
+    user_input: &str,
+    current_word_idx: usize,
     mut formatted_text: Vec<Text<'static>>,
 ) -> (Vec<Text<'static>>, Vec<Text<'static>>) {
     let (formatted_passage_word, formatted_user_input) =
-        get_formatted_words(words[*current_word_idx].clone(), user_input);
+        get_formatted_words(words[current_word_idx], user_input);
 
     let starting_idx = get_starting_idx(words, current_word_idx);
 
-    for i in 0..formatted_passage_word.len() {
-        formatted_text[starting_idx + i] = formatted_passage_word[i].clone();
-    }
+    formatted_text[starting_idx..(formatted_passage_word.len() + starting_idx)]
+        .clone_from_slice(&formatted_passage_word[..]);
     (formatted_text, formatted_user_input)
 }
 
@@ -324,10 +322,12 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                         let shortcut_block = Block::default()
                             .borders(Borders::NONE)
                             .title_style(Style::default());
-                        Paragraph::new([Text::raw("^C exit  ^N next passage")].iter())
-                            .block(shortcut_block.clone())
-                            .alignment(Alignment::Center)
-                            .render(&mut f, chunks[0]);
+                        Paragraph::new(
+                            [Text::raw("^C exit  ^N next passage  ^U clear word")].iter(),
+                        )
+                        .block(shortcut_block.clone())
+                        .alignment(Alignment::Center)
+                        .render(&mut f, chunks[0]);
                     }
                 }
             })
@@ -337,59 +337,56 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
             break;
         }
 
-        for c in stdin.keys() {
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards");
-            match c.unwrap() {
-                Key::Ctrl('c') => return actions::Action::Quit,
-                Key::Ctrl('n') => return actions::Action::NextPassage,
-                Key::Backspace => {
-                    user_input.pop();
-                    if user_input.chars().count() > 0 {
-                        write!(terminal.backend_mut(), "{}", Left(1))
-                            .expect("Failed to write to terminal.");
-                    }
-                    break;
-                }
-                Key::Char(c) => {
-                    if start_time == 0 {
-                        start_time = now.as_secs() - 1;
-                    }
-
-                    if c == ' ' && check_word(words[current_word_idx], &user_input) {
-                        current_word_idx += 1;
-                        // BUG: Cursor stays in a forward position after clearing
-                        // As soon as the user types it goes back to the beginning position
-                        // Moving the cursor manually to the left does not fix
-                        user_input.clear();
-                    } else if c == '\n' || c == '\t' {
-                        // Ignore a few types that can put the user in a weird spot
-                        break;
-                    } else {
-                        user_input.push(c);
-                        write!(terminal.backend_mut(), "{}", Right(1))
-                            .expect("Failed to write to terminal.");
-                    }
-                    wpm = derive_wpm(
-                        current_word_idx,
-                        &words,
-                        now.as_secs(),
-                        start_time,
-                        legacy_wpm,
-                    );
-                    break;
-                }
-                _ => {
-                    break;
+        let c = stdin.keys().find_map(Result::ok);
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        match c.unwrap() {
+            Key::Ctrl('c') => return actions::Action::Quit,
+            Key::Ctrl('n') => return actions::Action::NextPassage,
+            // Get some basic readline bindings
+            Key::Ctrl('u') => user_input.clear(),
+            Key::Backspace => {
+                user_input.pop();
+                if user_input.chars().count() > 0 {
+                    write!(terminal.backend_mut(), "{}", Left(1))
+                        .expect("Failed to write to terminal.");
                 }
             }
+            Key::Char(c) => {
+                if start_time == 0 {
+                    start_time = now.as_secs() - 1;
+                }
+
+                if c == ' ' && check_word(words[current_word_idx], &user_input) {
+                    current_word_idx += 1;
+                    // BUG: Cursor stays in a forward position after clearing
+                    // As soon as the user types it goes back to the beginning position
+                    // Moving the cursor manually to the left does not fix
+                    user_input.clear();
+                } else if c == '\n' || c == '\t' {
+                    // Ignore a few types that can put the user in a weird spot
+                    // We just want to ignore these characters.
+                } else {
+                    user_input.push(c);
+                    write!(terminal.backend_mut(), "{}", Right(1))
+                        .expect("Failed to write to terminal.");
+                }
+                wpm = derive_wpm(
+                    current_word_idx,
+                    &words,
+                    now.as_secs(),
+                    start_time,
+                    legacy_wpm,
+                );
+            }
+            _ => {}
         }
 
         let (return_passage, return_input) = get_formatted_texts(
             &words,
             &user_input.to_string(),
-            &current_word_idx,
+            current_word_idx,
             formatted_passage,
         );
 

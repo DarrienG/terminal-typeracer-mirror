@@ -12,7 +12,7 @@ pub mod actions;
 
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version("1.0.4")
+        .version("1.0.5")
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -54,7 +54,7 @@ fn main() -> Result<(), Error> {
 
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
-    if !term_check::resolution_check().is_err() {
+    if term_check::resolution_check().is_ok() {
         if !lang::check_lang_pack() {
             let result = lang::retrieve_lang_pack();
             if result.is_err() {
