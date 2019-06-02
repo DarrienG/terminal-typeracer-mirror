@@ -19,6 +19,17 @@ use crate::actions;
 
 use crate::dirs::setup_dirs;
 
+struct PassageInfo {
+    pub passage: String,
+    pub title: String,
+}
+
+struct FormattedTexts {
+    pub passage: Vec<Text<'static>>,
+    pub input: Vec<Text<'static>>,
+    pub error: bool,
+}
+
 // Convenience method for retrieving constraints for the typing layout.
 // At some point this may be refactored to be more dynamic based on
 // terminal layout size so we can skip resolution checks.
@@ -86,14 +97,14 @@ fn check_word(word: &str, input: &str) -> bool {
 // Retrieve a random passage and title from quote database.
 // Defaults to boring passage if no files are found.
 // Returns (passage, author/title)
-fn get_passage() -> (String, String) {
+fn get_passage() -> PassageInfo {
     let quote_dir = setup_dirs::get_quote_dir().to_string();
     let num_files = fs::read_dir(quote_dir).unwrap().count();
     let random_file_num = rand::thread_rng().gen_range(0, num_files);
-    let fallback = (
-        "The quick brown fox jumps over the lazy dog".to_owned(),
-        "darrienglasser.com".to_owned(),
-    );
+    let fallback = PassageInfo {
+        passage: "The quick brown fox jumps over the lazy dog".to_owned(),
+        title: "darrienglasser.com".to_owned(),
+    };
 
     if num_files == 0 {
         return fallback;
@@ -108,7 +119,10 @@ fn get_passage() -> (String, String) {
                     passage.push(line.unwrap());
                 }
                 if passage.len() >= 2 {
-                    return (passage[0].trim().to_string(), passage[1].clone());
+                    return PassageInfo {
+                        passage: passage[0].trim().to_string(),
+                        title: passage[1].clone(),
+                    };
                 }
             }
         }
@@ -119,7 +133,8 @@ fn get_passage() -> (String, String) {
 
 // Get formatted version of a single word in a passage and the user's current input
 // All similar characters up until the first different character are highlighted with green/
-// The first error character in the word is highlighted with red and the rest unformatted.
+// The first error character in the word is highlighted with red and the rest unformatted
+
 // The entire error is colored red on the user's input.
 // returns a tuple with the formatted version of the: word and the input.
 fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text<'static>>) {
@@ -190,16 +205,21 @@ fn get_formatted_texts(
     words: &[&str],
     user_input: &str,
     current_word_idx: usize,
-    mut formatted_text: Vec<Text<'static>>,
-) -> (Vec<Text<'static>>, Vec<Text<'static>>) {
-    let (formatted_passage_word, formatted_user_input) =
+    mut formatted_passage: Vec<Text<'static>>,
+) -> FormattedTexts {
+    let (formatted_passage_word, formatted_input) =
         get_formatted_words(words[current_word_idx], user_input);
 
     let starting_idx = get_starting_idx(words, current_word_idx);
 
-    formatted_text[starting_idx..(formatted_passage_word.len() + starting_idx)]
+    formatted_passage[starting_idx..(formatted_passage_word.len() + starting_idx)]
         .clone_from_slice(&formatted_passage_word[..]);
-    (formatted_text, formatted_user_input)
+
+    FormattedTexts {
+        passage: formatted_passage,
+        input: formatted_input,
+        error: check_word(user_input, words[current_word_idx]),
+    }
 }
 
 // Get default string to display when user completes a passage.
@@ -223,21 +243,28 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     let backend = TermionBackend::new(screen);
     let mut terminal = Terminal::new(backend).expect("Failed to get handle to terminal");
 
-    let (raw_passage, raw_title) = match input {
+    let passage_info = match input {
         "" => get_passage(),
-        _ => (input.to_string(), "Terminal Typeracer".to_string()),
+        _ => PassageInfo {
+            passage: input.to_string(),
+            title: "Terminal Typeracer".to_string(),
+        },
     };
 
-    let mut formatted_passage: Vec<Text> = raw_passage
-        .chars()
-        .map(|it| Text::raw(it.to_string()))
-        .collect();
+    let mut formatted_texts = FormattedTexts {
+        passage: passage_info
+            .passage
+            .chars()
+            .map(|it| Text::raw(it.to_string()))
+            .collect(),
+        input: vec![],
+        error: false,
+    };
 
     let mut user_input = String::new();
-    let mut formatted_user_input: Vec<Text> = vec![];
 
     // Split the passager into vec of words to work on one at a time
-    let words: Vec<&str> = raw_passage.split(' ').collect();
+    let words: Vec<&str> = passage_info.passage.split(' ').collect();
     let mut current_word_idx = 0;
 
     // Timing and wpm
@@ -282,8 +309,8 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                         let passage_block = Block::default()
                             .borders(Borders::ALL)
                             .title_style(Style::default());
-                        Paragraph::new(formatted_passage.iter())
-                            .block(passage_block.clone().title(&raw_title))
+                        Paragraph::new(formatted_texts.passage.iter())
+                            .block(passage_block.clone().title(&passage_info.title))
                             .wrap(true)
                             .alignment(Alignment::Left)
                             .render(&mut f, chunks[2]);
@@ -291,7 +318,7 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                         let typing_block = Block::default()
                             .borders(Borders::ALL)
                             .title_style(Style::default().modifier(Modifier::BOLD));
-                        Paragraph::new(formatted_user_input.iter())
+                        Paragraph::new(formatted_texts.input.iter())
                             .block(typing_block.clone().title("Type out passage here"))
                             .wrap(true)
                             .alignment(Alignment::Left)
@@ -383,22 +410,19 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
             _ => {}
         }
 
-        let (return_passage, return_input) = get_formatted_texts(
+        formatted_texts = get_formatted_texts(
             &words,
             &user_input.to_string(),
             current_word_idx,
-            formatted_passage,
+            formatted_texts.passage,
         );
-
-        formatted_passage = return_passage;
-        formatted_user_input = return_input;
 
         if current_word_idx == words.len() {
             // We want one more render cycle at the end.
             // Ignore the dangerous function call, and then do another bounds check and break
             // before taking user input again.
             user_input.clear();
-            formatted_user_input = get_complete_string();
+            formatted_texts.input = get_complete_string();
         } else if current_word_idx + 1 == words.len()
             && check_word(words[current_word_idx], &user_input)
         {
@@ -416,7 +440,7 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                 legacy_wpm,
             );
             user_input.clear();
-            formatted_user_input = get_complete_string();
+            formatted_texts.input = get_complete_string();
         }
     }
 
