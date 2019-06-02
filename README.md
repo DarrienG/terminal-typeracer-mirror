@@ -66,4 +66,4 @@ License is GPLv3 in the spirit of open source.
 
 ## TODO
 
-Write some docs for each of the functions!
+Separate rendering code and logic to make more testable
