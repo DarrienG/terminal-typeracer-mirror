@@ -94,6 +94,20 @@ fn check_word(word: &str, input: &str) -> bool {
     *word == *input
 }
 
+// Check to see if the "input" is like the word. This is effectively
+// word.contains(input) but only if the first input.len characters are
+// the same. e.g. apple, ap => true, apple ppl => false
+fn check_like_word(word: &str, input: &str) -> bool {
+    if input.len() == 0 {
+        return true;
+    }
+    if input.len() > word.len() {
+        return false;
+    }
+
+    check_word(&word[..input.len()], input)
+}
+
 // Retrieve a random passage and title from quote database.
 // Defaults to boring passage if no files are found.
 // Returns (passage, author/title)
@@ -147,6 +161,23 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
     let mut formatted_input: Vec<Text> = Vec::new();
     let mut word_dex = 0;
 
+    let mut err = !check_like_word(word, input);
+
+    // Make all of the user's input white on red
+    for input in indexable_input.iter() {
+        if err {
+            formatted_input.push(Text::styled(
+                input.to_string(),
+                Style::default().bg(Color::Red).fg(Color::White),
+            ));
+        } else {
+            formatted_input.push(Text::styled(
+                input.to_string(),
+                Style::default().fg(Color::Green),
+            ));
+        }
+    }
+
     while word_dex < idx_word_count && word_dex < idx_input_count {
         if indexable_word[word_dex] != indexable_input[word_dex] {
             break;
@@ -156,36 +187,20 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
             indexable_word[word_dex].to_string(),
             Style::default().fg(Color::Green),
         ));
-        formatted_input.push(Text::styled(
-            indexable_word[word_dex].to_string(),
-            Style::default().fg(Color::Green),
-        ));
-
         word_dex += 1;
     }
 
-    // Fill out whatever is left (the user has made a mistake for the rest of the word)
-
-    // Only show the first error the user made in the passage (if there is any)
-    let mut err_first_char = idx_input_count >= idx_word_count;
+    // Show the first error the user makes in the passage they are typing
     for word in indexable_word.iter().skip(word_dex).take(idx_word_count) {
-        if err_first_char {
+        if err {
             formatted_word.push(Text::styled(
                 word.to_string(),
                 Style::default().bg(Color::Red).fg(Color::White),
             ));
-            err_first_char = false;
+            err = false;
         } else {
             formatted_word.push(Text::raw(word.to_string()));
         }
-    }
-
-    // Make all of the user's typed error red
-    for input in indexable_input.iter().skip(word_dex).take(idx_input_count) {
-        formatted_input.push(Text::styled(
-            input.to_string(),
-            Style::default().bg(Color::Red).fg(Color::White),
-        ));
     }
 
     (formatted_word, formatted_input)
@@ -218,7 +233,7 @@ fn get_formatted_texts(
     FormattedTexts {
         passage: formatted_passage,
         input: formatted_input,
-        error: check_word(user_input, words[current_word_idx]),
+        error: !check_like_word(words[current_word_idx], user_input),
     }
 }
 
@@ -318,10 +333,18 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                         let typing_block = Block::default()
                             .borders(Borders::ALL)
                             .title_style(Style::default().modifier(Modifier::BOLD));
+
+                        let style = if formatted_texts.error {
+                            Style::default().bg(Color::Red).fg(Color::White)
+                        } else {
+                            Style::default()
+                        };
+
                         Paragraph::new(formatted_texts.input.iter())
                             .block(typing_block.clone().title("Type out passage here"))
                             .wrap(true)
                             .alignment(Alignment::Left)
+                            .style(style)
                             .render(&mut f, chunks[3]);
                     }
                     {
