@@ -11,3 +11,6 @@ release:
 
 mac:
 	bash build-macos.sh
+
+check:
+	cargo clippy --all --release -- -D warnings
