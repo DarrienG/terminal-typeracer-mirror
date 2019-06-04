@@ -195,18 +195,18 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
     for word in indexable_word.iter().skip(word_dex).take(idx_word_count) {
         if first {
             if err {
-            formatted_word.push(Text::styled(
-                word.to_string(),
-                Style::default().bg(Color::Red).fg(Color::White),
-            ));
+                formatted_word.push(Text::styled(
+                    word.to_string(),
+                    Style::default().bg(Color::Red).fg(Color::White),
+                ));
             } else {
-            formatted_word.push(Text::styled(
-                word.to_string(),
-                Style::default().bg(Color::Black).fg(Color::White),
-            ));
+                formatted_word.push(Text::styled(
+                    word.to_string(),
+                    Style::default().bg(Color::Blue).fg(Color::White),
+                ));
             }
             first = false;
-                continue;
+            continue;
         }
         formatted_word.push(Text::raw(word.to_string()));
     }
