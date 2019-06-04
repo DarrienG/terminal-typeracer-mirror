@@ -98,7 +98,7 @@ fn check_word(word: &str, input: &str) -> bool {
 // word.contains(input) but only if the first input.len characters are
 // the same. e.g. apple, ap => true, apple ppl => false
 fn check_like_word(word: &str, input: &str) -> bool {
-    if input.len() == 0 {
+    if input.is_empty() {
         return true;
     }
     if input.len() > word.len() {
