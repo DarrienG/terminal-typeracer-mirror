@@ -161,7 +161,7 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
     let mut formatted_input: Vec<Text> = Vec::new();
     let mut word_dex = 0;
 
-    let mut err = !check_like_word(word, input);
+    let err = !check_like_word(word, input);
 
     // Make all of the user's input white on red
     for input in indexable_input.iter() {
@@ -190,17 +190,25 @@ fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text
         word_dex += 1;
     }
 
+    let mut first = true;
     // Show the first error the user makes in the passage they are typing
     for word in indexable_word.iter().skip(word_dex).take(idx_word_count) {
-        if err {
+        if first {
+            if err {
             formatted_word.push(Text::styled(
                 word.to_string(),
                 Style::default().bg(Color::Red).fg(Color::White),
             ));
-            err = false;
-        } else {
-            formatted_word.push(Text::raw(word.to_string()));
+            } else {
+            formatted_word.push(Text::styled(
+                word.to_string(),
+                Style::default().bg(Color::Black).fg(Color::White),
+            ));
+            }
+            first = false;
+                continue;
         }
+        formatted_word.push(Text::raw(word.to_string()));
     }
 
     (formatted_word, formatted_input)
