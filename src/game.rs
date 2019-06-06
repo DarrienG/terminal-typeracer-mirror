@@ -161,6 +161,8 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
         }
     }
 
+    formatted_input.push(Text::styled(" ", Style::default().bg(Color::White)));
+
     while word_dex < idx_word_count && word_dex < idx_input_count {
         if indexable_word[word_dex] != indexable_input[word_dex] {
             break;
@@ -255,6 +257,8 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
     let mut terminal = Terminal::new(backend).expect("Unable to get handle to terminal.");
+
+    terminal.hide_cursor().expect("Failed to hide the cursor");
 
     let passage_info = match input {
         "" => get_passage(),
