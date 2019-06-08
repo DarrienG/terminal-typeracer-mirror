@@ -11,8 +11,6 @@ where you're making errors and give you a set of words per minute.
 
 [Or see it in action here!](https://asciinema.org/a/hEcf1pD2v60wUxiSIHdFWs5zN)
 
-Later I'll post some binaries here too.
-
 ## Installing
 
 Included are statically linked binaries for a few platforms (currently x86_64
@@ -22,20 +20,19 @@ Linux and macOS). To use them, download and execute like any regular binary.
 
 ## Running
 
-```
+```bash
 $ typeracer
 # Or if you want to take the passage from somewhere else
 $ typeracer -r $(echo 'racing using a passage from elsewhere')
 ```
 
-Hit ^C at any time to quit. If you don't like the passage you're typing out,
-hit ^N (next) for another passage!
+Hit ^C at any time to quit.
 
 ## Building
 You need rust version 1.33.0 or higher (using some newer time APIs) and OpenSSL.
 Generally the package you're looking for is libssl-dev
 
-```
+```bash
 $ cargo build --release
 ```
 
@@ -68,11 +65,9 @@ $ make mac
 
 ## Contributing
 
-I'd love to have more contributors! This is my first "real" not hello world
-program in rust.
+I'd love to have more contributors! If you're looking to make any drastic
+changes (e.g. Redis integration or something like that) consider contacting me
+via email first so we can discuss.
 
 License is GPLv3 in the spirit of open source.
 
-## TODO
-
-Separate rendering code and logic to make more testable
