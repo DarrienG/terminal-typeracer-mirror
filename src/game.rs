@@ -21,12 +21,19 @@ mod game_render;
 pub struct PassageInfo {
     pub passage: String,
     pub title: String,
+    pub passage_path: String,
 }
 
 pub struct FormattedTexts<'a> {
     pub passage: Vec<Text<'a>>,
     pub input: Vec<Text<'a>>,
     pub error: bool,
+}
+
+fn get_now() -> std::time::Duration {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
 }
 
 // Get the words per minute based on a words per minute algorithm.
@@ -90,6 +97,7 @@ fn get_passage() -> PassageInfo {
     let fallback = PassageInfo {
         passage: "The quick brown fox jumps over the lazy dog".to_owned(),
         title: "darrienglasser.com".to_owned(),
+        passage_path: "FALLBACK_PATH".to_owned(),
     };
 
     if num_files == 0 {
@@ -99,7 +107,7 @@ fn get_passage() -> PassageInfo {
         for (count, path) in fs::read_dir(read_dir_iter).unwrap().enumerate() {
             let path = path.unwrap().path();
             if count == random_file_num && path.file_stem().unwrap() != "version" {
-                let file = File::open(path).expect("File somehow did not exist.");
+                let file = File::open(&path).expect("File somehow did not exist.");
                 let mut passage: Vec<String> = vec![];
                 for line in BufReader::new(file).lines() {
                     passage.push(line.unwrap());
@@ -108,6 +116,7 @@ fn get_passage() -> PassageInfo {
                     return PassageInfo {
                         passage: passage[0].trim().to_string(),
                         title: passage[1].clone(),
+                        passage_path: path.to_string_lossy().into_owned(),
                     };
                 }
             }
@@ -241,7 +250,7 @@ fn get_complete_string<'a>() -> Vec<Text<'a>> {
 
 // Event loop: Displays the typing input and renders keypresses.
 // This is the entrance to the main game.
-pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
+pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions::Action {
     // TODO: Provide get_backend method in game_render
     let stdout = stdout()
         .into_raw_mode()
@@ -253,8 +262,9 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     let passage_info = match input {
         "" => get_passage(),
         _ => PassageInfo {
-            passage: input.to_string(),
-            title: "Terminal Typeracer".to_string(),
+            passage: input.to_owned(),
+            title: "Terminal Typeracer".to_owned(),
+            passage_path: "User input".to_owned(),
         },
     };
 
@@ -286,6 +296,13 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
             wpm,
             title: &passage_info.title,
             fresh: user_input == "" && current_word_idx == 0,
+            legacy_wpm,
+            debug_enabled,
+            word_idx: current_word_idx,
+            now: get_now().as_secs(),
+            start: start_time,
+            passage_path: &passage_info.passage_path,
+            current_word: words[current_word_idx],
         },
     );
 
@@ -298,6 +315,17 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                 wpm,
                 title: &passage_info.title,
                 fresh: user_input == "" && current_word_idx == 0,
+                legacy_wpm,
+                debug_enabled,
+                word_idx: current_word_idx,
+                now: get_now().as_secs(),
+                start: start_time,
+                passage_path: &passage_info.passage_path,
+                current_word: if current_word_idx == words.len() {
+                    "DONE"
+                } else {
+                    words[current_word_idx]
+                },
             },
         );
         if current_word_idx == words.len() {
@@ -306,9 +334,7 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
 
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
+        let now = get_now();
         match c.unwrap() {
             Key::Ctrl('c') => return actions::Action::Quit,
             Key::Ctrl('n') => return actions::Action::NextPassage,

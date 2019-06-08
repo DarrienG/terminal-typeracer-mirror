@@ -10,9 +10,19 @@ mod dirs {
 
 pub mod actions;
 
+#[cfg(not(debug_assertions))]
+fn debug_enabled_default() -> bool {
+    false
+}
+
+#[cfg(debug_assertions)]
+fn debug_enabled_default() -> bool {
+    true
+}
+
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version("1.0.6")
+        .version("1.0.7")
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -31,6 +41,13 @@ fn main() -> Result<(), Error> {
             .required(false)
             .takes_value(false)
             .help("Derive words per minute as actual words/minute instead of letters/5 over minute")
+        )
+        .arg(
+            clap::Arg::with_name("DEBUG_MODE")
+            .short("d")
+            .long("debug-mode")
+            .required(false)
+            .takes_value(false)
         )
         .get_matches();
 
@@ -52,6 +69,8 @@ fn main() -> Result<(), Error> {
         "".to_string()
     };
 
+    let debug_enabled = args.is_present("DEBUG_MODE") || debug_enabled_default();
+
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
     if term_check::resolution_check().is_ok() {
@@ -61,7 +80,7 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text, legacy_wpm) {
+        while match game::play_game(&read_text, legacy_wpm, debug_enabled) {
             actions::Action::Quit => false,
             actions::Action::NextPassage => true,
         } {

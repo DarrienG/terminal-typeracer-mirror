@@ -12,7 +12,28 @@ pub struct GameState<'a> {
     pub user_input: &'a str,
     pub wpm: u64,
     pub title: &'a str,
-    pub fresh: bool
+    pub fresh: bool,
+    // For debug
+    pub legacy_wpm: bool,
+    pub debug_enabled: bool,
+    pub word_idx: usize,
+    pub now: u64,
+    pub start: u64,
+    pub passage_path: &'a str,
+    pub current_word: &'a str,
+}
+
+impl <'a>GameState<'a> {
+    fn get_debug_output(&self) -> String {
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  now: {},  start: {}\npassage_path: {}\ncurrent_word: {}",
+                self.legacy_wpm,
+                self.word_idx,
+                self.now,
+                self.start,
+                self.passage_path,
+                self.current_word,
+            )
+    }
 }
 
 // Convenience method for retrieving constraints for the typing layout.
@@ -72,6 +93,16 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState){
                         .margin(1)
                         .constraints(get_typing_bounds().as_ref())
                         .split(root_layout[0]);
+                    if game_state.debug_enabled {
+                        let debug_block = Block::default()
+                            .borders(Borders::ALL)
+                            .title_style(Style::default());
+                        Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
+                            .block(debug_block.clone().title("DEBUG ENABLED"))
+                            .wrap(true)
+                            .alignment(Alignment::Left)
+                            .render(&mut f, chunks[1]);
+                    }
                     let passage_block = Block::default()
                         .borders(Borders::ALL)
                         .title_style(Style::default());
