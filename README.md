@@ -11,6 +11,13 @@ where you're making errors and give you a set of words per minute.
 
 Later I'll post some binaries here too.
 
+## Installing
+
+Included are statically linked binaries for a few platforms (currently x86_64
+Linux and macOS). To use them, download and execute like any regular binary.
+
+[Releases here](https://gitlab.com/DarrienG/terminal-typeracer/tags)
+
 ## Running
 
 ```
