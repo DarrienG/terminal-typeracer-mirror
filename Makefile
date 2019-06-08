@@ -14,3 +14,4 @@ mac:
 
 check:
 	cargo clippy --all --release -- -D warnings
+	cargo test

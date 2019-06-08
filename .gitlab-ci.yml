@@ -4,4 +4,5 @@ job:
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
+    - cargo test
 
