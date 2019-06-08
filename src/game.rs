@@ -394,6 +394,7 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::game;
     #[test]

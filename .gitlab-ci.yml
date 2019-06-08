@@ -1,8 +1,15 @@
 image: rust:1.34.1-stretch
 
-job:
+cache:
+  key: "shared-cargo-cache"
+  paths:
+    - "$HOME/.cargo"
+
+lint:
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
-    - cargo test
 
+test:
+  script:
+    - cargo test
