@@ -1,5 +1,7 @@
 # Typeracer
 
+[![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
+
 An open source terminal based version of Typeracer written in rust.
 
 Gives you a random passage and you type it out. While you type it will tell you
