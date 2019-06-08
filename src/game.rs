@@ -1,56 +1,32 @@
 use rand::Rng;
 use std::fs;
 use std::fs::File;
-use std::io::{stdin, stdout, BufRead, BufReader, Write};
+use std::io::{stdin, stdout, BufRead, BufReader};
 use std::time::{SystemTime, UNIX_EPOCH};
-use termion::cursor::{Left, Right};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
-use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::Color;
-use tui::style::{Modifier, Style};
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
+use tui::style::Style;
+use tui::widgets::Text;
 use tui::Terminal;
 
 use crate::actions;
-
 use crate::dirs::setup_dirs;
 
-struct PassageInfo {
+mod game_render;
+
+pub struct PassageInfo {
     pub passage: String,
     pub title: String,
 }
 
-struct FormattedTexts {
-    pub passage: Vec<Text<'static>>,
-    pub input: Vec<Text<'static>>,
+pub struct FormattedTexts<'a> {
+    pub passage: Vec<Text<'a>>,
+    pub input: Vec<Text<'a>>,
     pub error: bool,
-}
-
-// Convenience method for retrieving constraints for the typing layout.
-// At some point this may be refactored to be more dynamic based on
-// terminal layout size so we can skip resolution checks.
-fn get_typing_bounds() -> [Constraint; 4] {
-    [
-        Constraint::Percentage(20),
-        Constraint::Percentage(30),
-        Constraint::Percentage(30),
-        Constraint::Percentage(20),
-    ]
-}
-
-// Convenience method for retrieving constraints for the wpm layout.
-// At some point this may be refactored to be more dynamic based on
-// terminal layout size so we can skip resolution checks.
-fn get_wpm_bounds() -> [Constraint; 3] {
-    [
-        Constraint::Percentage(20),
-        Constraint::Percentage(30),
-        Constraint::Percentage(60),
-    ]
 }
 
 // Get the words per minute based on a words per minute algorithm.
@@ -151,7 +127,7 @@ fn get_passage() -> PassageInfo {
 
 // The entire error is colored red on the user's input.
 // returns a tuple with the formatted version of the: word and the input.
-fn get_formatted_words(word: &str, input: &str) -> (Vec<Text<'static>>, Vec<Text<'static>>) {
+fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
     let idx_word_count = indexable_word.len();
@@ -224,12 +200,12 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
 }
 
 // Get fully formatted versions of the passage, and the user's input.
-fn get_formatted_texts(
+fn get_formatted_texts<'a>(
     words: &[&str],
     user_input: &str,
     current_word_idx: usize,
-    mut formatted_passage: Vec<Text<'static>>,
-) -> FormattedTexts {
+    mut formatted_passage: Vec<Text<'a>>,
+) -> FormattedTexts<'a> {
     let (formatted_passage_word, formatted_input) =
         get_formatted_words(words[current_word_idx], user_input);
 
@@ -246,7 +222,7 @@ fn get_formatted_texts(
 }
 
 // Get default string to display when user completes a passage.
-fn get_complete_string() -> Vec<Text<'static>> {
+fn get_complete_string<'a>() -> Vec<Text<'a>> {
     vec![
         Text::styled(
             "COMPLETE\n",
@@ -259,12 +235,13 @@ fn get_complete_string() -> Vec<Text<'static>> {
 // Event loop: Displays the typing input and renders keypresses.
 // This is the entrance to the main game.
 pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
+    // TODO: Provide get_backend method in game_render
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
-    let mut terminal = Terminal::new(backend).expect("Failed to get handle to terminal");
+    let mut terminal = Terminal::new(backend).expect("Unable to get handle to terminal.");
 
     let passage_info = match input {
         "" => get_passage(),
@@ -294,107 +271,33 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
     let mut wpm = 0;
     let mut start_time = 0;
 
+    game_render::render(
+        &mut terminal,
+        game_render::GameState {
+            texts: &formatted_texts,
+            user_input: "",
+            wpm,
+            title: &passage_info.title,
+            fresh: user_input == "" && current_word_idx == 0,
+        },
+    );
+
     loop {
-        let stdin = stdin();
-        terminal
-            .draw(|mut f| {
-                // Because there is no way to specify vertical but not horizontal margins
-                let padding_layout = Layout::default()
-                    .direction(Direction::Horizontal)
-                    .constraints(
-                        [
-                            Constraint::Percentage(5),
-                            Constraint::Percentage(90),
-                            Constraint::Percentage(5),
-                        ]
-                        .as_ref(),
-                    )
-                    .split(f.size());
-
-                let base_layout = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([Constraint::Percentage(90), Constraint::Percentage(10)].as_ref())
-                    .split(padding_layout[1]);
-                {
-                    let root_layout = Layout::default()
-                        .direction(Direction::Horizontal)
-                        .constraints(
-                            [Constraint::Percentage(80), Constraint::Percentage(20)].as_ref(),
-                        )
-                        .split(base_layout[0]);
-                    {
-                        // Typing layout
-                        let chunks = Layout::default()
-                            .direction(Direction::Vertical)
-                            .margin(1)
-                            .constraints(get_typing_bounds().as_ref())
-                            .split(root_layout[0]);
-                        let passage_block = Block::default()
-                            .borders(Borders::ALL)
-                            .title_style(Style::default());
-                        Paragraph::new(formatted_texts.passage.iter())
-                            .block(passage_block.clone().title(&passage_info.title))
-                            .wrap(true)
-                            .alignment(Alignment::Left)
-                            .render(&mut f, chunks[2]);
-
-                        let typing_block = Block::default()
-                            .borders(Borders::ALL)
-                            .title_style(Style::default().modifier(Modifier::BOLD));
-
-                        let style = if formatted_texts.error {
-                            Style::default().bg(Color::Red).fg(Color::White)
-                        } else {
-                            Style::default()
-                        };
-
-                        Paragraph::new(formatted_texts.input.iter())
-                            .block(typing_block.clone().title("Type out passage here"))
-                            .wrap(true)
-                            .alignment(Alignment::Left)
-                            .style(style)
-                            .render(&mut f, chunks[3]);
-                    }
-                    {
-                        let chunks = Layout::default()
-                            .direction(Direction::Vertical)
-                            .margin(1)
-                            .constraints(get_wpm_bounds().as_ref())
-                            .split(root_layout[1]);
-
-                        let wpm_block = Block::default()
-                            .borders(Borders::ALL)
-                            .title_style(Style::default());
-                        Paragraph::new([Text::raw(format!("WPM\n{}", wpm))].iter())
-                            .block(wpm_block.clone().title("WPM"))
-                            .alignment(Alignment::Center)
-                            .render(&mut f, chunks[2]);
-                    }
-                    if user_input == "" && current_word_idx == 0 {
-                        let chunks = Layout::default()
-                            .direction(Direction::Vertical)
-                            .margin(0)
-                            .constraints([Constraint::Percentage(100)].as_ref())
-                            .split(base_layout[1]);
-
-                        let shortcut_block = Block::default()
-                            .borders(Borders::NONE)
-                            .title_style(Style::default());
-                        Paragraph::new(
-                            [Text::raw("^C exit  ^N next passage  ^U clear word")].iter(),
-                        )
-                        .block(shortcut_block.clone())
-                        .alignment(Alignment::Center)
-                        .render(&mut f, chunks[0]);
-                    }
-                }
-            })
-            .expect("Failed to draw terminal widgets.");
-
+        game_render::render(
+            &mut terminal,
+            game_render::GameState {
+                texts: &formatted_texts,
+                user_input: &user_input,
+                wpm,
+                title: &passage_info.title,
+                fresh: user_input == "" && current_word_idx == 0,
+            },
+        );
         if current_word_idx == words.len() {
             break;
         }
 
+        let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -406,11 +309,8 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
                 user_input.pop();
-                if user_input.chars().count() > 0 {
-                    write!(terminal.backend_mut(), "{}", Left(1))
-                        .expect("Failed to write to terminal.");
-                }
             }
+
             Key::Char(c) => {
                 if start_time == 0 {
                     start_time = now.as_secs() - 1;
@@ -427,8 +327,6 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
                     // We just want to ignore these characters.
                 } else {
                     user_input.push(c);
-                    write!(terminal.backend_mut(), "{}", Right(1))
-                        .expect("Failed to write to terminal.");
                 }
                 wpm = derive_wpm(
                     current_word_idx,
