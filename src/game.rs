@@ -32,36 +32,30 @@ pub struct FormattedTexts<'a> {
 // Get the words per minute based on a words per minute algorithm.
 // If legacy is set to true, use the actual words per minute, otherwise use chars/5 per minute.
 // See: https://en.wikipedia.org/wiki/Words_per_minute#Alphanumeric_entry
-fn derive_wpm(
-    word_idx: usize,
-    word_vec: &[&str],
-    duration: u64,
-    start_time: u64,
-    legacy: bool,
-) -> u64 {
+fn derive_wpm(word_idx: usize, word_vec: &[&str], now: u64, start_time: u64, legacy: bool) -> u64 {
     if legacy {
-        get_legacy_wpm(word_idx, duration, start_time)
+        get_legacy_wpm(word_idx, now, start_time)
     } else {
-        get_wpm(word_idx, word_vec, duration, start_time)
+        get_wpm(word_idx, word_vec, now, start_time)
     }
 }
 
 // Get words per minute where a word is 5 chars.
-fn get_wpm(word_idx: usize, word_vec: &[&str], duration: u64, start_time: u64) -> u64 {
+fn get_wpm(word_idx: usize, word_vec: &[&str], now: u64, start_time: u64) -> u64 {
     let mut char_count = 0;
     for item in word_vec.iter().take(word_idx) {
         // add 1 for space
         char_count += item.chars().count() + 1;
     }
-    let minute_float = ((duration - start_time) as f64) / 60.0;
+    let minute_float = ((now - start_time) as f64) / 60.0;
     let word_count_float = char_count as f64 / 5.0;
     (word_count_float / minute_float).ceil() as u64
 }
 
 // Get words per minute where a word is a set of characters delimited by a space.
-fn get_legacy_wpm(word_idx: usize, duration: u64, start_time: u64) -> u64 {
-    let minute_float = ((duration - start_time) as f64) / 60.0;
-    let word_count_float = (word_idx + 1) as f64;
+fn get_legacy_wpm(word_idx: usize, now: u64, start_time: u64) -> u64 {
+    let minute_float = ((now - start_time) as f64) / 60.0;
+    let word_count_float = (word_idx) as f64;
     (word_count_float / minute_float).ceil() as u64
 }
 
@@ -87,6 +81,8 @@ fn check_like_word(word: &str, input: &str) -> bool {
 // Retrieve a random passage and title from quote database.
 // Defaults to boring passage if no files are found.
 // Returns (passage, author/title)
+// TODO: Test
+// Difficult to test with unit tests. Expects a database file.
 fn get_passage() -> PassageInfo {
     let quote_dir = setup_dirs::get_quote_dir().to_string();
     let num_files = fs::read_dir(quote_dir).unwrap().count();
@@ -127,6 +123,8 @@ fn get_passage() -> PassageInfo {
 
 // The entire error is colored red on the user's input.
 // returns a tuple with the formatted version of the: word and the input.
+// TODO: Test
+// Difficult to test, because Text does not implement eq
 fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
@@ -190,7 +188,14 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
     (formatted_word, formatted_input)
 }
 
-// Gets index of fully formatted text where the word the user is typing starts.
+// Given a vector of word and the current index of the word the user is typing,
+// ["this", "is", "a", "vector"] and current_word_idx of 2,
+// return the index as if we were indexing the previous vector as a space
+// separated string to get the first character of the word the user is
+// currently on.
+// In this case, we would get 8 back.
+// "this is a vector"
+// ---------^
 fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     let mut passage_starting_idx: usize = 0;
     for word in words.iter().take(current_word_idx) {
@@ -200,6 +205,8 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
 }
 
 // Get fully formatted versions of the passage, and the user's input.
+// TODO: Test
+// Text doesn't derive eq, so it's difficult to test.
 fn get_formatted_texts<'a>(
     words: &[&str],
     user_input: &str,
@@ -385,4 +392,75 @@ pub fn play_game(input: &str, legacy_wpm: bool) -> actions::Action {
             }
         }
     }
+}
+
+mod tests {
+    use crate::game;
+    #[test]
+    fn test_get_wpm() {
+        let word_idx = 2;
+        let word_vec = vec!["There's", "a", "time", "when", "the", "operation"];
+        let now = 501;
+        let start_time = 500;
+
+        // Where a word is 5 characters, we know the user has typed 10 characters
+        // in 1 second, which comes out to 120 wpm.
+        assert!(game::get_wpm(word_idx, &word_vec, now, start_time) == 120);
+
+        let word_idx = 4;
+        let now = 510;
+        let start_time = 500;
+
+        // Where a word is 5 characters, we know the user has typed 20 characters in
+        // 10 seconds. Which comes out to 24 wpm.
+        assert!(game::get_wpm(word_idx, &word_vec, now, start_time) == 24);
+    }
+
+    #[test]
+    fn test_legacy_get_wpm() {
+        let word_idx = 2;
+        let now = 501;
+        let start_time = 500;
+
+        // The user has typed 2 words in 1 second, which comes out to 120 wpm.
+        assert!(game::get_legacy_wpm(word_idx, now, start_time) == 120);
+
+        let word_idx = 4;
+        let now = 510;
+        let start_time = 500;
+
+        // The user has typed 4 words in 10 seconds, which comes out to 24 wpm.
+        assert!(game::get_legacy_wpm(word_idx, now, start_time) == 24);
+    }
+
+    #[test]
+    fn test_check_word() {
+        assert!(game::check_word("darrien", "darrien"));
+        assert!(!game::check_word("Darrien", "darrien"));
+        assert!(!game::check_word("Darrien", "Glasser"));
+    }
+
+    #[test]
+    fn test_check_like_word() {
+        // Normal case
+        assert!(game::check_like_word("darrien", "darr"));
+
+        // Full word
+        assert!(game::check_like_word("darrien", "darrien"));
+
+        // Input is longer than word to check
+        assert!(!game::check_like_word("darrien", "darrienglasser.com"));
+
+        // Case sensitivity
+        assert!(!game::check_like_word("darrien", "Darrien"));
+    }
+
+    #[test]
+    fn test_get_starting_idx() {
+        let words = vec!["this", "is", "a", "vector"];
+        assert!(game::get_starting_idx(&words, 2) == 8);
+        assert!(game::get_starting_idx(&words, 0) == 0);
+        assert!(game::get_starting_idx(&words, 1) == 5);
+    }
+
 }

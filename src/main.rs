@@ -64,7 +64,9 @@ fn main() -> Result<(), Error> {
         while match game::play_game(&read_text, legacy_wpm) {
             actions::Action::Quit => false,
             actions::Action::NextPassage => true,
-        }{ read_text = "".to_string(); }
+        } {
+            read_text = "".to_string();
+        }
     }
     Ok(())
 }
