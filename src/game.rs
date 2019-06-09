@@ -161,7 +161,7 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
         }
     }
 
-    formatted_input.push(Text::styled(" ", Style::default().bg(Color::White)));
+    formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
 
     while word_dex < idx_word_count && word_dex < idx_input_count {
         if indexable_word[word_dex] != indexable_input[word_dex] {
