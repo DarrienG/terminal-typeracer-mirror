@@ -2,8 +2,8 @@ use tui::backend::Backend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::Color;
 use tui::style::{Modifier, Style};
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use tui::terminal::Terminal;
+use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 
 use crate::game::FormattedTexts;
 
@@ -12,7 +12,6 @@ pub struct GameState<'a> {
     pub user_input: &'a str,
     pub wpm: u64,
     pub title: &'a str,
-    pub fresh: bool,
     // For debug
     pub legacy_wpm: bool,
     pub debug_enabled: bool,
@@ -23,7 +22,7 @@ pub struct GameState<'a> {
     pub current_word: &'a str,
 }
 
-impl <'a>GameState<'a> {
+impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
         format!("Running with options:\n Legacy WPM: {},  word_idx: {},  now: {},  start: {}\npassage_path: {}\ncurrent_word: {}",
                 self.legacy_wpm,
@@ -59,7 +58,7 @@ fn get_wpm_bounds() -> [Constraint; 3] {
     ]
 }
 
-pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState){
+pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
     terminal
         .draw(|mut f| {
             // Because there is no way to specify vertical but not horizontal margins
@@ -82,9 +81,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState){
             {
                 let root_layout = Layout::default()
                     .direction(Direction::Horizontal)
-                    .constraints(
-                        [Constraint::Percentage(80), Constraint::Percentage(20)].as_ref(),
-                    )
+                    .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
                     .split(base_layout[0]);
                 {
                     // Typing layout
@@ -144,23 +141,19 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState){
                         .alignment(Alignment::Center)
                         .render(&mut f, chunks[2]);
                 }
-                if game_state.fresh {
-                    let chunks = Layout::default()
-                        .direction(Direction::Vertical)
-                        .margin(0)
-                        .constraints([Constraint::Percentage(100)].as_ref())
-                        .split(base_layout[1]);
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .margin(0)
+                    .constraints([Constraint::Percentage(100)].as_ref())
+                    .split(base_layout[1]);
 
-                    let shortcut_block = Block::default()
-                        .borders(Borders::NONE)
-                        .title_style(Style::default());
-                    Paragraph::new(
-                        [Text::raw("^C exit  ^N next passage  ^U clear word")].iter(),
-                    )
+                let shortcut_block = Block::default()
+                    .borders(Borders::NONE)
+                    .title_style(Style::default());
+                Paragraph::new([Text::raw("^C exit  ^N next passage  ^U clear word")].iter())
                     .block(shortcut_block.clone())
                     .alignment(Alignment::Center)
                     .render(&mut f, chunks[0]);
-                }
             }
         })
         .expect("Failed to draw terminal widgets.");

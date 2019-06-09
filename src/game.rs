@@ -238,14 +238,11 @@ fn get_formatted_texts<'a>(
 }
 
 // Get default string to display when user completes a passage.
-fn get_complete_string<'a>() -> Vec<Text<'a>> {
-    vec![
-        Text::styled(
-            "COMPLETE\n",
-            Style::default().bg(Color::Green).fg(Color::White),
-        ),
-        Text::raw("^A to play again, ^C to quit"),
-    ]
+fn get_complete_string() -> Vec<Text<'static>> {
+    vec![Text::styled(
+        "COMPLETE",
+        Style::default().bg(Color::Green).fg(Color::White),
+    )]
 }
 
 // Event loop: Displays the typing input and renders keypresses.
@@ -295,7 +292,6 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
             user_input: "",
             wpm,
             title: &passage_info.title,
-            fresh: user_input == "" && current_word_idx == 0,
             legacy_wpm,
             debug_enabled,
             word_idx: current_word_idx,
@@ -314,7 +310,6 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
                 user_input: &user_input,
                 wpm,
                 title: &passage_info.title,
-                fresh: user_input == "" && current_word_idx == 0,
                 legacy_wpm,
                 debug_enabled,
                 word_idx: current_word_idx,
@@ -413,7 +408,7 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
             if checked == Key::Ctrl('c') {
                 return actions::Action::Quit;
             }
-            if checked == Key::Ctrl('a') {
+            if checked == Key::Ctrl('n') {
                 return actions::Action::NextPassage;
             }
         }
