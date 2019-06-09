@@ -47,10 +47,10 @@ fn get_typing_bounds() -> [Constraint; 4] {
     ]
 }
 
-// Convenience method for retrieving constraints for the wpm layout.
+// Convenience method for retrieving constraints for the stats block.
 // At some point this may be refactored to be more dynamic based on
 // terminal layout size so we can skip resolution checks.
-fn get_wpm_bounds() -> [Constraint; 3] {
+fn get_stats_bounds() -> [Constraint; 3] {
     [
         Constraint::Percentage(20),
         Constraint::Percentage(30),
@@ -130,14 +130,14 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     let chunks = Layout::default()
                         .direction(Direction::Vertical)
                         .margin(1)
-                        .constraints(get_wpm_bounds().as_ref())
+                        .constraints(get_stats_bounds().as_ref())
                         .split(root_layout[1]);
 
-                    let wpm_block = Block::default()
+                    let stats_block = Block::default()
                         .borders(Borders::ALL)
                         .title_style(Style::default());
                     Paragraph::new([Text::raw(format!("WPM\n{}", game_state.wpm))].iter())
-                        .block(wpm_block.clone().title("WPM"))
+                        .block(stats_block.clone().title("Stats"))
                         .alignment(Alignment::Center)
                         .render(&mut f, chunks[2]);
                 }
