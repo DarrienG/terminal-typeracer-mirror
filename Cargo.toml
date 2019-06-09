@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "1.0.7"
+version = "1.0.8"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 # Packaging for crates.io
@@ -9,6 +9,24 @@ include = [
     "**/*.rs",
     "Cargo.toml",
 ]
+
+[profile.release]
+lto = true
+opt-level = 3
+debug = false
+debug-assertions = false
+panic = 'abort'
+incremental = false
+overflow-checks = false
+
+[profile.dev]
+opt-level = 0
+debug = 2
+lto = false
+debug-assertions = true
+panic = 'unwind'
+incremental = true
+overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal

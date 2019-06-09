@@ -13,5 +13,5 @@ mac:
 	bash build-macos.sh
 
 check:
-	cargo clippy --all --release -- -D warnings
+	cargo clippy --all -- -D warnings
 	cargo test

@@ -35,7 +35,7 @@ pub fn retrieve_lang_pack() -> Result<(), Error> {
 
     let mut terminal = Terminal::new(backend)?;
 
-    let lang_pack_url = "https://gitlab.com/DarrienG/terminal-typeracer/raw/7416eb0ea8aa8f574f4b80ea78090202f52b8f12/assets/quote-pack.tar.gz";
+    let lang_pack_url = "https://gitlab.com/DarrienG/terminal-typeracer/raw/c7a1c5259b21b8faea39312cd013425b3bf8440e/assets/quote-pack.tar.gz";
 
     let mut step_instruction = "Lang pack (~40Ki) not installed. Would you like to install now? (requires an internet connection)\nYes: y, No: n\n".to_string();
     let mut step_count = 0;

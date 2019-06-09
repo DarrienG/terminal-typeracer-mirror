@@ -20,9 +20,19 @@ fn debug_enabled_default() -> bool {
     true
 }
 
+#[cfg(debug_assertions)]
+fn get_version() -> &'static str {
+    "DEBUG"
+}
+
+#[cfg(not(debug_assertions))]
+fn get_version() -> &'static str {
+    "1.0.8"
+}
+
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version("1.0.7")
+        .version(get_version())
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
