@@ -2,7 +2,6 @@ use rand::Rng;
 use std::fs;
 use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader};
-use std::time::{SystemTime, UNIX_EPOCH};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -15,6 +14,7 @@ use tui::Terminal;
 
 use crate::actions;
 use crate::dirs::setup_dirs;
+use crate::stats;
 
 mod game_render;
 
@@ -28,42 +28,6 @@ pub struct FormattedTexts<'a> {
     pub passage: Vec<Text<'a>>,
     pub input: Vec<Text<'a>>,
     pub error: bool,
-}
-
-fn get_now() -> std::time::Duration {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
-}
-
-// Get the words per minute based on a words per minute algorithm.
-// If legacy is set to true, use the actual words per minute, otherwise use chars/5 per minute.
-// See: https://en.wikipedia.org/wiki/Words_per_minute#Alphanumeric_entry
-fn derive_wpm(word_idx: usize, word_vec: &[&str], now: u64, start_time: u64, legacy: bool) -> u64 {
-    if legacy {
-        get_legacy_wpm(word_idx, now, start_time)
-    } else {
-        get_wpm(word_idx, word_vec, now, start_time)
-    }
-}
-
-// Get words per minute where a word is 5 chars.
-fn get_wpm(word_idx: usize, word_vec: &[&str], now: u64, start_time: u64) -> u64 {
-    let mut char_count = 0;
-    for item in word_vec.iter().take(word_idx) {
-        // add 1 for space
-        char_count += item.chars().count() + 1;
-    }
-    let minute_float = ((now - start_time) as f64) / 60.0;
-    let word_count_float = char_count as f64 / 5.0;
-    (word_count_float / minute_float).ceil() as u64
-}
-
-// Get words per minute where a word is a set of characters delimited by a space.
-fn get_legacy_wpm(word_idx: usize, now: u64, start_time: u64) -> u64 {
-    let minute_float = ((now - start_time) as f64) / 60.0;
-    let word_count_float = (word_idx) as f64;
-    (word_count_float / minute_float).ceil() as u64
 }
 
 // Determine if two words are the same.
@@ -249,8 +213,8 @@ fn get_complete_string() -> Vec<Text<'static>> {
 
 // Event loop: Displays the typing input and renders keypresses.
 // This is the entrance to the main game.
-pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions::Action {
-    // TODO: Provide get_backend method in game_render
+// TODO: Provide get_backend method in game_render
+pub fn play_game(input: &str, stats: &mut stats::Stats, debug_enabled: bool) -> actions::Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
@@ -281,30 +245,9 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
 
     let mut user_input = String::new();
 
-    // Split the passager into vec of words to work on one at a time
+    // Split the passage into vec of words to work on one at a time
     let words: Vec<&str> = passage_info.passage.split(' ').collect();
     let mut current_word_idx = 0;
-
-    // Timing and wpm
-    let mut wpm = 0;
-    let mut start_time = 0;
-
-    game_render::render(
-        &mut terminal,
-        game_render::GameState {
-            texts: &formatted_texts,
-            user_input: "",
-            wpm,
-            title: &passage_info.title,
-            legacy_wpm,
-            debug_enabled,
-            word_idx: current_word_idx,
-            now: get_now().as_secs(),
-            start: start_time,
-            passage_path: &passage_info.passage_path,
-            current_word: words[current_word_idx],
-        },
-    );
 
     loop {
         game_render::render(
@@ -312,13 +255,10 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
             game_render::GameState {
                 texts: &formatted_texts,
                 user_input: &user_input,
-                wpm,
+                stats,
                 title: &passage_info.title,
-                legacy_wpm,
                 debug_enabled,
                 word_idx: current_word_idx,
-                now: get_now().as_secs(),
-                start: start_time,
                 passage_path: &passage_info.passage_path,
                 current_word: if current_word_idx == words.len() {
                     "DONE"
@@ -333,7 +273,6 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
 
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
-        let now = get_now();
         match c.unwrap() {
             Key::Ctrl('c') => return actions::Action::Quit,
             Key::Ctrl('n') => return actions::Action::NextPassage,
@@ -344,9 +283,7 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
             }
 
             Key::Char(c) => {
-                if start_time == 0 {
-                    start_time = now.as_secs() - 1;
-                }
+                stats.update_start_time();
 
                 if c == ' ' && check_word(words[current_word_idx], &user_input) {
                     current_word_idx += 1;
@@ -360,13 +297,7 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
                 } else {
                     user_input.push(c);
                 }
-                wpm = derive_wpm(
-                    current_word_idx,
-                    &words,
-                    now.as_secs(),
-                    start_time,
-                    legacy_wpm,
-                );
+                stats.update_wpm(current_word_idx, &words);
             }
             _ => {}
         }
@@ -388,18 +319,8 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
             && check_word(words[current_word_idx], &user_input)
         {
             // Special case for the last word so the user doesn't need to hit space
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards");
-
             current_word_idx += 1;
-            wpm = derive_wpm(
-                current_word_idx,
-                &words,
-                now.as_secs(),
-                start_time,
-                legacy_wpm,
-            );
+            stats.update_wpm(current_word_idx, &words);
             user_input.clear();
             formatted_texts.input = get_complete_string();
         }
@@ -422,42 +343,6 @@ pub fn play_game(input: &str, legacy_wpm: bool, debug_enabled: bool) -> actions:
 #[cfg(test)]
 mod tests {
     use crate::game;
-    #[test]
-    fn test_get_wpm() {
-        let word_idx = 2;
-        let word_vec = vec!["There's", "a", "time", "when", "the", "operation"];
-        let now = 501;
-        let start_time = 500;
-
-        // Where a word is 5 characters, we know the user has typed 10 characters
-        // in 1 second, which comes out to 120 wpm.
-        assert!(game::get_wpm(word_idx, &word_vec, now, start_time) == 120);
-
-        let word_idx = 4;
-        let now = 510;
-        let start_time = 500;
-
-        // Where a word is 5 characters, we know the user has typed 20 characters in
-        // 10 seconds. Which comes out to 24 wpm.
-        assert!(game::get_wpm(word_idx, &word_vec, now, start_time) == 24);
-    }
-
-    #[test]
-    fn test_legacy_get_wpm() {
-        let word_idx = 2;
-        let now = 501;
-        let start_time = 500;
-
-        // The user has typed 2 words in 1 second, which comes out to 120 wpm.
-        assert!(game::get_legacy_wpm(word_idx, now, start_time) == 120);
-
-        let word_idx = 4;
-        let now = 510;
-        let start_time = 500;
-
-        // The user has typed 4 words in 10 seconds, which comes out to 24 wpm.
-        assert!(game::get_legacy_wpm(word_idx, now, start_time) == 24);
-    }
 
     #[test]
     fn test_check_word() {

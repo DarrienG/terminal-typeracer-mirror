@@ -6,29 +6,26 @@ use tui::terminal::Terminal;
 use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 
 use crate::game::FormattedTexts;
+use crate::stats;
 
 pub struct GameState<'a> {
     pub texts: &'a FormattedTexts<'a>,
     pub user_input: &'a str,
-    pub wpm: u64,
+    pub stats: &'a stats::Stats,
     pub title: &'a str,
     // For debug
-    pub legacy_wpm: bool,
     pub debug_enabled: bool,
     pub word_idx: usize,
-    pub now: u64,
-    pub start: u64,
     pub passage_path: &'a str,
     pub current_word: &'a str,
 }
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  now: {},  start: {}\npassage_path: {}\ncurrent_word: {}",
-                self.legacy_wpm,
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\npassage_path: {}\ncurrent_word: {}",
+                self.stats.get_legacy_wpm(),
                 self.word_idx,
-                self.now,
-                self.start,
+                self.stats.get_start_time(),
                 self.passage_path,
                 self.current_word,
             )
@@ -136,7 +133,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     let stats_block = Block::default()
                         .borders(Borders::ALL)
                         .title_style(Style::default());
-                    Paragraph::new([Text::raw(format!("WPM\n{}", game_state.wpm))].iter())
+                    Paragraph::new(game_state.stats.text().iter())
                         .block(stats_block.clone().title("Stats"))
                         .alignment(Alignment::Center)
                         .render(&mut f, chunks[2]);

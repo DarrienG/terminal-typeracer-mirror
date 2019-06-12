@@ -9,6 +9,7 @@ mod dirs {
 }
 
 pub mod actions;
+pub mod stats;
 
 #[cfg(not(debug_assertions))]
 fn debug_enabled_default() -> bool {
@@ -83,6 +84,8 @@ fn main() -> Result<(), Error> {
 
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
+    let stats = &mut stats::Stats::new(legacy_wpm);
+
     if term_check::resolution_check().is_ok() {
         if !lang::check_lang_pack() {
             let result = lang::retrieve_lang_pack();
@@ -90,11 +93,12 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text, legacy_wpm, debug_enabled) {
+        while match game::play_game(&read_text, stats, debug_enabled) {
             actions::Action::Quit => false,
             actions::Action::NextPassage => true,
         } {
             read_text = "".to_string();
+            stats.reset();
         }
     }
     Ok(())
