@@ -8,12 +8,11 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
-use tui::layout::{Alignment, Constraint, Direction, Layout};
-use tui::style::Style;
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use tui::Terminal;
 
 use crate::dirs::setup_dirs;
+
+mod lang_pack_render;
 
 fn download(url: &str, file_path: &str) {
     let mut resp = reqwest::get(url).expect("request failed");
@@ -26,6 +25,11 @@ fn expand_lang_pack(file_path: &str, extract_path: &str) -> Result<(), Error> {
     let tar = GzDecoder::new(tar_gz);
     let mut archive = Archive::new(tar);
     archive.unpack(extract_path)
+}
+
+pub fn check_lang_pack() -> bool {
+    let data_dir = setup_dirs::create_data_dir();
+    fs::read_dir(data_dir).unwrap().count() > 0
 }
 
 pub fn retrieve_lang_pack() -> Result<(), Error> {
@@ -47,26 +51,7 @@ pub fn retrieve_lang_pack() -> Result<(), Error> {
 
     loop {
         let stdin = stdin();
-        terminal.draw(|mut f| {
-            let root_layout = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(100)].as_ref())
-                .split(f.size());
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .margin(5)
-                .constraints([Constraint::Percentage(100)].as_ref())
-                .split(root_layout[0]);
-            let passage_block = Block::default()
-                .borders(Borders::ALL)
-                .title_style(Style::default());
-            Paragraph::new([Text::raw(&step_instruction)].iter())
-                .block(passage_block.clone().title("Checking bounds"))
-                .wrap(true)
-                .alignment(Alignment::Left)
-                .render(&mut f, chunks[0]);
-        })?;
-
+        lang_pack_render::render(&mut terminal, &step_instruction);
         if step_count == 0 {
             for c in stdin.keys() {
                 let checked = c.unwrap();
@@ -109,9 +94,4 @@ pub fn retrieve_lang_pack() -> Result<(), Error> {
             }
         }
     }
-}
-
-pub fn check_lang_pack() -> bool {
-    let data_dir = setup_dirs::create_data_dir();
-    fs::read_dir(data_dir).unwrap().count() > 0
 }

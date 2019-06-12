@@ -2,7 +2,7 @@ use clap;
 use std::io::Error;
 
 mod game;
-mod lang;
+mod lang_pack;
 mod term_check;
 mod dirs {
     pub mod setup_dirs;
@@ -87,8 +87,8 @@ fn main() -> Result<(), Error> {
     let stats = &mut stats::Stats::new(legacy_wpm);
 
     if term_check::resolution_check().is_ok() {
-        if !lang::check_lang_pack() {
-            let result = lang::retrieve_lang_pack();
+        if !lang_pack::check_lang_pack() {
+            let result = lang_pack::retrieve_lang_pack();
             if result.is_err() {
                 return result;
             }
