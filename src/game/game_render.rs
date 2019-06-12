@@ -8,6 +8,7 @@ use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
 use crate::game::FormattedTexts;
 use crate::stats;
 
+#[derive(Clone, Debug)]
 pub struct GameState<'a> {
     pub texts: &'a FormattedTexts<'a>,
     pub user_input: &'a str,

@@ -18,12 +18,14 @@ use crate::stats;
 
 mod game_render;
 
+#[derive(Debug, Clone)]
 pub struct PassageInfo {
     pub passage: String,
     pub title: String,
     pub passage_path: String,
 }
 
+#[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {
     pub passage: Vec<Text<'a>>,
     pub input: Vec<Text<'a>>,
