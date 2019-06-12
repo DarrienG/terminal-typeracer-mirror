@@ -3,11 +3,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tui::widgets::Text;
 
 #[cfg(test)]
+#[derive(Debug, Clone)]
 struct Time {
     seconds: u64,
 }
 
 #[cfg(not(test))]
+#[derive(Debug, Clone)]
 struct Time {}
 
 impl Time {
@@ -38,6 +40,7 @@ impl Time {
 }
 
 /// Store the current stats to be displayed to the user
+#[derive(Debug, Clone)]
 pub struct Stats {
     wpm: u64,
     legacy_wpm: bool,
