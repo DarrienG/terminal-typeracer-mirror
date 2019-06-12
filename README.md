@@ -69,4 +69,7 @@ I'd love to have more contributors! If you're looking to make any drastic
 changes (e.g. Redis integration or something like that) consider contacting me
 via email first so we can discuss.
 
+All rust should be formatted with rustfmt. And if you're adding a new feature,
+please add some tests too!
+
 License is GPLv3 in the spirit of open source.
