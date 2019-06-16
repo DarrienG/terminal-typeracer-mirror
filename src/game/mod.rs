@@ -9,7 +9,7 @@ use tui::style::Style;
 use tui::widgets::Text;
 use tui::Terminal;
 
-use crate::actions;
+use crate::actions::Action;
 use crate::lang_pack::PassageInfo;
 use crate::stats;
 
@@ -169,7 +169,7 @@ pub fn play_game(
     passage_info: &PassageInfo,
     stats: &mut stats::Stats,
     debug_enabled: bool,
-) -> actions::Action {
+) -> Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
@@ -219,9 +219,9 @@ pub fn play_game(
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
-            Key::Ctrl('c') => return actions::Action::Quit,
-            Key::Ctrl('n') => return actions::Action::NextPassage,
-            Key::Ctrl('p') => return actions::Action::PreviousPassage,
+            Key::Ctrl('c') => return Action::Quit,
+            Key::Ctrl('n') => return Action::NextPassage,
+            Key::Ctrl('p') => return Action::PreviousPassage,
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
@@ -275,15 +275,11 @@ pub fn play_game(
     loop {
         let stdin = stdin();
         for c in stdin.keys() {
-            let checked = c.unwrap();
-            if checked == Key::Ctrl('c') {
-                return actions::Action::Quit;
-            }
-            if checked == Key::Ctrl('n') {
-                return actions::Action::NextPassage;
-            }
-            if checked == Key::Ctrl('p') {
-                return actions::Action::PreviousPassage;
+            match c.unwrap() {
+                Key::Ctrl('c') => return Action::Quit,
+                Key::Ctrl('n') => return Action::NextPassage,
+                Key::Ctrl('p') => return Action::PreviousPassage,
+                _ => (),
             }
         }
     }

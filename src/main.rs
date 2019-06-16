@@ -11,6 +11,8 @@ mod dirs {
 pub mod actions;
 pub mod stats;
 
+use actions::Action;
+
 #[cfg(not(debug_assertions))]
 fn debug_enabled_default() -> bool {
     false
@@ -94,10 +96,13 @@ fn main() -> Result<(), Error> {
             }
         }
 
-        while passage_controller.action != actions::Action::Quit {
-            let action =
-                game::play_game(passage_controller.retrieve_passage(), stats, debug_enabled);
-            passage_controller.action = action;
+        let mut action = Action::NextPassage;
+        while action != actions::Action::Quit {
+            action = game::play_game(
+                passage_controller.retrieve_passage(action),
+                stats,
+                debug_enabled,
+            );
             stats.reset();
         }
     }
