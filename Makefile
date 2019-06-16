@@ -15,3 +15,7 @@ mac:
 check:
 	cargo clippy --all -- -D warnings
 	cargo test
+	find src -type f -name "*.rs" | xargs rustfmt --check
+
+fmt:
+	find src -type f -name "*.rs" | xargs rustfmt

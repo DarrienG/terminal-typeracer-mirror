@@ -148,10 +148,15 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                 let shortcut_block = Block::default()
                     .borders(Borders::NONE)
                     .title_style(Style::default());
-                Paragraph::new([Text::raw("^C exit  ^N next passage  ^U clear word")].iter())
-                    .block(shortcut_block.clone())
-                    .alignment(Alignment::Center)
-                    .render(&mut f, chunks[0]);
+                Paragraph::new(
+                    [Text::raw(
+                        "^C exit  ^N next passage  ^P previous passage  ^U clear word",
+                    )]
+                    .iter(),
+                )
+                .block(shortcut_block.clone())
+                .alignment(Alignment::Center)
+                .render(&mut f, chunks[0]);
             }
         })
         .expect("Failed to draw terminal widgets.");

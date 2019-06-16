@@ -1,7 +1,8 @@
 use flate2::read::GzDecoder;
-use std::fs::File;
-use std::io::{stdin, stdout, Error};
-use std::{fs, io};
+use rand::Rng;
+use std::fs::{read_dir, File};
+use std::io;
+use std::io::{stdin, stdout, BufRead, BufReader, Error};
 use tar::Archive;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -10,9 +11,17 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::Terminal;
 
+use crate::actions;
 use crate::dirs::setup_dirs;
 
 mod lang_pack_render;
+
+#[derive(Debug, Clone)]
+pub struct PassageInfo {
+    pub passage: String,
+    pub title: String,
+    pub passage_path: String,
+}
 
 fn download(url: &str, file_path: &str) {
     let mut resp = reqwest::get(url).expect("request failed");
@@ -29,7 +38,7 @@ fn expand_lang_pack(file_path: &str, extract_path: &str) -> Result<(), Error> {
 
 pub fn check_lang_pack() -> bool {
     let data_dir = setup_dirs::create_data_dir();
-    fs::read_dir(data_dir).unwrap().count() > 0
+    read_dir(data_dir).unwrap().count() > 0
 }
 
 pub fn retrieve_lang_pack() -> Result<(), Error> {
@@ -94,4 +103,141 @@ pub fn retrieve_lang_pack() -> Result<(), Error> {
             }
         }
     }
+}
+
+pub struct PassageController {
+    passages: Vec<PassageInfo>,
+    current_passage_marker: usize,
+    history_size: usize,
+    start_idx: usize,
+    pub action: actions::Action,
+}
+
+// A slightly smarter ringbuffer for preserving history
+// Saves the last 20 passages as history.
+impl PassageController {
+    pub fn new(history_size: usize) -> Self {
+        // We want to initialize one value in the vector before we start.
+        // We could do all history_size, but not lazy loading with bigger values
+        // could be expensive.
+        let mut pc = PassageController {
+            passages: vec![],
+            current_passage_marker: 0,
+            history_size,
+            start_idx: 0,
+            action: actions::Action::NextPassage,
+        };
+
+        pc.passages.push(pc.get_passage());
+        pc
+    }
+
+    // Retrieve a passage.
+    // Takes into account history and the previous action given.
+    pub fn retrieve_passage(&mut self) -> &PassageInfo {
+        if self.action == actions::Action::NextPassage {
+            self.current_passage_marker = (self.current_passage_marker + 1) % self.history_size;
+
+            // The only times we need to get a new passage rather than look in history:
+            // - When we have forced the start_idx to push forward one
+            // - When we have not yet filled the history up
+            if self.current_passage_marker == self.start_idx {
+                self.start_idx = self.history_size % (self.start_idx + 1);
+                // Should we expand the vector, or push a new passage on?
+                if self.passages.len() < self.history_size {
+                    self.passages.push(self.get_passage());
+                } else {
+                    self.passages[self.current_passage_marker] = self.get_passage();
+                }
+            } else if self.passages.len() < self.history_size
+                && self.current_passage_marker == self.passages.len()
+            {
+                self.passages.push(self.get_passage());
+            }
+        } else if self.action == actions::Action::PreviousPassage {
+            if self.current_passage_marker == self.start_idx {
+                // Don't do anything, we're at the last position in history
+            } else {
+                // Since the start_idx can be in places other than 0, a -1 could make us negative,
+                // so we need to mod it with history_size.
+                self.current_passage_marker -= 1;
+                if self.current_passage_marker != 0 {
+                    self.current_passage_marker %= self.history_size;
+                }
+            }
+        }
+
+        &self.passages[self.current_passage_marker]
+    }
+
+    // TODO: If we want the user to be able to input for any passage, this should become
+    // smarter so it can insert to the next passage every time instead of assuming it is inserting
+    // the first time.
+    // For now this passage is just for inserting the initial user input if they want it.
+    pub fn write_initial_passage(&mut self, passage: &str) {
+        self.passages.push(PassageInfo {
+            passage: passage.to_owned(),
+            title: "User input".to_owned(),
+            passage_path: "User input".to_owned(),
+        });
+    }
+
+    // Retrieve a random passage and title from quote database.
+    // Defaults to boring passage if no files are found.
+    // Returns (passage, author/title)
+    // TODO: Test
+    // Difficult to test with unit tests. Expects a database file.
+    #[cfg(not(test))]
+    fn get_passage(&self) -> PassageInfo {
+        let quote_dir = setup_dirs::get_quote_dir().to_string();
+        let num_files = read_dir(quote_dir).unwrap().count();
+        let random_file_num = rand::thread_rng().gen_range(0, num_files);
+        let fallback = PassageInfo {
+            passage: "The quick brown fox jumps over the lazy dog".to_owned(),
+            title: "darrienglasser.com".to_owned(),
+            passage_path: "FALLBACK_PATH".to_owned(),
+        };
+
+        if num_files == 0 {
+            return fallback;
+        } else {
+            let read_dir_iter = setup_dirs::get_quote_dir().to_string();
+            for (count, path) in read_dir(read_dir_iter).unwrap().enumerate() {
+                let path = path.unwrap().path();
+                if count == random_file_num && path.file_stem().unwrap() != "version" {
+                    let file = File::open(&path).expect("File somehow did not exist.");
+                    let mut passage: Vec<String> = vec![];
+                    for line in BufReader::new(file).lines() {
+                        passage.push(line.unwrap());
+                    }
+                    if passage.len() >= 2 {
+                        return PassageInfo {
+                            passage: passage[0].trim().to_string(),
+                            title: passage[1].clone(),
+                            passage_path: path.to_string_lossy().into_owned(),
+                        };
+                    }
+                }
+            }
+        }
+
+        fallback
+    }
+
+    #[cfg(test)]
+    fn get_passage(&self) -> PassageInfo {
+        PassageInfo {
+            passage: "the quick brown fox...".to_owned(),
+            title: "testing...".to_owned(),
+            passage_path: "TEST_GET_PASSAGE".to_owned(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_next_passage() {}
 }

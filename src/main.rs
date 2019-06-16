@@ -62,8 +62,9 @@ fn main() -> Result<(), Error> {
         )
         .get_matches();
 
+    let mut passage_controller = lang_pack::PassageController::new(20);
     // Get user input text and strip out characters that are difficult to type
-    let mut read_text = if args.is_present("READ_TEXT") {
+    if args.is_present("READ_TEXT") {
         let mut constructed_string = "".to_owned();
         let input = args.values_of("READ_TEXT").unwrap();
 
@@ -75,10 +76,9 @@ fn main() -> Result<(), Error> {
                 constructed_string.push_str(" ");
             }
         }
-        (&constructed_string[0..constructed_string.chars().count() - 1]).to_string()
-    } else {
-        "".to_string()
-    };
+        passage_controller
+            .write_initial_passage(&constructed_string[0..constructed_string.chars().count() - 1]);
+    }
 
     let debug_enabled = args.is_present("DEBUG_MODE") || debug_enabled_default();
 
@@ -93,11 +93,11 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text, stats, debug_enabled) {
-            actions::Action::Quit => false,
-            actions::Action::NextPassage => true,
-        } {
-            read_text = "".to_string();
+
+        while passage_controller.action != actions::Action::Quit {
+            let action =
+                game::play_game(passage_controller.retrieve_passage(), stats, debug_enabled);
+            passage_controller.action = action;
             stats.reset();
         }
     }
