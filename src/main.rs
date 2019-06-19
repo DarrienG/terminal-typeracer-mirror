@@ -1,8 +1,10 @@
+#![cfg_attr(test, allow(dead_code, unused_imports))]
 use clap;
 use std::io::Error;
 
 mod game;
 mod lang_pack;
+mod passage_controller;
 mod term_check;
 mod dirs {
     pub mod setup_dirs;
@@ -10,6 +12,8 @@ mod dirs {
 
 pub mod actions;
 pub mod stats;
+
+use actions::Action;
 
 #[cfg(not(debug_assertions))]
 fn debug_enabled_default() -> bool {
@@ -62,8 +66,9 @@ fn main() -> Result<(), Error> {
         )
         .get_matches();
 
+    let mut passage_controller = passage_controller::Controller::new(20);
     // Get user input text and strip out characters that are difficult to type
-    let mut read_text = if args.is_present("READ_TEXT") {
+    if args.is_present("READ_TEXT") {
         let mut constructed_string = "".to_owned();
         let input = args.values_of("READ_TEXT").unwrap();
 
@@ -75,10 +80,9 @@ fn main() -> Result<(), Error> {
                 constructed_string.push_str(" ");
             }
         }
-        (&constructed_string[0..constructed_string.chars().count() - 1]).to_string()
-    } else {
-        "".to_string()
-    };
+        passage_controller
+            .write_initial_passage(&constructed_string[0..constructed_string.chars().count() - 1]);
+    }
 
     let debug_enabled = args.is_present("DEBUG_MODE") || debug_enabled_default();
 
@@ -93,11 +97,14 @@ fn main() -> Result<(), Error> {
                 return result;
             }
         }
-        while match game::play_game(&read_text, stats, debug_enabled) {
-            actions::Action::Quit => false,
-            actions::Action::NextPassage => true,
-        } {
-            read_text = "".to_string();
+
+        let mut action = Action::NextPassage;
+        while action != actions::Action::Quit {
+            action = game::play_game(
+                passage_controller.retrieve_passage(action),
+                stats,
+                debug_enabled,
+            );
             stats.reset();
         }
     }

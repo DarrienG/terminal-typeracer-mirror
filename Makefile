@@ -15,3 +15,7 @@ mac:
 check:
 	cargo clippy --all -- -D warnings
 	cargo test
+	cargo fmt -- --check
+
+fmt:
+	cargo fmt

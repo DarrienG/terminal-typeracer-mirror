@@ -1,7 +1,7 @@
 use flate2::read::GzDecoder;
-use std::fs::File;
+use std::fs::{read_dir, File};
+use std::io;
 use std::io::{stdin, stdout, Error};
-use std::{fs, io};
 use tar::Archive;
 use termion::event::Key;
 use termion::input::TermRead;
@@ -29,7 +29,7 @@ fn expand_lang_pack(file_path: &str, extract_path: &str) -> Result<(), Error> {
 
 pub fn check_lang_pack() -> bool {
     let data_dir = setup_dirs::create_data_dir();
-    fs::read_dir(data_dir).unwrap().count() > 0
+    read_dir(data_dir).unwrap().count() > 0
 }
 
 pub fn retrieve_lang_pack() -> Result<(), Error> {

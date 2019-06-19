@@ -1,7 +1,4 @@
-use rand::Rng;
-use std::fs;
-use std::fs::File;
-use std::io::{stdin, stdout, BufRead, BufReader};
+use std::io::{stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -12,18 +9,11 @@ use tui::style::Style;
 use tui::widgets::Text;
 use tui::Terminal;
 
-use crate::actions;
-use crate::dirs::setup_dirs;
+use crate::actions::Action;
+use crate::passage_controller::PassageInfo;
 use crate::stats;
 
 mod game_render;
-
-#[derive(Debug, Clone)]
-pub struct PassageInfo {
-    pub passage: String,
-    pub title: String,
-    pub passage_path: String,
-}
 
 #[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {
@@ -49,47 +39,6 @@ fn check_like_word(word: &str, input: &str) -> bool {
     }
 
     check_word(&word[..input.len()], input)
-}
-
-// Retrieve a random passage and title from quote database.
-// Defaults to boring passage if no files are found.
-// Returns (passage, author/title)
-// TODO: Test
-// Difficult to test with unit tests. Expects a database file.
-fn get_passage() -> PassageInfo {
-    let quote_dir = setup_dirs::get_quote_dir().to_string();
-    let num_files = fs::read_dir(quote_dir).unwrap().count();
-    let random_file_num = rand::thread_rng().gen_range(0, num_files);
-    let fallback = PassageInfo {
-        passage: "The quick brown fox jumps over the lazy dog".to_owned(),
-        title: "darrienglasser.com".to_owned(),
-        passage_path: "FALLBACK_PATH".to_owned(),
-    };
-
-    if num_files == 0 {
-        return fallback;
-    } else {
-        let read_dir_iter = setup_dirs::get_quote_dir().to_string();
-        for (count, path) in fs::read_dir(read_dir_iter).unwrap().enumerate() {
-            let path = path.unwrap().path();
-            if count == random_file_num && path.file_stem().unwrap() != "version" {
-                let file = File::open(&path).expect("File somehow did not exist.");
-                let mut passage: Vec<String> = vec![];
-                for line in BufReader::new(file).lines() {
-                    passage.push(line.unwrap());
-                }
-                if passage.len() >= 2 {
-                    return PassageInfo {
-                        passage: passage[0].trim().to_string(),
-                        title: passage[1].clone(),
-                        passage_path: path.to_string_lossy().into_owned(),
-                    };
-                }
-            }
-        }
-    }
-
-    fallback
 }
 
 // Get formatted version of a single word in a passage and the user's current input
@@ -216,24 +165,18 @@ fn get_complete_string() -> Vec<Text<'static>> {
 // Event loop: Displays the typing input and renders keypresses.
 // This is the entrance to the main game.
 // TODO: Provide get_backend method in game_render
-pub fn play_game(input: &str, stats: &mut stats::Stats, debug_enabled: bool) -> actions::Action {
+pub fn play_game(
+    passage_info: &PassageInfo,
+    stats: &mut stats::Stats,
+    debug_enabled: bool,
+) -> Action {
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
     let mut terminal = Terminal::new(backend).expect("Unable to get handle to terminal.");
-
     terminal.hide_cursor().expect("Failed to hide the cursor");
-
-    let passage_info = match input {
-        "" => get_passage(),
-        _ => PassageInfo {
-            passage: input.to_owned(),
-            title: "Terminal Typeracer".to_owned(),
-            passage_path: "User input".to_owned(),
-        },
-    };
 
     let mut formatted_texts = FormattedTexts {
         passage: passage_info
@@ -276,8 +219,9 @@ pub fn play_game(input: &str, stats: &mut stats::Stats, debug_enabled: bool) -> 
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
-            Key::Ctrl('c') => return actions::Action::Quit,
-            Key::Ctrl('n') => return actions::Action::NextPassage,
+            Key::Ctrl('c') => return Action::Quit,
+            Key::Ctrl('n') => return Action::NextPassage,
+            Key::Ctrl('p') => return Action::PreviousPassage,
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
@@ -331,12 +275,11 @@ pub fn play_game(input: &str, stats: &mut stats::Stats, debug_enabled: bool) -> 
     loop {
         let stdin = stdin();
         for c in stdin.keys() {
-            let checked = c.unwrap();
-            if checked == Key::Ctrl('c') {
-                return actions::Action::Quit;
-            }
-            if checked == Key::Ctrl('n') {
-                return actions::Action::NextPassage;
+            match c.unwrap() {
+                Key::Ctrl('c') => return Action::Quit,
+                Key::Ctrl('n') => return Action::NextPassage,
+                Key::Ctrl('p') => return Action::PreviousPassage,
+                _ => (),
             }
         }
     }
