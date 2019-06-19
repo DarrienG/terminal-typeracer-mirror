@@ -32,7 +32,7 @@ fn get_version() -> &'static str {
 
 #[cfg(not(debug_assertions))]
 fn get_version() -> &'static str {
-    "1.0.8"
+    "1.0.9"
 }
 
 fn main() -> Result<(), Error> {
