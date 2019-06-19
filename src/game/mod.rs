@@ -287,36 +287,155 @@ pub fn play_game(
 
 #[cfg(test)]
 mod tests {
-    use crate::game;
+    use super::*;
 
     #[test]
     fn test_check_word() {
-        assert!(game::check_word("darrien", "darrien"));
-        assert!(!game::check_word("Darrien", "darrien"));
-        assert!(!game::check_word("Darrien", "Glasser"));
+        assert!(check_word("darrien", "darrien"));
+        assert!(!check_word("Darrien", "darrien"));
+        assert!(!check_word("Darrien", "Glasser"));
     }
 
     #[test]
     fn test_check_like_word() {
         // Normal case
-        assert!(game::check_like_word("darrien", "darr"));
+        assert!(check_like_word("darrien", "darr"));
 
         // Full word
-        assert!(game::check_like_word("darrien", "darrien"));
+        assert!(check_like_word("darrien", "darrien"));
 
         // Input is longer than word to check
-        assert!(!game::check_like_word("darrien", "darrienglasser.com"));
+        assert!(!check_like_word("darrien", "darrienglasser.com"));
 
         // Case sensitivity
-        assert!(!game::check_like_word("darrien", "Darrien"));
+        assert!(!check_like_word("darrien", "Darrien"));
     }
 
     #[test]
     fn test_get_starting_idx() {
         let words = vec!["this", "is", "a", "vector"];
-        assert!(game::get_starting_idx(&words, 2) == 8);
-        assert!(game::get_starting_idx(&words, 0) == 0);
-        assert!(game::get_starting_idx(&words, 1) == 5);
+        assert!(get_starting_idx(&words, 2) == 8);
+        assert!(get_starting_idx(&words, 0) == 0);
+        assert!(get_starting_idx(&words, 1) == 5);
     }
 
+    #[test]
+    fn test_get_formatted_words_correct() {
+        // Test all letters are correct condition
+        let test_word = "terminal-typeracer";
+        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_word);
+        let properly_formatted_word: Vec<Text> = test_word
+            .chars()
+            .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
+            .collect();
+        let mut properly_formatted_input: Vec<Text> = test_word
+            .chars()
+            .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
+            .collect();
+        properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
+        assert!(formatted_word == properly_formatted_word);
+        assert!(formatted_input == properly_formatted_input);
+    }
+
+    #[test]
+    fn test_get_formatted_words_err() {
+        let test_word = "terminal-type";
+        let test_input = "termimal-type";
+
+        // There has to be a better way to do this
+        let properly_formatted_word = vec![
+            Text::styled("t", Style::default().fg(Color::Green)),
+            Text::styled("e", Style::default().fg(Color::Green)),
+            Text::styled("r", Style::default().fg(Color::Green)),
+            Text::styled("m", Style::default().fg(Color::Green)),
+            Text::styled("i", Style::default().fg(Color::Green)),
+            Text::styled("n", Style::default().fg(Color::White).bg(Color::Red)),
+            Text::raw("a"),
+            Text::raw("l"),
+            Text::raw("-"),
+            Text::raw("t"),
+            Text::raw("y"),
+            Text::raw("p"),
+            Text::raw("e"),
+        ];
+
+        let mut properly_formatted_input: Vec<Text> = test_input
+            .chars()
+            .map(|it| {
+                Text::styled(
+                    it.to_string(),
+                    Style::default().fg(Color::White).bg(Color::Red),
+                )
+            })
+            .collect();
+        properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
+
+        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_input);
+
+        assert!(properly_formatted_word == formatted_word);
+        assert!(properly_formatted_input == formatted_input);
+    }
+
+    #[test]
+    fn test_get_formatted_texts() {
+        // Test that words are added in place to a set of formatted texts
+        // Do not need to check correct vs incorrect. All we need to verify is that the formatted
+        // texts are properly applied to the full set of formatted texts.
+        let words = vec!["the", "quick", "brown", "fox"];
+        let user_input = "bro";
+        let current_word_idx = 2;
+        let input_formatted_passage: Vec<Text> = vec![
+            Text::styled("t", Style::default().fg(Color::Green)),
+            Text::styled("h", Style::default().fg(Color::Green)),
+            Text::styled("e", Style::default().fg(Color::Green)),
+            Text::styled(" ", Style::default().fg(Color::Green)),
+            Text::styled("q", Style::default().fg(Color::Green)),
+            Text::styled("u", Style::default().fg(Color::Green)),
+            Text::styled("i", Style::default().fg(Color::Green)),
+            Text::styled("c", Style::default().fg(Color::Green)),
+            Text::styled("k", Style::default().fg(Color::Green)),
+            Text::styled(" ", Style::default().fg(Color::Green)),
+            Text::raw("b"),
+            Text::raw("r"),
+            Text::raw("o"),
+            Text::raw("w"),
+            Text::raw("n"),
+            Text::raw(" "),
+            Text::raw("f"),
+            Text::raw("o"),
+            Text::raw("x"),
+        ];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("t", Style::default().fg(Color::Green)),
+            Text::styled("h", Style::default().fg(Color::Green)),
+            Text::styled("e", Style::default().fg(Color::Green)),
+            Text::styled(" ", Style::default().fg(Color::Green)),
+            Text::styled("q", Style::default().fg(Color::Green)),
+            Text::styled("u", Style::default().fg(Color::Green)),
+            Text::styled("i", Style::default().fg(Color::Green)),
+            Text::styled("c", Style::default().fg(Color::Green)),
+            Text::styled("k", Style::default().fg(Color::Green)),
+            Text::styled(" ", Style::default().fg(Color::Green)),
+            Text::styled("b", Style::default().fg(Color::Green)),
+            Text::styled("r", Style::default().fg(Color::Green)),
+            Text::styled("o", Style::default().fg(Color::Green)),
+            Text::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("n"),
+            Text::raw(" "),
+            Text::raw("f"),
+            Text::raw("o"),
+            Text::raw("x"),
+        ];
+
+        let formatted_texts = get_formatted_texts(
+            &words,
+            user_input,
+            current_word_idx,
+            input_formatted_passage,
+        );
+
+        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
 }
