@@ -1,8 +1,10 @@
+#![cfg_attr(test, allow(dead_code, unused_imports))]
 use clap;
 use std::io::Error;
 
 mod game;
 mod lang_pack;
+mod passage_controller;
 mod term_check;
 mod dirs {
     pub mod setup_dirs;
@@ -64,7 +66,7 @@ fn main() -> Result<(), Error> {
         )
         .get_matches();
 
-    let mut passage_controller = lang_pack::PassageController::new(20);
+    let mut passage_controller = passage_controller::Controller::new(20);
     // Get user input text and strip out characters that are difficult to type
     if args.is_present("READ_TEXT") {
         let mut constructed_string = "".to_owned();

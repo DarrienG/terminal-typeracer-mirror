@@ -10,7 +10,7 @@ use tui::widgets::Text;
 use tui::Terminal;
 
 use crate::actions::Action;
-use crate::lang_pack::PassageInfo;
+use crate::passage_controller::PassageInfo;
 use crate::stats;
 
 mod game_render;
