@@ -11,4 +11,11 @@ style-check:
     - find src -type f -name "*.rs" | xargs rustfmt --check
 test:
   script:
+    - apt-get update -y && apt-get install -y kcov
     - cargo test
+    - cargo build
+    - kcov target/debug/typeracer
+
+code-coverage:
+  script:
+    - apt-get update -y && apt-get install -y kcov
