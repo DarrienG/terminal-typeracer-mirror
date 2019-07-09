@@ -20,6 +20,7 @@ pub struct FormattedTexts<'a> {
     pub passage: Vec<Text<'a>>,
     pub input: Vec<Text<'a>>,
     pub error: bool,
+    pub complete: bool,
 }
 
 // Determine if two words are the same.
@@ -151,6 +152,7 @@ fn get_formatted_texts<'a>(
         passage: formatted_passage,
         input: formatted_input,
         error: !check_like_word(words[current_word_idx], user_input),
+        complete: false,
     }
 }
 
@@ -186,6 +188,7 @@ pub fn play_game(
             .collect(),
         input: vec![],
         error: false,
+        complete: false,
     };
 
     let mut user_input = String::new();
@@ -261,6 +264,7 @@ pub fn play_game(
             // before taking user input again.
             user_input.clear();
             formatted_texts.input = get_complete_string();
+            formatted_texts.complete = true;
         } else if current_word_idx + 1 == words.len()
             && check_word(words[current_word_idx], &user_input)
         {
@@ -269,6 +273,7 @@ pub fn play_game(
             stats.update_wpm(current_word_idx, &words);
             user_input.clear();
             formatted_texts.input = get_complete_string();
+            formatted_texts.complete = true;
         }
     }
 

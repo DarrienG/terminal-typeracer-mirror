@@ -113,6 +113,8 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
 
                     let style = if game_state.texts.error {
                         Style::default().bg(Color::Red).fg(Color::White)
+                    } else if game_state.texts.complete {
+                        Style::default().bg(Color::Green).fg(Color::White)
                     } else {
                         Style::default()
                     };
