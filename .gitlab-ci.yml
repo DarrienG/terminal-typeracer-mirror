@@ -1,4 +1,4 @@
-image: rust:1.35.0-stretch
+image: rust:1.36.0-stretch
 
 lint:
   script:
@@ -8,7 +8,7 @@ lint:
 style-check:
   script:
     - rustup component add rustfmt
-    - find src -type f -name "*.rs" | xargs rustfmt --check
+    - cargo fmt -- --check
 test:
   script:
     - cargo test
