@@ -219,6 +219,8 @@ pub fn play_game(
             break;
         }
 
+        let mut new_char = false;
+
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
@@ -230,8 +232,8 @@ pub fn play_game(
             Key::Backspace => {
                 user_input.pop();
             }
-
             Key::Char(c) => {
+                new_char = true;
                 stats.update_start_time();
 
                 if c == ' ' && check_word(words[current_word_idx], &user_input) {
@@ -257,6 +259,10 @@ pub fn play_game(
             current_word_idx,
             formatted_texts.passage,
         );
+
+        if formatted_texts.error && new_char {
+            stats.increment_errors();
+        }
 
         if current_word_idx == words.len() {
             // We want one more render cycle at the end.

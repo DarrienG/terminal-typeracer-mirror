@@ -1,6 +1,5 @@
 #[cfg(not(test))]
 use std::time::{SystemTime, UNIX_EPOCH};
-use tui::widgets::Text;
 
 #[cfg(test)]
 #[derive(Debug, Clone)]
@@ -42,6 +41,7 @@ impl Time {
 /// Store the current stats to be displayed to the user
 #[derive(Debug, Clone)]
 pub struct Stats {
+    errors: u16,
     wpm: u64,
     legacy_wpm: bool,
     start_time: u64,
@@ -52,6 +52,7 @@ impl Stats {
     /// Create a new Stats struct
     pub fn new(legacy_wpm: bool) -> Self {
         Stats {
+            errors: 0,
             wpm: 0,
             legacy_wpm,
             start_time: 0,
@@ -87,15 +88,24 @@ impl Stats {
         }
     }
 
+    /// Increment the number of errors by 1
+    pub fn increment_errors(&mut self) {
+        self.errors += 1
+    }
+
     /// Reset the Stats struct to default values
     pub fn reset(&mut self) {
         self.wpm = 0;
+        self.errors = 0;
         self.start_time = 0;
     }
 
     /// Create the vector of text elements
-    pub fn text(&self) -> Vec<Text> {
-        vec![Text::raw(format!("WPM: {}", self.wpm))]
+    pub fn text(&self) -> Vec<Vec<String>> {
+        vec![
+            vec!["WPM".to_string(), self.wpm.to_string()],
+            vec!["Errors".to_string(), self.errors.to_string()],
+        ]
     }
 
     /// Get the value of `legacy_wpm`
@@ -158,5 +168,22 @@ mod tests {
         // The user has typed 4 words in 10 seconds, which comes out to 24 wpm.
         stats.update_wpm(word_idx, &[]);
         assert_eq!(stats.wpm, 24);
+    }
+
+    #[test]
+    fn test_errors() {
+        let mut stats = Stats::new(false);
+        assert_eq!(stats.errors, 0);
+        stats.increment_errors();
+        assert_eq!(stats.errors, 1);
+    }
+
+    #[test]
+    fn test_wpm_is_first_text() {
+        // wpm is the most important stat for the user so the table places it in the header row
+        // due to this it assumes the wpm is the first item in the returned text vectors
+        let stats = Stats::new(false);
+        let text = stats.text();
+        assert_eq!(text[0][0], "WPM");
     }
 }

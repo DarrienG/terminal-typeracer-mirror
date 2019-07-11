@@ -3,7 +3,7 @@ use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::Color;
 use tui::style::{Modifier, Style};
 use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text, Widget};
 
 use crate::game::FormattedTexts;
 use crate::stats;
@@ -136,11 +136,27 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     let stats_block = Block::default()
                         .borders(Borders::ALL)
                         .title_style(Style::default());
-                    Paragraph::new(game_state.stats.text().iter())
+
+                    let stats_text = game_state.stats.text();
+                    let headers = stats_text
+                        .get(0)
+                        .expect("Stats produced no text elements")
+                        .iter();
+                    let rows = stats_text
+                        .iter()
+                        .skip(1)
+                        .map(|name_value_vec| Row::Data(name_value_vec.iter()));
+                    // set to be the width of the longest name in the stats
+                    let stat_column_width = 5;
+                    // set to be an arbitrary value, 5 digits should be plenty to show the values for now
+                    let value_column_width = 5;
+                    Table::new(headers, rows)
                         .block(stats_block.clone().title("Stats"))
-                        .alignment(Alignment::Center)
+                        .widths(&[stat_column_width, value_column_width])
+                        .column_spacing(1)
                         .render(&mut f, chunks[2]);
                 }
+
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .margin(0)
