@@ -23,14 +23,14 @@ pub struct FormattedTexts<'a> {
     pub complete: bool,
 }
 
-// Determine if two words are the same.
+/// Determine if two words are the same.
 fn check_word(word: &str, input: &str) -> bool {
     *word == *input
 }
 
-// Check to see if the "input" is like the word. This is effectively
-// word.contains(input) but only if the first input.len characters are
-// the same. e.g. apple, ap => true, apple ppl => false
+/// Check to see if the "input" is like the word. This is effectively
+/// word.contains(input) but only if the first input.len characters are
+/// the same. e.g. apple, ap => true, apple ppl => false
 fn check_like_word(word: &str, input: &str) -> bool {
     if input.is_empty() {
         return true;
@@ -42,14 +42,15 @@ fn check_like_word(word: &str, input: &str) -> bool {
     check_word(&word[..input.len()], input)
 }
 
-// Get formatted version of a single word in a passage and the user's current input
-// All similar characters up until the first different character are highlighted with green/
-// The first error character in the word is highlighted with red and the rest unformatted
-
-// The entire error is colored red on the user's input.
-// returns a tuple with the formatted version of the: word and the input.
-// TODO: Test
-// Difficult to test, because Text does not implement eq
+/// Get formatted version of a single word in a passage and the user's current input.
+///
+/// All similar characters up until the first different character are highlighted with green.
+///
+/// On an erroroneous character:
+/// - The first error character in the passage's word is highlighted with red and the rest unformatted.
+/// - The entirety of the user's input is colored red.
+///
+/// Returns a tuple with the formatted version of the: word and the input.
 fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
@@ -115,14 +116,14 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
     (formatted_word, formatted_input)
 }
 
-// Given a vector of word and the current index of the word the user is typing,
-// ["this", "is", "a", "vector"] and current_word_idx of 2,
-// return the index as if we were indexing the previous vector as a space
-// separated string to get the first character of the word the user is
-// currently on.
-// In this case, we would get 8 back.
-// "this is a vector"
-// ---------^
+/// Given a vector of word and the current index of the word the user is typing,
+/// ["this", "is", "a", "vector"] and current_word_idx of 2,
+/// return the index as if we were indexing the previous vector as a space
+/// separated string to get the first character of the word the user is
+/// currently on.
+/// In this case, we would get 8 back.
+/// "this is a vector"
+/// ---------^
 fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     let mut passage_starting_idx: usize = 0;
     for word in words.iter().take(current_word_idx) {
@@ -131,7 +132,7 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     passage_starting_idx
 }
 
-// Get fully formatted versions of the passage, and the user's input.
+/// Get fully formatted versions of the passage, and the user's input.
 // TODO: Test
 // Text doesn't derive eq, so it's difficult to test.
 fn get_formatted_texts<'a>(
@@ -156,7 +157,7 @@ fn get_formatted_texts<'a>(
     }
 }
 
-// Get default string to display when user completes a passage.
+/// Get default string to display when user completes a passage.
 fn get_complete_string() -> Vec<Text<'static>> {
     vec![Text::styled(
         "COMPLETE",
@@ -164,8 +165,8 @@ fn get_complete_string() -> Vec<Text<'static>> {
     )]
 }
 
-// Event loop: Displays the typing input and renders keypresses.
-// This is the entrance to the main game.
+/// Event loop: Displays the typing input and renders keypresses.
+/// This is the entrance to the main game.
 // TODO: Provide get_backend method in game_render
 pub fn play_game(
     passage_info: &PassageInfo,

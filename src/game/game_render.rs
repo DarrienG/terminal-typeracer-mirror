@@ -33,9 +33,9 @@ impl<'a> GameState<'a> {
     }
 }
 
-// Convenience method for retrieving constraints for the typing layout.
-// At some point this may be refactored to be more dynamic based on
-// terminal layout size so we can skip resolution checks.
+/// Convenience method for retrieving constraints for the typing layout.
+/// At some point this may be refactored to be more dynamic based on
+/// terminal layout size so we can skip resolution checks.
 fn get_typing_bounds() -> [Constraint; 4] {
     [
         Constraint::Percentage(20),
@@ -45,9 +45,9 @@ fn get_typing_bounds() -> [Constraint; 4] {
     ]
 }
 
-// Convenience method for retrieving constraints for the stats block.
-// At some point this may be refactored to be more dynamic based on
-// terminal layout size so we can skip resolution checks.
+/// Convenience method for retrieving constraints for the stats block.
+/// At some point this may be refactored to be more dynamic based on
+/// terminal layout size so we can skip resolution checks.
 fn get_stats_bounds() -> [Constraint; 3] {
     [
         Constraint::Percentage(20),
