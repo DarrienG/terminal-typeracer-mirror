@@ -3,4 +3,5 @@ pub enum Action {
     Quit,
     NextPassage,
     PreviousPassage,
+    RestartPassage,
 }

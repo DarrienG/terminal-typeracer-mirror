@@ -2,7 +2,7 @@ use rand::Rng;
 use std::fs::{read_dir, File};
 use std::io::{BufRead, BufReader};
 
-use crate::actions;
+use crate::actions::Action;
 use crate::dirs::setup_dirs;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -40,11 +40,12 @@ impl Controller {
 
     /// Retrieve a passage.
     /// Takes into account history and the previous action given.
-    pub fn retrieve_passage(&mut self, action: actions::Action) -> &PassageInfo {
+    pub fn retrieve_passage(&mut self, action: Action) -> &PassageInfo {
         match action {
-            actions::Action::NextPassage => self.retrieve_next_passage(),
-            actions::Action::PreviousPassage => self.retrieve_previous_passage(),
-            _ => &self.passages[self.current_passage_idx],
+            Action::NextPassage => self.retrieve_next_passage(),
+            Action::PreviousPassage => self.retrieve_previous_passage(),
+            Action::RestartPassage => &self.passages[self.current_passage_idx],
+            Action::Quit => &self.passages[self.current_passage_idx],
         }
     }
 
@@ -147,9 +148,9 @@ impl Controller {
         // The chance that two of these collide is close enough to zero that we can assume they
         // will always be different.
         PassageInfo {
-            passage: format!("{}", rand::thread_rng().gen_range(0, 10000000)),
-            title: format!("{}", rand::thread_rng().gen_range(0, 10000000)),
-            passage_path: format!("{}", rand::thread_rng().gen_range(0, 10000000)),
+            passage: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
+            title: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
+            passage_path: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
         }
     }
 }
@@ -188,19 +189,18 @@ mod tests {
     #[test]
     fn test_verify_history_integrity() {
         let mut passage_controller = Controller::new(5);
-        let passage0 =
-            (*passage_controller.retrieve_passage(actions::Action::PreviousPassage)).clone();
-        let passage1 = (*passage_controller.retrieve_passage(actions::Action::NextPassage)).clone();
-        let passage2 = (*passage_controller.retrieve_passage(actions::Action::NextPassage)).clone();
+        let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
+        let passage1 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
+        let passage2 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
 
         // Check going backwards and forwards
-        assert!(passage1 == *passage_controller.retrieve_passage(actions::Action::PreviousPassage));
-        assert!(passage0 == *passage_controller.retrieve_passage(actions::Action::PreviousPassage));
-        assert!(passage1 == *passage_controller.retrieve_passage(actions::Action::NextPassage));
-        assert!(passage2 == *passage_controller.retrieve_passage(actions::Action::NextPassage));
+        assert!(passage1 == *passage_controller.retrieve_passage(Action::PreviousPassage));
+        assert!(passage0 == *passage_controller.retrieve_passage(Action::PreviousPassage));
+        assert!(passage1 == *passage_controller.retrieve_passage(Action::NextPassage));
+        assert!(passage2 == *passage_controller.retrieve_passage(Action::NextPassage));
 
-        let passage3 = (*passage_controller.retrieve_passage(actions::Action::NextPassage)).clone();
-        let passage4 = (*passage_controller.retrieve_passage(actions::Action::NextPassage)).clone();
+        let passage3 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
+        let passage4 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
 
         // Make sure the passages are unique
         assert!(passage0 != passage1);
@@ -209,10 +209,32 @@ mod tests {
         assert!(passage3 != passage4);
 
         // Ensure we start overwriting old history when we roll past the history limit
-        assert!(passage0 != *passage_controller.retrieve_passage(actions::Action::NextPassage));
-        assert!(passage1 != *passage_controller.retrieve_passage(actions::Action::NextPassage));
-        assert!(passage2 != *passage_controller.retrieve_passage(actions::Action::NextPassage));
-        assert!(passage3 != *passage_controller.retrieve_passage(actions::Action::NextPassage));
-        assert!(passage4 != *passage_controller.retrieve_passage(actions::Action::NextPassage));
+        assert!(passage0 != *passage_controller.retrieve_passage(Action::NextPassage));
+        assert!(passage1 != *passage_controller.retrieve_passage(Action::NextPassage));
+        assert!(passage2 != *passage_controller.retrieve_passage(Action::NextPassage));
+        assert!(passage3 != *passage_controller.retrieve_passage(Action::NextPassage));
+        assert!(passage4 != *passage_controller.retrieve_passage(Action::NextPassage));
+    }
+
+    #[test]
+    fn test_verify_restart() {
+        let mut passage_controller = Controller::new(5);
+
+        // restarting on the initial passage doesn't break and gives the correct passage
+        let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
+        let passage0_restart =
+            (*passage_controller.retrieve_passage(Action::RestartPassage)).clone();
+        assert_eq!(passage0, passage0_restart);
+
+        // can move forwards and restart then skip some and restart a previous one
+        let passage0 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
+        let passage0_restart =
+            (*passage_controller.retrieve_passage(Action::RestartPassage)).clone();
+        let _ = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
+        let passage2 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
+        let passage2_restart =
+            (*passage_controller.retrieve_passage(Action::RestartPassage)).clone();
+        assert_eq!(passage0, passage0_restart);
+        assert_eq!(passage2, passage2_restart);
     }
 }

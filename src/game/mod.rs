@@ -228,6 +228,7 @@ pub fn play_game(
             Key::Ctrl('c') => return Action::Quit,
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
+            Key::Ctrl('r') => return Action::RestartPassage,
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {

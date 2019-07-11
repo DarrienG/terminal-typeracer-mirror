@@ -168,7 +168,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     .title_style(Style::default());
                 Paragraph::new(
                     [Text::raw(
-                        "^C exit  ^N next passage  ^P previous passage  ^U clear word",
+                        "^C exit  ^R restart passage ^N next passage  ^P previous passage  ^U clear word",
                     )]
                     .iter(),
                 )
