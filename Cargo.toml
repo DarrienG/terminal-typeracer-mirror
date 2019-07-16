@@ -9,6 +9,13 @@ include = [
     "**/*.rs",
     "Cargo.toml",
 ]
+description="A terminal typing game. Race to see the fastest time you can get!"
+repository = "https://gitlab.com/DarrienG/terminal-typeracer"
+readme = "./README.md"
+keywords = ["typing", "terminal", "termion", "tui-rs", "fun"]
+license = "GPLv3"
+license-file = "./LICENSE"
+gitlab = { repository = "https://gitlab.com/DarrienG/terminal-typeracer", branch = "master" }
 
 [profile.release]
 lto = true
