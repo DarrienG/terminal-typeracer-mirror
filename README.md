@@ -13,8 +13,17 @@ where you're making errors and give you a set of words per minute.
 
 ## Installing
 
-Included are statically linked binaries for a few platforms (currently x86_64
-Linux and macOS). To use them, download and execute like any regular binary.
+We're on crates.io! Grab the latest version with:
+
+```bash
+$ cargo install typeracer
+```
+
+Or if you prefer, binaries are included with each release.
+
+Binaries are statically linked and available for a few platforms (currently
+x86_64 Linux and macOS). To use them, download and execute like any regular
+binary.
 
 [Releases here](https://gitlab.com/DarrienG/terminal-typeracer/tags)
 
