@@ -14,7 +14,6 @@ repository = "https://gitlab.com/DarrienG/terminal-typeracer"
 readme = "./README.md"
 keywords = ["typing", "terminal", "termion", "tui-rs", "fun"]
 license = "GPL-3.0"
-license-file = "./LICENSE"
 gitlab = { repository = "https://gitlab.com/DarrienG/terminal-typeracer", branch = "master" }
 
 [profile.release]
