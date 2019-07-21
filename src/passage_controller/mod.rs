@@ -18,6 +18,7 @@ pub struct Controller {
     current_passage_idx: usize,
     history_size: usize,
     start_idx: usize,
+    first_run: bool,
 }
 
 /// A slightly smarter ringbuffer for preserving history
@@ -27,15 +28,13 @@ impl Controller {
         // We want to initialize one value in the vector before we start.
         // We could do all history_size, but not lazy loading with bigger values
         // could be expensive.
-        let mut pc = Controller {
+        Controller {
             passages: vec![],
             current_passage_idx: 0,
             history_size,
             start_idx: 0,
-        };
-
-        pc.passages.push(pc.get_new_passage());
-        pc
+            first_run: true,
+        }
     }
 
     /// Retrieve a passage.
@@ -50,36 +49,46 @@ impl Controller {
     }
 
     fn retrieve_next_passage(&mut self) -> &PassageInfo {
-        self.current_passage_idx = (self.current_passage_idx + 1) % self.history_size;
-
-        // The only times we need to get a new passage rather than look in history:
-        // - When we have forced the start_idx to push forward one
-        // - When we have not yet filled the history up
-        if self.current_passage_idx == self.start_idx {
-            self.start_idx = (self.start_idx + 1) % self.history_size;
-            // Should we expand the vector, or push a new passage on?
-            if self.passages.len() < self.history_size {
-                self.passages.push(self.get_new_passage());
-            } else {
-                self.passages[self.current_passage_idx] = self.get_new_passage();
-            }
-        } else if self.passages.len() < self.history_size
-            && self.current_passage_idx == self.passages.len()
-        {
+        // Because we can't guarantee we are starting with the ability to read passages (e.g. the
+        // user may not have downloaded the lang_pack yet, our elegant always incrementing
+        // algorithm will throw an out of bounds error on the first run if we increment
+        // immediately.
+        // Doing nothing on the first run solves this problem.
+        if self.first_run {
+            self.first_run = false;
             self.passages.push(self.get_new_passage());
+        } else {
+            self.current_passage_idx = (self.current_passage_idx + 1) % self.history_size;
+
+            // The only times we need to get a new passage rather than look in history:
+            // - When we have forced the start_idx to push forward one
+            // - When we have not yet filled the history up
+            if self.current_passage_idx == self.start_idx {
+                self.start_idx = (self.start_idx + 1) % self.history_size;
+                // Should we expand the vector, or push a new passage on?
+                if self.passages.len() < self.history_size {
+                    self.passages.push(self.get_new_passage());
+                } else {
+                    self.passages[self.current_passage_idx] = self.get_new_passage();
+                }
+            } else if self.passages.len() < self.history_size
+                && self.current_passage_idx == self.passages.len()
+            {
+                self.passages.push(self.get_new_passage());
+            }
         }
         &self.passages[self.current_passage_idx]
     }
 
     fn retrieve_previous_passage(&mut self) -> &PassageInfo {
-        if self.current_passage_idx == self.start_idx {
-            // Don't do anything, we're at the last position in history
-        } else {
-            // Since the start_idx can be in places other than 0, a -1 could make us negative,
-            // so we need to mod it with history_size.
-            self.current_passage_idx -= 1;
+        // If we're at the starting position, we shouldn't go back any further.
+        if self.current_passage_idx != self.start_idx {
+            // current_passage_idx is a usize, we can't go below 0, otherwise we get an underflow.
             if self.current_passage_idx != 0 {
+                self.current_passage_idx -= 1;
                 self.current_passage_idx %= self.history_size;
+            } else {
+                self.current_passage_idx = self.history_size - 1;
             }
         }
         &self.passages[self.current_passage_idx]
@@ -178,6 +187,7 @@ mod tests {
         // Since we return a reference to a passage_info, and these methods require a mutable
         // reference, we have to clone to make the borrow checker happy.
         let mut passage_controller = Controller::new(5);
+        passage_controller.retrieve_next_passage();
         let mut previous_passage = (*passage_controller.retrieve_previous_passage()).clone();
         for _ in 0..4000 {
             let passage = (*passage_controller.retrieve_previous_passage()).clone();
@@ -189,6 +199,7 @@ mod tests {
     #[test]
     fn test_verify_history_integrity() {
         let mut passage_controller = Controller::new(5);
+        passage_controller.retrieve_next_passage();
         let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
         let passage1 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
         let passage2 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
@@ -219,6 +230,7 @@ mod tests {
     #[test]
     fn test_verify_restart() {
         let mut passage_controller = Controller::new(5);
+        passage_controller.retrieve_next_passage();
 
         // restarting on the initial passage doesn't break and gives the correct passage
         let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();

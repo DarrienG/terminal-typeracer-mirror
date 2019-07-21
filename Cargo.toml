@@ -45,7 +45,7 @@ unicode-width = "0.1.5"
 directories = "1.0"
 
 # For downloading lang pack
-reqwest = "0.9.17"
+git2 = "0.9"
 
 # For deflating lang pack
 flate2 = "1.0"

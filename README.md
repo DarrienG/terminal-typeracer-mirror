@@ -38,8 +38,8 @@ $ typeracer -r $(echo 'racing using a passage from elsewhere')
 Hit ^C at any time to quit.
 
 ## Building
-You need rust version 1.33.0 or higher (using some newer time APIs) and OpenSSL.
-Generally the package you're looking for is libssl-dev
+You need rust version 1.33.0 or higher (using some newer time APIs) and git. If
+you're on macOS, you'll probably need to install openssl too.
 
 ```bash
 $ cargo build --release
@@ -47,6 +47,7 @@ $ cargo build --release
 
 The binary you'll get is called `typeracer` and runnable immediately!
 
+### Cross compile is currently broken
 If you're trying to cross compile to macOS from Linux you'll need:
 
 ```
