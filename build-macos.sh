@@ -19,7 +19,8 @@ export LIBZ_SYS_STATIC=1
 export CC=o64-clang
 export CXX=o64-clang++
 
-cargo build --release --target "${MACOS_TARGET}"
+export PKG_CONFIG_ALLOW_CROSS=1
+cross build --release --target "${MACOS_TARGET}"
 
 echo
 echo Done

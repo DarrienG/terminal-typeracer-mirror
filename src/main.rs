@@ -35,9 +35,13 @@ fn get_version() -> &'static str {
     "1.0.10"
 }
 
+fn get_lang_pack_version() -> &'static str {
+    "lang-0.1"
+}
+
 fn main() -> Result<(), Error> {
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version(get_version())
+        .version(&*format!("Typeracer version: {}, lang pack version: {}", get_version(), get_lang_pack_version()))
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -91,8 +95,8 @@ fn main() -> Result<(), Error> {
     let stats = &mut stats::Stats::new(legacy_wpm);
 
     if term_check::resolution_check().is_ok() {
-        if !lang_pack::check_lang_pack() {
-            let result = lang_pack::retrieve_lang_pack();
+        if !lang_pack::check_lang_pack(get_lang_pack_version()) {
+            let result = lang_pack::retrieve_lang_pack(get_lang_pack_version());
             if result.is_err() {
                 return result;
             }
