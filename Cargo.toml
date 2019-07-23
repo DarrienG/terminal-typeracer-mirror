@@ -1,7 +1,7 @@
 [package]
 name = "typeracer"
 version = "1.0.10"
-authors = ["DarrienG <darrienglasser@outlook.com>"]
+authors = ["DarrienG <darrienglasser@outlook.com>", "Jeffas"]
 edition = "2018"
 # Packaging for crates.io
 # We don't want assets included and the like
@@ -10,11 +10,10 @@ include = [
     "Cargo.toml",
 ]
 description="A terminal typing game. Race to see the fastest time you can get!"
-repository = "https://gitlab.com/DarrienG/terminal-typeracer"
+repository = "https://gitlab.com/ttyperacer/terminal-typeracer"
 readme = "./README.md"
 keywords = ["typing", "terminal", "termion", "tui-rs", "fun"]
 license = "GPL-3.0"
-gitlab = { repository = "https://gitlab.com/DarrienG/terminal-typeracer", branch = "master" }
 
 [profile.release]
 lto = true

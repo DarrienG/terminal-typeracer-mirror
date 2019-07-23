@@ -32,7 +32,7 @@ fn get_version() -> &'static str {
 
 #[cfg(not(debug_assertions))]
 fn get_version() -> &'static str {
-    "1.0.10"
+    "1.1.0"
 }
 
 fn get_lang_pack_version() -> &'static str {
