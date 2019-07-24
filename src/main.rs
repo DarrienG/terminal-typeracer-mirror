@@ -97,8 +97,10 @@ fn main() -> Result<(), Error> {
     if term_check::resolution_check().is_ok() {
         if !lang_pack::check_lang_pack(get_lang_pack_version()) {
             let result = lang_pack::retrieve_lang_pack(get_lang_pack_version());
-            if result.is_err() {
-                return result;
+            match result {
+                Err(e) => return Err(e),
+                Ok(false) => return Ok(()),
+                Ok(true) => (),
             }
         }
 

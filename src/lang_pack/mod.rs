@@ -82,7 +82,9 @@ pub fn check_lang_pack(lang_pack_version: &str) -> bool {
     }
 }
 
-pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<(), Error> {
+/// Retrieves the langpack with the given version.
+/// Returns true if the user wants to continue, false otherwise
+pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<bool, Error> {
     let stdout = stdout().into_raw_mode()?;
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
@@ -102,45 +104,49 @@ pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<(), Error> {
     loop {
         let stdin = stdin();
         lang_pack_render::render(&mut terminal, &step_instruction);
-        if step_count == 0 {
-            for c in stdin.keys() {
-                let checked = c.unwrap();
-                if checked == Key::Char('y') {
-                    step_count += 1;
-                    data_dir = setup_dirs::create_data_dir();
-                    step_instruction.push_str(&format!("\nMaking data dir at: {}\n", data_dir));
-                    break;
-                }
-                if checked == Key::Char('n') {
-                    return Err(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "User wants to exit",
-                    ));
+        match step_count {
+            0 => {
+                for c in stdin.keys() {
+                    match c.unwrap() {
+                        Key::Char('y') | Key::Char('Y') => {
+                            step_count += 1;
+                            data_dir = setup_dirs::create_data_dir();
+                            step_instruction
+                                .push_str(&format!("\nMaking data dir at: {}\n", data_dir));
+                            break;
+                        }
+                        Key::Char('n') | Key::Char('N') => return Ok(false),
+                        _ => (),
+                    }
                 }
             }
-        } else if step_count == 1 {
-            step_count += 1;
-            step_instruction.push_str("Downloading lang pack...\n");
-            file_path = format!("{}/{}", &data_dir, "quote-pack.tar.gz");
-            download_and_checkout(lang_pack_url, &data_dir, &file_path, data_pack_version);
-            step_instruction.push_str("Lang pack downloaded!\n");
-        } else if step_count == 2 {
-            step_count += 1;
-            step_instruction.push_str("Extracting lang pack.\n");
-            result = expand_lang_pack(&file_path, &data_dir);
-            if result.is_err() {
-                step_instruction.push_str(
-                    "Failed to extract lang pack. Please quit and try again.\n^D to exit.\n",
-                );
-            } else {
-                step_instruction
-                    .push_str("Lang pack downloaded and ready to go!\n^D to continue\n");
+            1 => {
+                step_count += 1;
+                step_instruction.push_str("Downloading lang pack...\n");
+                file_path = format!("{}/{}", &data_dir, "quote-pack.tar.gz");
+                download_and_checkout(lang_pack_url, &data_dir, &file_path, data_pack_version);
+                step_instruction.push_str("Lang pack downloaded!\n");
             }
-        } else {
-            for c in stdin.keys() {
-                if c.unwrap() == Key::Ctrl('d') {
-                    return result;
+            2 => {
+                step_count += 1;
+                step_instruction.push_str("Extracting lang pack.\n");
+                result = expand_lang_pack(&file_path, &data_dir);
+                match result {
+                    Err(_) =>
+                    step_instruction.push_str(
+                    "Failed to extract lang pack. Please quit and try again.\nPress any key to exit.\n"),
+                    Ok(()) =>
+                    step_instruction.push_str(
+                        "Lang pack downloaded and ready to go!\nPress any key to continue or ^C to exit.\n",
+                    )
                 }
+            }
+            _ => {
+                let c = stdin.keys().next().unwrap();
+                return result.map(|()| match c.unwrap() {
+                    Key::Ctrl('c') => false,
+                    _ => true,
+                });
             }
         }
     }
