@@ -1,10 +1,7 @@
-use flate2::read::GzDecoder;
-use git2::Repository;
-use std::fs;
+use git2::{build, Repository};
 use std::fs::{read_dir, File};
 use std::io::{stdin, stdout, BufRead, BufReader, Error};
 use std::path::Path;
-use tar::Archive;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -16,13 +13,7 @@ use crate::dirs::setup_dirs;
 
 mod lang_pack_render;
 
-fn download_and_checkout(
-    url: &str,
-    data_dir: &str,
-    quote_pack_dest: &str,
-    data_pack_version: &str,
-) {
-    let repo_path = &format!("{}/terminal-typeracer", data_dir);
+fn download_and_checkout(url: &str, repo_path: &str, data_pack_version: &str) {
     let repo = if Path::new(repo_path).exists() {
         match Repository::open(repo_path) {
             Ok(repo) => repo,
@@ -35,30 +26,33 @@ fn download_and_checkout(
         }
     };
 
-    repo.set_head(&format!("refs/heads/{}", data_pack_version))
+    let mut remote = repo
+        .find_remote("origin")
+        .expect("Unable to find remote for repo");
+
+    let mut fetch_options = git2::FetchOptions::new();
+    fetch_options.download_tags(git2::AutotagOption::All);
+    remote
+        .fetch(&[data_pack_version], Some(&mut fetch_options), None)
+        .expect("Failed to fetch");
+
+    repo.set_head(&format!("refs/remotes/origin/{}", data_pack_version))
         .expect("Unable to checkout version of lang pack");
 
-    // The case where we can't remove the old one is usually that the
-    // old one doesn't exist, so we don't need to worry about checking
-    // for err here.
-    let _ = fs::remove_file(quote_pack_dest);
-    fs::copy(
-        format!("{}/default/quote-pack.tar.gz", repo_path),
-        quote_pack_dest,
-    )
-    .expect("Unable to copy lang pack to destination dir");
-}
-
-fn expand_lang_pack(file_path: &str, extract_path: &str) -> Result<(), Error> {
-    let tar_gz = File::open(file_path)?;
-    let tar = GzDecoder::new(tar_gz);
-    let mut archive = Archive::new(tar);
-    archive.unpack(extract_path)
+    repo.checkout_head(Some(
+        build::CheckoutBuilder::new().remove_untracked(true).force(),
+    ))
+    .expect("Failed to checkout HEAD");
 }
 
 fn check_proper_version(lang_pack_version: &str, data_dir: &str) -> bool {
-    let version_file =
-        File::open(format!("{}/version", data_dir)).expect("Failed to read version file");
+    // Somehow the file doesn't exist, so we should just get the right version
+    let version_file = format!("{}/version", data_dir);
+    if !Path::new(&version_file).exists() {
+        return false;
+    }
+
+    let version_file = File::open(&version_file).expect("Failed to read version file");
     let mut version_text: Vec<String> = vec![];
     for line in BufReader::new(version_file).lines() {
         version_text.push(line.unwrap());
@@ -73,10 +67,9 @@ fn check_proper_version(lang_pack_version: &str, data_dir: &str) -> bool {
 }
 
 pub fn check_lang_pack(lang_pack_version: &str) -> bool {
-    let data_dir = setup_dirs::create_data_dir();
-    let quote_dir = &format!("{}/quote-pack", data_dir);
-    if Path::new(quote_dir).exists() && read_dir(quote_dir).unwrap().count() > 0 {
-        check_proper_version(lang_pack_version, &setup_dirs::get_quote_dir())
+    let quote_dir = setup_dirs::get_quote_dir();
+    if Path::new(&quote_dir).exists() && read_dir(&quote_dir).unwrap().count() > 0 {
+        check_proper_version(lang_pack_version, &quote_dir)
     } else {
         false
     }
@@ -93,13 +86,10 @@ pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<bool, Error> {
 
     let lang_pack_url = "https://gitlab.com/ttyperacer/lang-packs.git";
 
-    let mut step_instruction = "Lang pack (100Ki) not on version compatible with your typeracer, install the proper version? (requires an internet connection)\nYes: y, No: n\n".to_string();
+    let mut step_instruction = "Lang pack (1.5Mi installed) not on version compatible with your typeracer, install the proper version? (requires an internet connection)\nYes: y, No: n\n".to_string();
     let mut step_count = 0;
 
-    let mut data_dir: String = "".to_string();
-    let mut file_path: String = "".to_string();
-
-    let mut result: Result<(), Error> = Ok(());
+    let result: Result<(), Error> = Ok(());
 
     loop {
         let stdin = stdin();
@@ -110,9 +100,10 @@ pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<bool, Error> {
                     match c.unwrap() {
                         Key::Char('y') | Key::Char('Y') => {
                             step_count += 1;
-                            data_dir = setup_dirs::create_data_dir();
-                            step_instruction
-                                .push_str(&format!("\nMaking data dir at: {}\n", data_dir));
+                            step_instruction.push_str(&format!(
+                                "\nMaking data dir at: {}\n",
+                                setup_dirs::create_data_dir()
+                            ));
                             break;
                         }
                         Key::Char('n') | Key::Char('N') => return Ok(false),
@@ -122,24 +113,15 @@ pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<bool, Error> {
             }
             1 => {
                 step_count += 1;
-                step_instruction.push_str("Downloading lang pack...\n");
-                file_path = format!("{}/{}", &data_dir, "quote-pack.tar.gz");
-                download_and_checkout(lang_pack_url, &data_dir, &file_path, data_pack_version);
-                step_instruction.push_str("Lang pack downloaded!\n");
-            }
-            2 => {
-                step_count += 1;
-                step_instruction.push_str("Extracting lang pack.\n");
-                result = expand_lang_pack(&file_path, &data_dir);
-                match result {
-                    Err(_) =>
-                    step_instruction.push_str(
-                    "Failed to extract lang pack. Please quit and try again.\nPress any key to exit.\n"),
-                    Ok(()) =>
-                    step_instruction.push_str(
+                step_instruction.push_str("Downloading and setting up lang packs...\n");
+                download_and_checkout(
+                    lang_pack_url,
+                    &setup_dirs::get_quote_dir(),
+                    data_pack_version,
+                );
+                step_instruction.push_str(
                         "Lang pack downloaded and ready to go!\nPress any key to continue or ^C to exit.\n",
                     )
-                }
             }
             _ => {
                 let c = stdin.keys().next().unwrap();
