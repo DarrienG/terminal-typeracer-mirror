@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::fs::{read_dir, File};
+use std::fs::{read_dir, DirEntry, File};
 use std::io::{BufRead, BufReader};
 
 use crate::actions::Action;
@@ -106,6 +106,37 @@ impl Controller {
         });
     }
 
+    fn pick_quote_dir(&self) -> DirEntry {
+        let mut quote_dirs = self.get_quote_dirs();
+        quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len()))
+    }
+
+    fn get_quote_dirs(&self) -> Vec<DirEntry> {
+        self.without_bad_paths(
+            read_dir(setup_dirs::get_quote_dir().to_string())
+                .unwrap()
+                .map(|dir| dir.unwrap())
+                .collect(),
+        )
+    }
+
+    fn without_bad_paths(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        let mut true_quote_dirs: Vec<DirEntry> = vec![];
+        for entry in entries {
+            let str_entry = entry
+                .path()
+                .file_stem()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+            if str_entry != "version" && str_entry != ".git" {
+                true_quote_dirs.push(entry);
+            }
+        }
+        true_quote_dirs
+    }
+
     // Retrieve a random passage and title from quote database.
     // Defaults to boring passage if no files are found.
     // Returns (passage, author/title)
@@ -113,8 +144,8 @@ impl Controller {
     // Difficult to test with unit tests. Expects a database file.
     #[cfg(not(test))]
     fn get_new_passage(&self) -> PassageInfo {
-        let quote_dir = setup_dirs::get_quote_dir().to_string();
-        let num_files = read_dir(quote_dir).unwrap().count();
+        let quote_dir = self.pick_quote_dir();
+        let num_files: usize = read_dir(quote_dir.path()).unwrap().count();
         let random_file_num = rand::thread_rng().gen_range(0, num_files);
         let fallback = PassageInfo {
             passage: "The quick brown fox jumps over the lazy dog".to_owned(),
@@ -123,7 +154,7 @@ impl Controller {
         };
 
         if num_files > 0 {
-            let read_dir_iter = setup_dirs::get_quote_dir().to_string();
+            let read_dir_iter = quote_dir.path();
             for (count, path) in read_dir(read_dir_iter)
                 .expect("Failed to read from data dir")
                 .enumerate()
@@ -131,8 +162,8 @@ impl Controller {
                 let path = path
                     .expect("Failed to evaluate path while reading files")
                     .path();
-                if count == random_file_num && path.file_stem().unwrap() != "version" {
-                    let file = File::open(&path).expect("File somehow did not exist.");
+                if count == random_file_num {
+                    let file = File::open(&path).expect("Unable to open quote file");
                     let mut passage: Vec<String> = vec![];
                     for line in BufReader::new(file).lines() {
                         passage.push(line.unwrap());

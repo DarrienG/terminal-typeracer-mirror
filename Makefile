@@ -10,7 +10,8 @@ release:
 	strip $(BIN_PATH)/$(BIN)
 
 mac:
-	bash build-macos.sh
+	#bash build-macos.sh
+	@echo "broken :("
 
 check:
 	cargo clippy --all -- -D warnings

@@ -8,5 +8,5 @@ pub fn create_data_dir() -> String {
 }
 
 pub fn get_quote_dir() -> String {
-    format!("{}/{}", create_data_dir(), "quote-pack").to_string()
+    format!("{}/{}", create_data_dir(), "lang-packs").to_string()
 }
