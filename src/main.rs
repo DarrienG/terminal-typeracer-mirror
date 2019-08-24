@@ -36,7 +36,7 @@ fn get_version() -> &'static str {
 }
 
 fn get_lang_pack_version() -> &'static str {
-    "lang-0.2"
+    "lang-0.3"
 }
 
 fn main() -> Result<(), Error> {
@@ -67,10 +67,29 @@ fn main() -> Result<(), Error> {
             .long("debug-mode")
             .required(false)
             .takes_value(false)
+            .help("Run with debug info")
+        )
+        .arg(
+            clap::Arg::with_name("SHOW_PACKS")
+            .short("s")
+            .long("show-packs")
+            .required(false)
+            .takes_value(false)
+            .help("Show all currently available language packs")
         )
         .get_matches();
 
     let mut passage_controller = passage_controller::Controller::new(20);
+
+    if args.is_present("SHOW_PACKS") {
+        let dirs = passage_controller.get_quote_dir_shortnames();
+
+        for dir in dirs {
+            println!("{}", dir)
+        }
+        return Ok(());
+    }
+
     // Get user input text and strip out characters that are difficult to type
     if args.is_present("READ_TEXT") {
         let mut constructed_string = "".to_owned();

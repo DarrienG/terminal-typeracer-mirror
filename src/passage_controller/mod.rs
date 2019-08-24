@@ -111,6 +111,23 @@ impl Controller {
         quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len()))
     }
 
+    /// Get shortnames of quote directories.
+    pub fn get_quote_dir_shortnames(&self) -> Vec<String> {
+        let mut dirs: Vec<String> = self.get_quote_dirs()
+            .iter()
+            .map(|dir| dir
+                 .path()
+                 .file_stem()
+                 .expect("Unable to get file")
+                 .to_string_lossy()
+                 .to_string()
+            )
+            .collect();
+
+            dirs.sort();
+            dirs
+    }
+
     fn get_quote_dirs(&self) -> Vec<DirEntry> {
         self.without_bad_paths(
             read_dir(setup_dirs::get_quote_dir().to_string())
