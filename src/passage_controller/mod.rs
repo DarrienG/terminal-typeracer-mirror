@@ -113,19 +113,20 @@ impl Controller {
 
     /// Get shortnames of quote directories.
     pub fn get_quote_dir_shortnames(&self) -> Vec<String> {
-        let mut dirs: Vec<String> = self.get_quote_dirs()
+        let mut dirs: Vec<String> = self
+            .get_quote_dirs()
             .iter()
-            .map(|dir| dir
-                 .path()
-                 .file_stem()
-                 .expect("Unable to get file")
-                 .to_string_lossy()
-                 .to_string()
-            )
+            .map(|dir| {
+                dir.path()
+                    .file_stem()
+                    .expect("Unable to get file")
+                    .to_string_lossy()
+                    .to_string()
+            })
             .collect();
 
-            dirs.sort();
-            dirs
+        dirs.sort();
+        dirs
     }
 
     fn get_quote_dirs(&self) -> Vec<DirEntry> {
