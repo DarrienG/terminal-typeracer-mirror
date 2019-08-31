@@ -36,7 +36,7 @@ impl<'a> Controller<'a> {
             history_size,
             start_idx: 0,
             first_run: true,
-            config: config,
+            config,
         }
     }
 
@@ -111,11 +111,11 @@ impl<'a> Controller<'a> {
 
     fn pick_quote_dir(&self) -> Option<DirEntry> {
         let mut quote_dirs = self.get_filtered_quote_dirs();
-        return if quote_dirs.len() == 0 {
+        if quote_dirs.is_empty() {
             None
         } else {
             Some(quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len())))
-        };
+        }
     }
 
     /// Get shortnames of quote directories
@@ -165,7 +165,7 @@ impl<'a> Controller<'a> {
     }
 
     fn filter_user_dirs(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
-        return if self.config.lang_packs.is_some() {
+        if self.config.lang_packs.is_some() {
             if self
                 .config
                 .lang_packs
@@ -180,7 +180,7 @@ impl<'a> Controller<'a> {
             }
         } else {
             entries
-        };
+        }
     }
 
     fn filter_blacklist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
@@ -219,7 +219,7 @@ impl<'a> Controller<'a> {
             .whitelisted
             .as_ref()
             .unwrap_or(&fallback_whitelist);
-        return if whitelist.len() == 0 || whitelist[0] == "*" {
+        if whitelist.is_empty() || whitelist[0] == "*" {
             entries
         } else {
             let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
@@ -236,7 +236,7 @@ impl<'a> Controller<'a> {
                 }
             }
             filtered_quote_dirs
-        };
+        }
     }
 
     fn without_bad_paths(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
