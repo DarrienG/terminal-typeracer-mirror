@@ -12,9 +12,9 @@ pub struct TyperacerConfig {
 }
 
 #[derive(Debug, Deserialize)]
-struct LangPacks {
-    whitelisted: Vec<String>,
-    blacklisted: Vec<String>,
+pub struct LangPacks {
+    whitelisted: Option<Vec<String>>,
+    blacklisted: Option<Vec<String>>,
 }
 
 mod validator;

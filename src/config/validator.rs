@@ -20,7 +20,7 @@ fn validate_lang_packs(config: &TyperacerConfig) -> Result<(), Error> {
     match &config.lang_packs {
         None => Ok(()),
         Some(x) => {
-            if x.blacklisted.len() > 0 && x.whitelisted.len() > 0 {
+            if x.blacklisted.is_some() && x.whitelisted.is_some() {
                 Err(Error::new(
                     ErrorKind::Other,
                     "Both blacklist and whitelist cannot be filled out",
@@ -29,5 +29,46 @@ fn validate_lang_packs(config: &TyperacerConfig) -> Result<(), Error> {
                 Ok(())
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::LangPacks;
+
+    #[test]
+    fn test_empty_config_ok() {
+        assert!(validate_config(TyperacerConfig { lang_packs: None }).is_ok());
+    }
+
+    #[test]
+    fn test_exclusive_blackwhitelist() {
+        assert!(validate_config(TyperacerConfig {
+            lang_packs: Some(LangPacks {
+                whitelisted: Some(vec!["vrinda".to_owned(), "punj".to_owned()]),
+                blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
+            }),
+        })
+        .is_err());
+    }
+
+    #[test]
+    fn test_blacklist_or_whitelist_ok() {
+        assert!(validate_config(TyperacerConfig {
+            lang_packs: Some(LangPacks {
+                whitelisted: Some(vec!["vrinda".to_owned(), "punj".to_owned()]),
+                blacklisted: None,
+            }),
+        })
+        .is_ok());
+
+        assert!(validate_config(TyperacerConfig {
+            lang_packs: Some(LangPacks {
+                whitelisted: None,
+                blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
+            }),
+        })
+        .is_ok());
     }
 }
