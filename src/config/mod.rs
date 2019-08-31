@@ -35,7 +35,7 @@ fn get_config_raw() -> TyperacerConfig {
 
 fn get_config_file() -> PathBuf {
     let mut config_dir = create_config_dir();
-    config_dir.push("typeracer.toml");
+    config_dir.push("config.toml");
     if config_dir.exists() {
         config_dir
     } else {
