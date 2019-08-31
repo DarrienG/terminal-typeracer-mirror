@@ -3,6 +3,7 @@ use std::fs::{read_dir, DirEntry, File};
 use std::io::{BufRead, BufReader};
 
 use crate::actions::Action;
+use crate::config::TyperacerConfig;
 use crate::dirs::setup_dirs;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,18 +14,19 @@ pub struct PassageInfo {
 }
 
 #[derive(Debug, Clone)]
-pub struct Controller {
+pub struct Controller<'a> {
     passages: Vec<PassageInfo>,
     current_passage_idx: usize,
     history_size: usize,
     start_idx: usize,
     first_run: bool,
+    config: &'a TyperacerConfig,
 }
 
 /// A slightly smarter ringbuffer for preserving history
 /// Saves the last 20 passages as history.
-impl Controller {
-    pub fn new(history_size: usize) -> Self {
+impl<'a> Controller<'a> {
+    pub fn new(history_size: usize, config: &'a TyperacerConfig) -> Self {
         // We want to initialize one value in the vector before we start.
         // We could do all history_size, but not lazy loading with bigger values
         // could be expensive.
@@ -34,6 +36,7 @@ impl Controller {
             history_size,
             start_idx: 0,
             first_run: true,
+            config: config,
         }
     }
 
@@ -106,9 +109,13 @@ impl Controller {
         });
     }
 
-    fn pick_quote_dir(&self) -> DirEntry {
+    fn pick_quote_dir(&self) -> Option<DirEntry> {
         let mut quote_dirs = self.get_quote_dirs();
-        quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len()))
+        return if quote_dirs.len() == 0 {
+            None
+        } else {
+            Some(quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len())))
+        };
     }
 
     /// Get shortnames of quote directories.
@@ -130,12 +137,87 @@ impl Controller {
     }
 
     fn get_quote_dirs(&self) -> Vec<DirEntry> {
-        self.without_bad_paths(
-            read_dir(setup_dirs::get_quote_dir().to_string())
-                .unwrap()
-                .map(|dir| dir.unwrap())
-                .collect(),
+        self.filter_user_dirs(
+            self.without_bad_paths(
+                read_dir(setup_dirs::get_quote_dir().to_string())
+                    .unwrap()
+                    .map(|dir| dir.unwrap())
+                    .collect(),
+            ),
         )
+    }
+
+    fn filter_user_dirs(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        return if self.config.lang_packs.is_some() {
+            if self
+                .config
+                .lang_packs
+                .as_ref()
+                .unwrap()
+                .blacklisted
+                .is_some()
+            {
+                self.filter_blacklist(entries)
+            } else {
+                self.filter_whitelist(entries)
+            }
+        } else {
+            entries
+        };
+    }
+
+    fn filter_blacklist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        let blacklist = self
+            .config
+            .lang_packs
+            .as_ref()
+            .unwrap()
+            .blacklisted
+            .as_ref()
+            .unwrap();
+        let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
+        for entry in entries {
+            let str_entry = entry
+                .path()
+                .file_stem()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+            if !blacklist.contains(&str_entry) {
+                filtered_quote_dirs.push(entry);
+            }
+        }
+        filtered_quote_dirs
+    }
+
+    fn filter_whitelist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        let whitelist = self
+            .config
+            .lang_packs
+            .as_ref()
+            .unwrap()
+            .whitelisted
+            .as_ref()
+            .unwrap();
+        return if whitelist.len() == 0 || whitelist[0] == "*" {
+            entries
+        } else {
+            let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
+            for entry in entries {
+                let str_entry = entry
+                    .path()
+                    .file_stem()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                if whitelist.contains(&str_entry) {
+                    filtered_quote_dirs.push(entry);
+                }
+            }
+            filtered_quote_dirs
+        };
     }
 
     fn without_bad_paths(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
@@ -162,16 +244,24 @@ impl Controller {
     // Difficult to test with unit tests. Expects a database file.
     #[cfg(not(test))]
     fn get_new_passage(&self) -> PassageInfo {
-        let quote_dir = self.pick_quote_dir();
-        let num_files: usize = read_dir(quote_dir.path()).unwrap().count();
-        let random_file_num = rand::thread_rng().gen_range(0, num_files);
         let fallback = PassageInfo {
             passage: "The quick brown fox jumps over the lazy dog".to_owned(),
             title: "darrienglasser.com".to_owned(),
             passage_path: "FALLBACK_PATH".to_owned(),
         };
 
+        let quote_opt = self.pick_quote_dir();
+
+        if quote_opt.is_none() {
+            return fallback;
+        }
+
+        let quote_dir = quote_opt.unwrap();
+
+        let num_files: usize = read_dir(quote_dir.path()).unwrap().count();
+
         if num_files > 0 {
+            let random_file_num = rand::thread_rng().gen_range(0, num_files);
             let read_dir_iter = quote_dir.path();
             for (count, path) in read_dir(read_dir_iter)
                 .expect("Failed to read from data dir")
@@ -220,7 +310,7 @@ mod tests {
     fn test_get_next_passage_overwrite() {
         // Check to see if we keep asking for next passages they're always valid
         // History of 5 so we can loop through history multiple times
-        let mut passage_controller = Controller::new(5);
+        let mut passage_controller = Controller::new(5, &TyperacerConfig { lang_packs: None });
         for _ in 0..4000 {
             passage_controller.retrieve_next_passage();
         }
@@ -235,7 +325,7 @@ mod tests {
 
         // Since we return a reference to a passage_info, and these methods require a mutable
         // reference, we have to clone to make the borrow checker happy.
-        let mut passage_controller = Controller::new(5);
+        let mut passage_controller = Controller::new(5, &TyperacerConfig { lang_packs: None });
         passage_controller.retrieve_next_passage();
         let mut previous_passage = (*passage_controller.retrieve_previous_passage()).clone();
         for _ in 0..4000 {
@@ -247,7 +337,7 @@ mod tests {
 
     #[test]
     fn test_verify_history_integrity() {
-        let mut passage_controller = Controller::new(5);
+        let mut passage_controller = Controller::new(5, &TyperacerConfig { lang_packs: None });
         passage_controller.retrieve_next_passage();
         let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
         let passage1 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
@@ -278,7 +368,7 @@ mod tests {
 
     #[test]
     fn test_verify_restart() {
-        let mut passage_controller = Controller::new(5);
+        let mut passage_controller = Controller::new(5, &TyperacerConfig { lang_packs: None });
         passage_controller.retrieve_next_passage();
 
         // restarting on the initial passage doesn't break and gives the correct passage

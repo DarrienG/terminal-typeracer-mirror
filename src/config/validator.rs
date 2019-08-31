@@ -43,10 +43,10 @@ mod tests {
     }
 
     #[test]
-    fn test_exclusive_blackwhitelist() {
+    fn test_exclusive_blacklistwhitelist() {
         assert!(validate_config(TyperacerConfig {
             lang_packs: Some(LangPacks {
-                whitelisted: Some(vec!["vrinda".to_owned(), "punj".to_owned()]),
+                whitelisted: Some(vec!["vrinda".to_string(), "punj".to_string()]),
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
         })

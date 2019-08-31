@@ -8,13 +8,13 @@ use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 pub struct TyperacerConfig {
-    lang_packs: Option<LangPacks>,
+    pub lang_packs: Option<LangPacks>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct LangPacks {
-    whitelisted: Option<Vec<String>>,
-    blacklisted: Option<Vec<String>>,
+    pub whitelisted: Option<Vec<String>>,
+    pub blacklisted: Option<Vec<String>>,
 }
 
 mod validator;
