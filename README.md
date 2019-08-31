@@ -37,6 +37,46 @@ $ typeracer -r $(echo 'racing using a passage from elsewhere')
 
 Hit ^C at any time to quit.
 
+## Configuration
+
+What good would a typing game be without a config file?
+
+Where you can find your config file:
+
+Linux:
+```
+~/.config/typeracer/config.toml
+```
+
+And roughly in:
+
+macOS:
+```
+$HOME/Library/Preferences
+```
+
+Windows;
+
+```
+{FOLDERID_RoamingAppData}
+```
+
+-- Note typeracer uses whatever the proper mechanism is for data and config
+folders are for your OS. If you customized the variables used, it may be
+elsewhere.
+
+With your config, you can enable or disable language packs.
+
+```toml
+[lang_packs]
+whitelisted = ["default"]
+```
+
+```toml
+[lang_packs]
+blacklisted = ["harry-potter"]
+```
+
 ## Building
 You need rust version 1.33.0 or higher (using some newer time APIs) and git. If
 you're on macOS, you'll probably need to install openssl too.

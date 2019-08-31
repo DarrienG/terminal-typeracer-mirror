@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "1.1.1"
+version = "1.2.0"
 authors = ["DarrienG <darrienglasser@outlook.com>", "Jeffas"]
 edition = "2018"
 # Packaging for crates.io
@@ -40,8 +40,10 @@ tui = "0.6.2"
 termion = "1.5"
 unicode-width = "0.1.5"
 
-# For storing lang pack
-directories = "1.0"
+# For lang pack and config
+directories = "2.0.2"
+toml = "0.5.3"
+serde = { version = "1.0", features = ["derive"] }
 
 # For downloading lang pack
 git2 = "0.9"

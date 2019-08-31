@@ -11,6 +11,7 @@ mod dirs {
 }
 
 pub mod actions;
+pub mod config;
 pub mod stats;
 
 use actions::Action;
@@ -32,7 +33,7 @@ fn get_version() -> &'static str {
 
 #[cfg(not(debug_assertions))]
 fn get_version() -> &'static str {
-    "1.1.1"
+    "1.2.0"
 }
 
 fn get_lang_pack_version() -> &'static str {
@@ -40,6 +41,13 @@ fn get_lang_pack_version() -> &'static str {
 }
 
 fn main() -> Result<(), Error> {
+    // Check config before doing anything else
+    let config_result = config::get_config();
+    if config_result.is_err() {
+        return Err(config_result.unwrap_err());
+    }
+    let typeracer_config = config_result.unwrap();
+
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", get_version(), get_lang_pack_version()))
         .author("Darrien Glasser <me@darrien.dev>")
@@ -79,14 +87,13 @@ fn main() -> Result<(), Error> {
         )
         .get_matches();
 
-    let mut passage_controller = passage_controller::Controller::new(20);
+    let mut passage_controller = passage_controller::Controller::new(20, &typeracer_config);
 
     if args.is_present("SHOW_PACKS") {
-        let dirs = passage_controller.get_quote_dir_shortnames();
+        let (filtered_dirs, all_dirs) = passage_controller.get_quote_dir_shortnames();
 
-        for dir in dirs {
-            println!("{}", dir)
-        }
+        println!("Enabled packs:\t{}", filtered_dirs.join(", "));
+        println!("All packs:\t{}", all_dirs.join(", "));
         return Ok(());
     }
 
@@ -99,7 +106,7 @@ fn main() -> Result<(), Error> {
             if word == " " || word == "\n" {
                 continue;
             } else {
-                constructed_string.push_str(word);
+                constructed_string.push_str(word.trim());
                 constructed_string.push_str(" ");
             }
         }
