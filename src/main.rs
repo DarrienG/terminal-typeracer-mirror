@@ -11,6 +11,7 @@ mod dirs {
 }
 
 pub mod actions;
+pub mod config;
 pub mod stats;
 
 use actions::Action;
@@ -40,6 +41,11 @@ fn get_lang_pack_version() -> &'static str {
 }
 
 fn main() -> Result<(), Error> {
+    // Check config before doing anything else
+    let config_result = config::get_config();
+    if config_result.is_err() {
+        return Err(config_result.unwrap_err());
+    }
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", get_version(), get_lang_pack_version()))
         .author("Darrien Glasser <me@darrien.dev>")
