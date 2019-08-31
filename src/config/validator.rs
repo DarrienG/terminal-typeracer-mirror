@@ -4,12 +4,12 @@ use std::io::{Error, ErrorKind};
 /// Validates that the given config is valid.
 /// If config is not valid, returns an err rather than the
 /// user's config.
-pub fn validate_config(config: TyperacerConfig) -> Result<Option<TyperacerConfig>, Error> {
+pub fn validate_config(config: TyperacerConfig) -> Result<TyperacerConfig, Error> {
     let lang_pack_check = validate_lang_packs(&config);
     if lang_pack_check.is_err() {
         return Err(lang_pack_check.unwrap_err());
     }
-    Ok(Some(config))
+    Ok(config)
 }
 
 /// Validate whether the lang_packs section is valid

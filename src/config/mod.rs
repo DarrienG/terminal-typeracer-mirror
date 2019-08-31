@@ -19,7 +19,7 @@ pub struct LangPacks {
 
 mod validator;
 
-pub fn get_config() -> Result<Option<TyperacerConfig>, Error> {
+pub fn get_config() -> Result<TyperacerConfig, Error> {
     validator::validate_config(get_config_raw())
 }
 

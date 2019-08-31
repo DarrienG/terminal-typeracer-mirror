@@ -46,7 +46,7 @@ fn main() -> Result<(), Error> {
     if config_result.is_err() {
         return Err(config_result.unwrap_err());
     }
-    let typeracer_config = config_result.unwrap().unwrap();
+    let typeracer_config = config_result.unwrap();
 
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", get_version(), get_lang_pack_version()))
@@ -90,11 +90,10 @@ fn main() -> Result<(), Error> {
     let mut passage_controller = passage_controller::Controller::new(20, &typeracer_config);
 
     if args.is_present("SHOW_PACKS") {
-        let dirs = passage_controller.get_quote_dir_shortnames();
+        let (filtered_dirs, all_dirs) = passage_controller.get_quote_dir_shortnames();
 
-        for dir in dirs {
-            println!("{}", dir)
-        }
+        println!("Enabled packs:\t{}", filtered_dirs.join(", "));
+        println!("All packs:\t{}", all_dirs.join(", "));
         return Ok(());
     }
 

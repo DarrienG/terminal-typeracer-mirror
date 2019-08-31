@@ -110,7 +110,7 @@ impl<'a> Controller<'a> {
     }
 
     fn pick_quote_dir(&self) -> Option<DirEntry> {
-        let mut quote_dirs = self.get_quote_dirs();
+        let mut quote_dirs = self.get_filtered_quote_dirs();
         return if quote_dirs.len() == 0 {
             None
         } else {
@@ -118,9 +118,24 @@ impl<'a> Controller<'a> {
         };
     }
 
-    /// Get shortnames of quote directories.
-    pub fn get_quote_dir_shortnames(&self) -> Vec<String> {
-        let mut dirs: Vec<String> = self
+    /// Get shortnames of quote directories
+    /// returns enabled quote dirs first, all quote dirs second
+    pub fn get_quote_dir_shortnames(&self) -> (Vec<String>, Vec<String>) {
+        let mut filtered_dirs: Vec<String> = self
+            .get_filtered_quote_dirs()
+            .iter()
+            .map(|dir| {
+                dir.path()
+                    .file_stem()
+                    .expect("Unable to get file")
+                    .to_string_lossy()
+                    .to_string()
+            })
+            .collect();
+
+        filtered_dirs.sort();
+
+        let mut all_dirs: Vec<String> = self
             .get_quote_dirs()
             .iter()
             .map(|dir| {
@@ -132,18 +147,20 @@ impl<'a> Controller<'a> {
             })
             .collect();
 
-        dirs.sort();
-        dirs
+        all_dirs.sort();
+        (filtered_dirs, all_dirs)
+    }
+
+    fn get_filtered_quote_dirs(&self) -> Vec<DirEntry> {
+        self.filter_user_dirs(self.get_quote_dirs())
     }
 
     fn get_quote_dirs(&self) -> Vec<DirEntry> {
-        self.filter_user_dirs(
-            self.without_bad_paths(
-                read_dir(setup_dirs::get_quote_dir().to_string())
-                    .unwrap()
-                    .map(|dir| dir.unwrap())
-                    .collect(),
-            ),
+        self.without_bad_paths(
+            read_dir(setup_dirs::get_quote_dir().to_string())
+                .unwrap()
+                .map(|dir| dir.unwrap())
+                .collect(),
         )
     }
 
@@ -167,6 +184,7 @@ impl<'a> Controller<'a> {
     }
 
     fn filter_blacklist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        let fallback_blacklist = vec![];
         let blacklist = self
             .config
             .lang_packs
@@ -174,7 +192,7 @@ impl<'a> Controller<'a> {
             .unwrap()
             .blacklisted
             .as_ref()
-            .unwrap();
+            .unwrap_or(&fallback_blacklist);
         let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
         for entry in entries {
             let str_entry = entry
@@ -192,6 +210,7 @@ impl<'a> Controller<'a> {
     }
 
     fn filter_whitelist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+        let fallback_whitelist = vec![];
         let whitelist = self
             .config
             .lang_packs
@@ -199,7 +218,7 @@ impl<'a> Controller<'a> {
             .unwrap()
             .whitelisted
             .as_ref()
-            .unwrap();
+            .unwrap_or(&fallback_whitelist);
         return if whitelist.len() == 0 || whitelist[0] == "*" {
             entries
         } else {
