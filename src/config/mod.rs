@@ -9,6 +9,7 @@ use std::path::PathBuf;
 #[derive(Debug, Deserialize)]
 pub struct TyperacerConfig {
     pub lang_packs: Option<LangPacks>,
+    pub repo: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

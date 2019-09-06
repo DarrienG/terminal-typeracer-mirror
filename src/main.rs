@@ -27,29 +27,19 @@ fn debug_enabled_default() -> bool {
 }
 
 #[cfg(debug_assertions)]
-fn get_version() -> &'static str {
-    "DEBUG"
-}
+const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-fn get_version() -> &'static str {
-    "1.2.0"
-}
+const VERSION: &str = "1.2.0";
 
-fn get_lang_pack_version() -> &'static str {
-    "lang-0.3"
-}
+const LANG_PACK_VERSION: &str = "lang-0.3";
 
 fn main() -> Result<(), Error> {
     // Check config before doing anything else
-    let config_result = config::get_config();
-    if config_result.is_err() {
-        return Err(config_result.unwrap_err());
-    }
-    let typeracer_config = config_result.unwrap();
+    let typeracer_config = config::get_config()?;
 
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version(&*format!("Typeracer version: {}, lang pack version: {}", get_version(), get_lang_pack_version()))
+        .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, LANG_PACK_VERSION))
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -120,25 +110,28 @@ fn main() -> Result<(), Error> {
 
     let stats = &mut stats::Stats::new(legacy_wpm);
 
-    if term_check::resolution_check().is_ok() {
-        if !lang_pack::check_lang_pack(get_lang_pack_version()) {
-            let result = lang_pack::retrieve_lang_pack(get_lang_pack_version());
-            match result {
-                Err(e) => return Err(e),
-                Ok(false) => return Ok(()),
-                Ok(true) => (),
-            }
-        }
+    if term_check::resolution_check().is_err() {
+        return Ok(());
+    }
 
-        let mut action = Action::NextPassage;
-        while action != actions::Action::Quit {
-            action = game::play_game(
-                passage_controller.retrieve_passage(action),
-                stats,
-                debug_enabled,
-            );
-            stats.reset();
+    if !lang_pack::check_lang_pack(LANG_PACK_VERSION) {
+        let result = lang_pack::retrieve_lang_pack(LANG_PACK_VERSION, &typeracer_config);
+        match result {
+            Err(e) => return Err(e),
+            Ok(false) => return Ok(()),
+            Ok(true) => (),
         }
     }
+
+    let mut action = Action::NextPassage;
+    while action != actions::Action::Quit {
+        action = game::play_game(
+            passage_controller.retrieve_passage(action),
+            stats,
+            debug_enabled,
+        );
+        stats.reset();
+    }
+
     Ok(())
 }

@@ -77,6 +77,14 @@ whitelisted = ["default"]
 blacklisted = ["harry-potter"]
 ```
 
+You can also choose where to get language packs. Default langpack is
+`https://gitlab.com/ttyperacer/lang-packs.git`, you can override this in the
+configuration file using `repo` key.
+
+```toml
+repo = "https://example.com/your-lang-pack.git"
+```
+
 ## Building
 You need rust version 1.33.0 or higher (using some newer time APIs) and git. If
 you're on macOS, you'll probably need to install openssl too.

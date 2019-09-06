@@ -9,6 +9,7 @@ use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::Terminal;
 
+use crate::config::TyperacerConfig;
 use crate::dirs::setup_dirs;
 
 mod lang_pack_render;
@@ -77,14 +78,21 @@ pub fn check_lang_pack(lang_pack_version: &str) -> bool {
 
 /// Retrieves the langpack with the given version.
 /// Returns true if the user wants to continue, false otherwise
-pub fn retrieve_lang_pack(data_pack_version: &str) -> Result<bool, Error> {
+pub fn retrieve_lang_pack(
+    data_pack_version: &str,
+    typeracer_config: &TyperacerConfig,
+) -> Result<bool, Error> {
     let stdout = stdout().into_raw_mode()?;
     let screen = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(screen);
 
     let mut terminal = Terminal::new(backend)?;
 
-    let lang_pack_url = "https://gitlab.com/ttyperacer/lang-packs.git";
+    let lang_pack_url = typeracer_config
+        .repo
+        .as_ref()
+        .map(String::as_str)
+        .unwrap_or("https://gitlab.com/ttyperacer/lang-packs.git");
 
     let mut step_instruction = "Lang pack (1.5Mi installed) not on version compatible with your typeracer, install the proper version? (requires an internet connection)\nYes: y, No: n\n".to_string();
     let mut step_count = 0;

@@ -5,10 +5,7 @@ use std::io::{Error, ErrorKind};
 /// If config is not valid, returns an err rather than the
 /// user's config.
 pub fn validate_config(config: TyperacerConfig) -> Result<TyperacerConfig, Error> {
-    let lang_pack_check = validate_lang_packs(&config);
-    if lang_pack_check.is_err() {
-        return Err(lang_pack_check.unwrap_err());
-    }
+    validate_lang_packs(&config)?;
     Ok(config)
 }
 
@@ -39,7 +36,11 @@ mod tests {
 
     #[test]
     fn test_empty_config_ok() {
-        assert!(validate_config(TyperacerConfig { lang_packs: None }).is_ok());
+        assert!(validate_config(TyperacerConfig {
+            lang_packs: None,
+            repo: None
+        })
+        .is_ok());
     }
 
     #[test]
@@ -49,6 +50,7 @@ mod tests {
                 whitelisted: Some(vec!["vrinda".to_string(), "punj".to_string()]),
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
+            repo: None,
         })
         .is_err());
     }
@@ -60,6 +62,7 @@ mod tests {
                 whitelisted: Some(vec!["vrinda".to_owned(), "punj".to_owned()]),
                 blacklisted: None,
             }),
+            repo: None,
         })
         .is_ok());
 
@@ -68,6 +71,7 @@ mod tests {
                 whitelisted: None,
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
+            repo: None,
         })
         .is_ok());
     }
