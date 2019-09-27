@@ -30,7 +30,7 @@ fn debug_enabled_default() -> bool {
 const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "1.2.0";
+const VERSION: &str = "1.2.1";
 
 const LANG_PACK_VERSION: &str = "lang-0.3";
 
