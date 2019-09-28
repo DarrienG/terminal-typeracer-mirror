@@ -79,10 +79,14 @@ blacklisted = ["harry-potter"]
 
 You can also choose where to get language packs. Default langpack is
 `https://gitlab.com/ttyperacer/lang-packs.git`, you can override this in the
-configuration file using `repo` key.
+configuration file using `repo` key. You can also specify the version with
+repo_version.
+
+For all lang pack versions, see [here!][https://gitlab.com/ttyperacer/lang-packs/-/branches] Bear in mind there may be incompatibilities between older lang packs and newer typeracers and the other way around.
 
 ```toml
 repo = "https://example.com/your-lang-pack.git"
+repo_version = "lang-0.2"
 ```
 
 ## Building
