@@ -1,5 +1,5 @@
 use tui::backend::Backend;
-use tui::layout::{Alignment, Constraint, Direction, Layout};
+use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::Color;
 use tui::style::{Modifier, Style};
 use tui::terminal::Terminal;
@@ -7,6 +7,8 @@ use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text, Widget};
 
 use crate::game::FormattedTexts;
 use crate::stats;
+
+mod styles;
 
 #[derive(Clone, Debug)]
 pub struct GameState<'a> {
@@ -36,27 +38,19 @@ impl<'a> GameState<'a> {
 /// Convenience method for retrieving constraints for the typing layout.
 /// At some point this may be refactored to be more dynamic based on
 /// terminal layout size so we can skip resolution checks.
-fn get_typing_bounds() -> [Constraint; 4] {
-    [
-        Constraint::Percentage(20),
-        Constraint::Percentage(30),
-        Constraint::Percentage(30),
-        Constraint::Percentage(20),
-    ]
+fn get_typing_bounds(rect: Rect) -> [Constraint; 4] {
+    styles::get_typing_bounds(rect.height)
 }
 
 /// Convenience method for retrieving constraints for the stats block.
 /// At some point this may be refactored to be more dynamic based on
 /// terminal layout size so we can skip resolution checks.
-fn get_stats_bounds() -> [Constraint; 3] {
-    [
-        Constraint::Percentage(20),
-        Constraint::Percentage(30),
-        Constraint::Percentage(60),
-    ]
+fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
+    styles::get_stats_bounds(rect.height)
 }
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
+    let term_size = terminal.size().unwrap();
     terminal
         .draw(|mut f| {
             // Because there is no way to specify vertical but not horizontal margins
@@ -86,7 +80,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     let chunks = Layout::default()
                         .direction(Direction::Vertical)
                         .margin(1)
-                        .constraints(get_typing_bounds().as_ref())
+                        .constraints(get_typing_bounds(term_size).as_ref())
                         .split(root_layout[0]);
                     if game_state.debug_enabled {
                         let debug_block = Block::default()
@@ -130,7 +124,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     let chunks = Layout::default()
                         .direction(Direction::Vertical)
                         .margin(1)
-                        .constraints(get_stats_bounds().as_ref())
+                        .constraints(get_stats_bounds(term_size).as_ref())
                         .split(root_layout[1]);
 
                     let stats_block = Block::default()
