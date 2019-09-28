@@ -334,6 +334,7 @@ mod tests {
             &TyperacerConfig {
                 lang_packs: None,
                 repo: None,
+                repo_version: None,
             },
         );
         for _ in 0..4000 {
@@ -355,6 +356,7 @@ mod tests {
             &TyperacerConfig {
                 lang_packs: None,
                 repo: None,
+                repo_version: None,
             },
         );
         passage_controller.retrieve_next_passage();
@@ -373,6 +375,7 @@ mod tests {
             &TyperacerConfig {
                 lang_packs: None,
                 repo: None,
+                repo_version: None,
             },
         );
         passage_controller.retrieve_next_passage();
@@ -410,6 +413,7 @@ mod tests {
             &TyperacerConfig {
                 lang_packs: None,
                 repo: None,
+                repo_version: None,
             },
         );
         passage_controller.retrieve_next_passage();

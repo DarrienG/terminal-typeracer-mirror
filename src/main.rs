@@ -31,14 +31,20 @@ const VERSION: &str = "DEBUG";
 #[cfg(not(debug_assertions))]
 const VERSION: &str = "1.2.1";
 
-const LANG_PACK_VERSION: &str = "lang-0.3";
+const DEFAULT_LANG_PACK_VERSION: &str = "lang-0.3";
 
 fn main() -> Result<(), Error> {
     // Check config before doing anything else
     let typeracer_config = config::get_config()?;
 
+    let resolved_lang_pack_version = typeracer_config
+        .repo_version
+        .as_ref()
+        .map(String::as_str)
+        .unwrap_or(DEFAULT_LANG_PACK_VERSION);
+
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, LANG_PACK_VERSION))
+        .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, resolved_lang_pack_version))
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -109,8 +115,8 @@ fn main() -> Result<(), Error> {
 
     let stats = &mut stats::Stats::new(legacy_wpm);
 
-    if !lang_pack::check_lang_pack(LANG_PACK_VERSION) {
-        let result = lang_pack::retrieve_lang_pack(LANG_PACK_VERSION, &typeracer_config);
+    if !lang_pack::check_lang_pack(resolved_lang_pack_version) {
+        let result = lang_pack::retrieve_lang_pack(resolved_lang_pack_version, &typeracer_config);
         match result {
             Err(e) => return Err(e),
             Ok(false) => return Ok(()),

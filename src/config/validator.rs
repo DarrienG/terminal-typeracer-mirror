@@ -38,7 +38,8 @@ mod tests {
     fn test_empty_config_ok() {
         assert!(validate_config(TyperacerConfig {
             lang_packs: None,
-            repo: None
+            repo: None,
+            repo_version: None,
         })
         .is_ok());
     }
@@ -51,6 +52,7 @@ mod tests {
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
             repo: None,
+            repo_version: None,
         })
         .is_err());
     }
@@ -63,6 +65,7 @@ mod tests {
                 blacklisted: None,
             }),
             repo: None,
+            repo_version: None,
         })
         .is_ok());
 
@@ -72,6 +75,7 @@ mod tests {
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
             repo: None,
+            repo_version: None,
         })
         .is_ok());
     }
