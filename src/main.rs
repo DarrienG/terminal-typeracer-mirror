@@ -5,7 +5,6 @@ use std::io::Error;
 mod game;
 mod lang_pack;
 mod passage_controller;
-mod term_check;
 mod dirs {
     pub mod setup_dirs;
 }
@@ -109,10 +108,6 @@ fn main() -> Result<(), Error> {
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
     let stats = &mut stats::Stats::new(legacy_wpm);
-
-    if term_check::resolution_check().is_err() {
-        return Ok(());
-    }
 
     if !lang_pack::check_lang_pack(LANG_PACK_VERSION) {
         let result = lang_pack::retrieve_lang_pack(LANG_PACK_VERSION, &typeracer_config);
