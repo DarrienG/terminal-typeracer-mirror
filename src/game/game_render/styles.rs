@@ -29,8 +29,8 @@ const MEDIUM_STATS_LAYOUT: [Constraint; 3] = [
 const SMALL_TYPING_LAYOUT: [Constraint; 4] = [
     Constraint::Percentage(0),
     Constraint::Percentage(0),
-    Constraint::Percentage(50),
-    Constraint::Percentage(50),
+    Constraint::Percentage(70),
+    Constraint::Percentage(30),
 ];
 
 const SMALL_STATS_LAYOUT: [Constraint; 3] = [
