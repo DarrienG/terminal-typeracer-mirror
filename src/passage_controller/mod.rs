@@ -335,6 +335,7 @@ mod tests {
                 lang_packs: None,
                 repo: None,
                 repo_version: None,
+                history_size: None,
             },
         );
         for _ in 0..4000 {
@@ -357,6 +358,7 @@ mod tests {
                 lang_packs: None,
                 repo: None,
                 repo_version: None,
+                history_size: None,
             },
         );
         passage_controller.retrieve_next_passage();
@@ -376,6 +378,7 @@ mod tests {
                 lang_packs: None,
                 repo: None,
                 repo_version: None,
+                history_size: None,
             },
         );
         passage_controller.retrieve_next_passage();
@@ -414,6 +417,7 @@ mod tests {
                 lang_packs: None,
                 repo: None,
                 repo_version: None,
+                history_size: None,
             },
         );
         passage_controller.retrieve_next_passage();

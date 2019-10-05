@@ -40,6 +40,7 @@ mod tests {
             lang_packs: None,
             repo: None,
             repo_version: None,
+            history_size: None,
         })
         .is_ok());
     }
@@ -53,6 +54,7 @@ mod tests {
             }),
             repo: None,
             repo_version: None,
+            history_size: None,
         })
         .is_err());
     }
@@ -66,6 +68,7 @@ mod tests {
             }),
             repo: None,
             repo_version: None,
+            history_size: None,
         })
         .is_ok());
 
@@ -76,6 +79,7 @@ mod tests {
             }),
             repo: None,
             repo_version: None,
+            history_size: None,
         })
         .is_ok());
     }

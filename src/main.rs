@@ -33,6 +33,8 @@ const VERSION: &str = "1.2.2";
 
 const DEFAULT_LANG_PACK_VERSION: &str = "lang-0.3";
 
+const DEFAULT_HISTORY_SIZE: usize = 20;
+
 fn main() -> Result<(), Error> {
     // Check config before doing anything else
     let typeracer_config = config::get_config()?;
@@ -42,6 +44,10 @@ fn main() -> Result<(), Error> {
         .as_ref()
         .map(String::as_str)
         .unwrap_or(DEFAULT_LANG_PACK_VERSION);
+
+    let resolved_history_size = typeracer_config
+        .history_size
+        .unwrap_or(DEFAULT_HISTORY_SIZE);
 
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, resolved_lang_pack_version))
@@ -82,7 +88,8 @@ fn main() -> Result<(), Error> {
         )
         .get_matches();
 
-    let mut passage_controller = passage_controller::Controller::new(20, &typeracer_config);
+    let mut passage_controller =
+        passage_controller::Controller::new(resolved_history_size, &typeracer_config);
 
     if args.is_present("SHOW_PACKS") {
         let (filtered_dirs, all_dirs) = passage_controller.get_quote_dir_shortnames();
