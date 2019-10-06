@@ -41,89 +41,11 @@ Hit ^C at any time to quit.
 
 What good would a typing game be without a config file?
 
-Where you can find your config file:
-
-Linux:
-```
-~/.config/typeracer/config.toml
-```
-
-And roughly in:
-
-macOS:
-```
-$HOME/Library/Preferences
-```
-
-Windows;
-
-```
-{FOLDERID_RoamingAppData}
-```
-
--- Note typeracer uses whatever the proper mechanism is for data and config
-folders are for your OS. If you customized the variables used, it may be
-elsewhere.
-
-With your config, you can enable or disable language packs.
-
-```toml
-[lang_packs]
-whitelisted = ["default"]
-```
-
-```toml
-[lang_packs]
-blacklisted = ["harry-potter"]
-```
-
-You can also choose where to get language packs. Default langpack is
-`https://gitlab.com/ttyperacer/lang-packs.git`, you can override this in the
-configuration file using `repo` key. You can also specify the version with
-repo_version.
-
-For all lang pack versions, see [here!][https://gitlab.com/ttyperacer/lang-packs/-/branches] Bear in mind there may be incompatibilities between older lang packs and newer typeracers and the other way around.
-
-```toml
-repo = "https://example.com/your-lang-pack.git"
-repo_version = "lang-0.2"
-```
+You can find docs on configuring [here](https://gitlab.com/ttyperacer/terminal-typeracer/tree/master/docs/config.md).
 
 ## Building
-You need rust version 1.33.0 or higher (using some newer time APIs) and git. If
-you're on macOS, you'll probably need to install openssl too.
 
-```bash
-$ cargo build --release
-```
-
-The binary you'll get is called `typeracer` and runnable immediately!
-
-### Cross compile is currently broken
-If you're trying to cross compile to macOS from Linux you'll need:
-
-```
-clang
-g++
-gcc
-git
-zlib1g-dev
-libmpc-dev
-libmpfr-dev
-libgmp-dev
-```
-
-and to add the apple target via rustup:
-
-```bash
-$ rustup target add x86_64-apple-darwin
-```
-
-You can then build just the macOS target with
-
-```
-$ make mac
-```
+There isn't much to building, but steps are documented [here](https://gitlab.com/ttyperacer/terminal-typeracer/tree/master/docs/building.md).
 
 ## Contributing
 
