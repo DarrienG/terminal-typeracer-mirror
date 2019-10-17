@@ -29,8 +29,8 @@ Windows:
 {FOLDERID_RoamingAppData}
 ```
 
--- Note typeracer uses whatever the proper mechanism is for data and config
-folders are for your OS. e.g. XDG_DIRS on Linux. If you customize your XDG_DIRS,
+-- Note typeracer uses whatever the proper mechanism is for data and config 
+folders are for your OS. e.g. XDG_DIRS on Linux. If you customize your XDG_DIRS, 
 it will respect that and may be elsewhere.
 
 ## Configuration
@@ -41,8 +41,10 @@ Parameters you can configure in the default namespace:
 * default: `https://gitlab.com/ttyperacer/lang-packs.git`
 * For more information on the lang-pack format, see
     [here](https://gitlab.com/ttyperacer/terminal-typeracer/tree/master/docs/lang-pack-format.md)
+
 `repo_version` = which version of the lang pack to use
 * default: The recommended version compiled with the program
+
 `history_size` = number of previous passages to remember during runtime
 * default: `20`
 * This buffer is dynamically allocated, so memory usage will not balloon on
@@ -54,6 +56,7 @@ Parameters you can configure in the `[lang_packs]` namespace:
 
 `whitelisted` = Takes a list, enabled lang packs
 * default: Everything
+
 `blacklisted` = Takes a list, disabled lang packs
 * default: Nothing
 
