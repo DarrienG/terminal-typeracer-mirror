@@ -65,6 +65,8 @@ blacklisted and whitelisted cannot both be filled out at the same time.
 You can see what is and isn't enabled, and what is and isn't available with the
 `-s` flag: `typeracer -s`
 
+## Example config
+
 Assuming you want to customize everything, a fully configured file might look
 like this:
 
