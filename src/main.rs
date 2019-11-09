@@ -31,10 +31,6 @@ const VERSION: &str = "DEBUG";
 #[cfg(not(debug_assertions))]
 const VERSION: &str = "1.2.2";
 
-const DEFAULT_LANG_PACK_VERSION: &str = "lang-0.3";
-
-const DEFAULT_HISTORY_SIZE: usize = 20;
-
 fn main() -> Result<(), Error> {
     // Check config before doing anything else
     let typeracer_config = config::get_config()?;
@@ -43,11 +39,9 @@ fn main() -> Result<(), Error> {
         .repo_version
         .as_ref()
         .map(String::as_str)
-        .unwrap_or(DEFAULT_LANG_PACK_VERSION);
+        .unwrap();
 
-    let resolved_history_size = typeracer_config
-        .history_size
-        .unwrap_or(DEFAULT_HISTORY_SIZE);
+    let resolved_history_size = typeracer_config.history_size.unwrap();
 
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, resolved_lang_pack_version))
