@@ -325,19 +325,13 @@ impl<'a> Controller<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::defaults;
     #[test]
     fn test_get_next_passage_overwrite() {
         // Check to see if we keep asking for next passages they're always valid
         // History of 5 so we can loop through history multiple times
-        let mut passage_controller = Controller::new(
-            5,
-            &TyperacerConfig {
-                lang_packs: None,
-                repo: None,
-                repo_version: None,
-                history_size: None,
-            },
-        );
+        let default = defaults::construct_default();
+        let mut passage_controller = Controller::new(5, &default);
         for _ in 0..4000 {
             passage_controller.retrieve_next_passage();
         }
@@ -352,15 +346,8 @@ mod tests {
 
         // Since we return a reference to a passage_info, and these methods require a mutable
         // reference, we have to clone to make the borrow checker happy.
-        let mut passage_controller = Controller::new(
-            5,
-            &TyperacerConfig {
-                lang_packs: None,
-                repo: None,
-                repo_version: None,
-                history_size: None,
-            },
-        );
+        let default = defaults::construct_default();
+        let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
         let mut previous_passage = (*passage_controller.retrieve_previous_passage()).clone();
         for _ in 0..4000 {
@@ -372,15 +359,8 @@ mod tests {
 
     #[test]
     fn test_verify_history_integrity() {
-        let mut passage_controller = Controller::new(
-            5,
-            &TyperacerConfig {
-                lang_packs: None,
-                repo: None,
-                repo_version: None,
-                history_size: None,
-            },
-        );
+        let default = defaults::construct_default();
+        let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
         let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
         let passage1 = (*passage_controller.retrieve_passage(Action::NextPassage)).clone();
@@ -411,15 +391,8 @@ mod tests {
 
     #[test]
     fn test_verify_restart() {
-        let mut passage_controller = Controller::new(
-            5,
-            &TyperacerConfig {
-                lang_packs: None,
-                repo: None,
-                repo_version: None,
-                history_size: None,
-            },
-        );
+        let default = defaults::construct_default();
+        let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
 
         // restarting on the initial passage doesn't break and gives the correct passage

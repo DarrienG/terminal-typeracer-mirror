@@ -28,7 +28,7 @@ pub struct LangPacks {
     pub blacklisted: Option<Vec<String>>,
 }
 
-mod defaults;
+pub mod defaults;
 mod validator;
 
 pub fn get_config() -> TyperacerConfig {
