@@ -32,19 +32,9 @@ const VERSION: &str = "DEBUG";
 const VERSION: &str = "1.2.2";
 
 fn main() -> Result<(), Error> {
-    // Check config before doing anything else
-    let typeracer_config = config::get_config()?;
-
-    let resolved_lang_pack_version = typeracer_config
-        .repo_version
-        .as_ref()
-        .map(String::as_str)
-        .unwrap();
-
-    let resolved_history_size = typeracer_config.history_size.unwrap();
-
+    let typeracer_config = config::get_config();
     let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
-        .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, resolved_lang_pack_version))
+        .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, typeracer_config.repo_version))
         .author("Darrien Glasser <me@darrien.dev>")
         .setting(clap::AppSettings::TrailingVarArg)
         .arg(
@@ -83,7 +73,7 @@ fn main() -> Result<(), Error> {
         .get_matches();
 
     let mut passage_controller =
-        passage_controller::Controller::new(resolved_history_size, &typeracer_config);
+        passage_controller::Controller::new(typeracer_config.history_size, &typeracer_config);
 
     if args.is_present("SHOW_PACKS") {
         let (filtered_dirs, all_dirs) = passage_controller.get_quote_dir_shortnames();
@@ -116,8 +106,9 @@ fn main() -> Result<(), Error> {
 
     let stats = &mut stats::Stats::new(legacy_wpm);
 
-    if !lang_pack::check_lang_pack(resolved_lang_pack_version) {
-        let result = lang_pack::retrieve_lang_pack(resolved_lang_pack_version, &typeracer_config);
+    if !lang_pack::check_lang_pack(&typeracer_config.repo_version) {
+        let result =
+            lang_pack::retrieve_lang_pack(&typeracer_config.repo_version, &typeracer_config);
         match result {
             Err(e) => return Err(e),
             Ok(false) => return Ok(()),

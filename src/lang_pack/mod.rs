@@ -88,12 +88,6 @@ pub fn retrieve_lang_pack(
 
     let mut terminal = Terminal::new(backend)?;
 
-    let lang_pack_url = typeracer_config
-        .repo
-        .as_ref()
-        .map(String::as_str)
-        .unwrap_or("https://gitlab.com/ttyperacer/lang-packs.git");
-
     let mut step_instruction = "Lang pack (1.5Mi installed) not on version compatible with your typeracer, install the proper version? (requires an internet connection)\nYes: y, No: n\n".to_string();
     let mut step_count = 0;
 
@@ -123,7 +117,7 @@ pub fn retrieve_lang_pack(
                 step_count += 1;
                 step_instruction.push_str("Downloading and setting up lang packs...\n");
                 download_and_checkout(
-                    lang_pack_url,
+                    &typeracer_config.repo,
                     &setup_dirs::get_quote_dir(),
                     data_pack_version,
                 );

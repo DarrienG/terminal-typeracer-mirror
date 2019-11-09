@@ -35,7 +35,6 @@ overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal
-# Build at HEAD until clone is put into a release
 tui = "0.6.2"
 termion = "1.5"
 unicode-width = "0.1.5"
