@@ -16,6 +16,6 @@ test:
     - cargo test
 
 legacy_test:
-  image: rust:1.33.0-stretch
+  image: rust:1.36.0-stretch
   script:
     - cargo test
