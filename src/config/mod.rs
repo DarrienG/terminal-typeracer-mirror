@@ -55,6 +55,7 @@ pub fn get_config() -> TyperacerConfig {
     }
 }
 
+#[cfg(not(test))]
 fn get_config_raw() -> Result<RawTyperacerConfig, Error> {
     let config_buf = get_config_file();
     let mut file_contents = "".to_owned();
@@ -106,4 +107,32 @@ fn user_enter() {
     stdin()
         .read_line(&mut input)
         .expect("Unable to read line :(");
+}
+
+#[cfg(test)]
+fn get_config_raw() -> Result<RawTyperacerConfig, Error> {
+    let tr_config: Result<RawTyperacerConfig, toml::de::Error> = toml::from_str("");
+    match tr_config {
+        Ok(v) => Ok(v),
+        Err(e) => Err(Error::new(ErrorKind::InvalidInput, format!("{}", e))),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    /// Tests that we provide a sane default for the user.
+    /// We should always provide a reliable, sane, default for the user.
+    /// Add test to ensure we do.
+    fn test_sane_defaults() {
+        // Note that get_config_raw is overloaded for tests to give an
+        // empty config file
+        let config = get_config();
+        assert!(config.lang_packs.is_none());
+        assert!(config.repo == "https://gitlab.com/ttyperacer/lang-packs.git");
+        assert!(config.repo_version == "lang-0.3");
+        assert!(config.history_size == 20);
+    }
 }
