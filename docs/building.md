@@ -4,7 +4,8 @@ It's a rust project with one external dependency: git
 
 You may need openssl installed as well.
 
-Rust version required is 1.33.0 or higher (using some newer time APIs).
+Rust version required is 1.36.0 or higher (using some newer time APIs and
+libraries are using alloc).
 
 ```bash
 $ cargo build --release

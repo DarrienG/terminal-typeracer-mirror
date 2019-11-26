@@ -11,6 +11,7 @@ mod dirs {
 
 pub mod actions;
 pub mod config;
+pub mod info;
 pub mod stats;
 
 use actions::Action;
@@ -29,7 +30,7 @@ fn debug_enabled_default() -> bool {
 const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "1.2.2";
+const VERSION: &str = "1.2.3";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
@@ -122,6 +123,7 @@ fn main() -> Result<(), Error> {
             passage_controller.retrieve_passage(action),
             stats,
             debug_enabled,
+            VERSION,
         );
         stats.reset();
     }

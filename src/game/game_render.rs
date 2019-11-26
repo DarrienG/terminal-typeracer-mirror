@@ -36,20 +36,20 @@ impl<'a> GameState<'a> {
 }
 
 /// Convenience method for retrieving constraints for the typing layout.
-/// At some point this may be refactored to be more dynamic based on
-/// terminal layout size so we can skip resolution checks.
 fn get_typing_bounds(rect: Rect) -> [Constraint; 4] {
     styles::get_typing_bounds(rect.height)
 }
 
 /// Convenience method for retrieving constraints for the stats block.
-/// At some point this may be refactored to be more dynamic based on
-/// terminal layout size so we can skip resolution checks.
 fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
     styles::get_stats_bounds(rect.height)
 }
 
-pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
+pub fn render<B: Backend>(
+    terminal: &mut Terminal<B>,
+    game_state: GameState,
+    typeracer_version: &str,
+) {
     let term_size = terminal.size().unwrap();
     terminal
         .draw(|mut f| {
@@ -161,9 +161,15 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, game_state: GameState) {
                     .borders(Borders::NONE)
                     .title_style(Style::default());
                 Paragraph::new(
-                    [Text::raw(
-                        "^C exit  ^R restart passage ^N next passage  ^P previous passage  ^U clear word",
-                    )]
+                    [
+                        Text::raw(
+                            "^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]  ^A[bout]\n",
+                        ),
+                        Text::styled(
+                            format!("Build: {}", typeracer_version),
+                            Style::default().fg(Color::Gray),
+                        ),
+                    ]
                     .iter(),
                 )
                 .block(shortcut_block.clone())
