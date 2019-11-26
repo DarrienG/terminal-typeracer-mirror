@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "1.2.2"
+version = "1.2.3"
 authors = ["DarrienG <darrienglasser@outlook.com>", "Jeffas"]
 edition = "2018"
 # Packaging for crates.io
@@ -52,3 +52,6 @@ rand = "0.6.5"
 
 # Command line optoins
 clap = "2.33.0"
+
+# For zipping lists
+itertools = "0.8.2"

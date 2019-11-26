@@ -1,3 +1,4 @@
+use info::show_info;
 use std::io::{stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
@@ -10,6 +11,7 @@ use tui::widgets::Text;
 use tui::Terminal;
 
 use crate::actions::Action;
+use crate::info;
 use crate::passage_controller::PassageInfo;
 use crate::stats;
 
@@ -172,6 +174,7 @@ pub fn play_game(
     passage_info: &PassageInfo,
     stats: &mut stats::Stats,
     debug_enabled: bool,
+    typeracer_version: &str,
 ) -> Action {
     let stdout = stdout()
         .into_raw_mode()
@@ -215,6 +218,7 @@ pub fn play_game(
                     words[current_word_idx]
                 },
             },
+            typeracer_version,
         );
         if current_word_idx == words.len() {
             break;
@@ -225,6 +229,7 @@ pub fn play_game(
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
+            Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
             Key::Ctrl('c') => return Action::Quit,
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
@@ -289,6 +294,7 @@ pub fn play_game(
         let stdin = stdin();
         for c in stdin.keys() {
             match c.unwrap() {
+                Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
                 Key::Ctrl('c') => return Action::Quit,
                 Key::Ctrl('n') => return Action::NextPassage,
                 Key::Ctrl('p') => return Action::PreviousPassage,
