@@ -134,9 +134,24 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     passage_starting_idx
 }
 
+fn get_formatted_texts_line_mode<'a>(
+    words: &[&str],
+    user_input: &str,
+    mut formatted_passage: Vec<Text<'a>>,
+) -> FormattedTexts<'a> {
+    let (formatted_passage_word, formatted_input) = get_formatted_words(words[0], user_input);
+    formatted_passage[0..(formatted_passage_word.len())]
+        .clone_from_slice(&formatted_passage_word[..]);
+
+    FormattedTexts {
+        passage: formatted_passage,
+        input: formatted_input,
+        error: !check_like_word(words[0], user_input),
+        complete: false,
+    }
+}
+
 /// Get fully formatted versions of the passage, and the user's input.
-// TODO: Test
-// Text doesn't derive eq, so it's difficult to test.
 fn get_formatted_texts<'a>(
     words: &[&str],
     user_input: &str,
@@ -244,10 +259,10 @@ pub fn play_game(
                 stats.update_start_time();
 
                 if c == ' ' && check_word(words[current_word_idx], &user_input) {
+                    formatted_texts.passage = formatted_texts.passage
+                        [words[current_word_idx].len() + 1..formatted_texts.passage.len()]
+                        .to_vec();
                     current_word_idx += 1;
-                    // BUG: Cursor stays in a forward position after clearing
-                    // As soon as the user types it goes back to the beginning position
-                    // Moving the cursor manually to the left does not fix
                     user_input.clear();
                 } else if c == '\n' || c == '\t' {
                     // Ignore a few types that can put the user in a weird spot
@@ -260,10 +275,9 @@ pub fn play_game(
             _ => {}
         }
 
-        formatted_texts = get_formatted_texts(
-            &words,
+        formatted_texts = get_formatted_texts_line_mode(
+            &words[current_word_idx..words.len()].to_vec(),
             &user_input.to_string(),
-            current_word_idx,
             formatted_texts.passage,
         );
 
