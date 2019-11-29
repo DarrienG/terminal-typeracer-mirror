@@ -9,6 +9,7 @@ use std::path::PathBuf;
 #[derive(Debug, Deserialize)]
 pub struct TyperacerConfig {
     pub lang_packs: Option<LangPacks>,
+    pub display_settings: Display,
     pub repo: String,
     pub repo_version: String,
     pub history_size: usize,
@@ -17,6 +18,7 @@ pub struct TyperacerConfig {
 #[derive(Debug, Deserialize)]
 pub struct RawTyperacerConfig {
     pub lang_packs: Option<LangPacks>,
+    pub display_settings: Option<RawDisplay>,
     pub repo: Option<String>,
     pub repo_version: Option<String>,
     pub history_size: Option<usize>,
@@ -26,6 +28,16 @@ pub struct RawTyperacerConfig {
 pub struct LangPacks {
     pub whitelisted: Option<Vec<String>>,
     pub blacklisted: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Display {
+    pub always_full: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RawDisplay {
+    pub always_full: Option<bool>,
 }
 
 pub mod defaults;
@@ -74,6 +86,10 @@ fn construct_config(raw_config: RawTyperacerConfig) -> TyperacerConfig {
     let default_config = defaults::construct_default();
     TyperacerConfig {
         lang_packs: raw_config.lang_packs,
+        display_settings: construct_display(
+            raw_config.display_settings,
+            default_config.display_settings,
+        ),
         repo: raw_config.repo.unwrap_or(default_config.repo),
         repo_version: raw_config
             .repo_version
@@ -81,6 +97,15 @@ fn construct_config(raw_config: RawTyperacerConfig) -> TyperacerConfig {
         history_size: raw_config
             .history_size
             .unwrap_or(default_config.history_size),
+    }
+}
+
+fn construct_display(display_config: Option<RawDisplay>, default_display: Display) -> Display {
+    match display_config {
+        None => default_display,
+        Some(d) => Display {
+            always_full: d.always_full.unwrap_or(default_display.always_full),
+        },
     }
 }
 

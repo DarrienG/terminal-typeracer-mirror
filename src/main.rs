@@ -124,6 +124,7 @@ fn main() -> Result<(), Error> {
             stats,
             debug_enabled,
             VERSION,
+            &typeracer_config,
         );
         stats.reset();
     }

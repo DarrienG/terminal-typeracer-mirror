@@ -38,6 +38,7 @@ mod tests {
     fn test_empty_config_ok() {
         assert!(validate_config(RawTyperacerConfig {
             lang_packs: None,
+            display_settings: None,
             repo: None,
             repo_version: None,
             history_size: None,
@@ -52,6 +53,7 @@ mod tests {
                 whitelisted: Some(vec!["vrinda".to_string(), "punj".to_string()]),
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
+            display_settings: None,
             repo: None,
             repo_version: None,
             history_size: None,
@@ -66,6 +68,7 @@ mod tests {
                 whitelisted: Some(vec!["vrinda".to_owned(), "punj".to_owned()]),
                 blacklisted: None,
             }),
+            display_settings: None,
             repo: None,
             repo_version: None,
             history_size: None,
@@ -77,6 +80,7 @@ mod tests {
                 whitelisted: None,
                 blacklisted: Some(vec!["tub".to_owned(), "golang".to_owned()]),
             }),
+            display_settings: None,
             repo: None,
             repo_version: None,
             history_size: None,

@@ -1,3 +1,4 @@
+use config::TyperacerConfig;
 use info::show_info;
 use std::io::{stdin, stdout};
 use termion::event::Key;
@@ -11,6 +12,7 @@ use tui::widgets::Text;
 use tui::Terminal;
 
 use crate::actions::Action;
+use crate::config;
 use crate::info;
 use crate::passage_controller::PassageInfo;
 use crate::stats;
@@ -134,9 +136,26 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     passage_starting_idx
 }
 
+fn get_formatted_texts_line_mode<'a>(
+    words: &[&str],
+    user_input: &str,
+    current_word_idx: usize,
+    mut formatted_passage: Vec<Text<'a>>,
+) -> FormattedTexts<'a> {
+    let word_slice = words[current_word_idx..words.len()].to_vec();
+    let (formatted_passage_word, formatted_input) = get_formatted_words(word_slice[0], user_input);
+    formatted_passage[0..(formatted_passage_word.len())]
+        .clone_from_slice(&formatted_passage_word[..]);
+
+    FormattedTexts {
+        passage: formatted_passage,
+        input: formatted_input,
+        error: !check_like_word(word_slice[0], user_input),
+        complete: false,
+    }
+}
+
 /// Get fully formatted versions of the passage, and the user's input.
-// TODO: Test
-// Text doesn't derive eq, so it's difficult to test.
 fn get_formatted_texts<'a>(
     words: &[&str],
     user_input: &str,
@@ -159,6 +178,25 @@ fn get_formatted_texts<'a>(
     }
 }
 
+/// Should be the final formatting call.
+/// Sets formatted texts fields to expected completion settings.
+/// Reformats the entire passage from scratch in the case that the user is
+/// running with display_settings.always_max=false.
+/// If they are, they will only see the final word, but showing the whole
+/// passage to them now that it is complete is a much better user experience.
+fn get_reformatted_complete_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
+    let reformatted_complete_texts = (*words)
+        .iter()
+        .map(|word| Text::styled(format!("{} ", word), Style::default().fg(Color::Green)))
+        .collect();
+    FormattedTexts {
+        passage: reformatted_complete_texts,
+        input: get_complete_string(),
+        error: false,
+        complete: true,
+    }
+}
+
 /// Get default string to display when user completes a passage.
 fn get_complete_string() -> Vec<Text<'static>> {
     vec![Text::styled(
@@ -175,6 +213,7 @@ pub fn play_game(
     stats: &mut stats::Stats,
     debug_enabled: bool,
     typeracer_version: &str,
+    typeracer_config: &TyperacerConfig,
 ) -> Action {
     let stdout = stdout()
         .into_raw_mode()
@@ -244,10 +283,12 @@ pub fn play_game(
                 stats.update_start_time();
 
                 if c == ' ' && check_word(words[current_word_idx], &user_input) {
+                    if !typeracer_config.display_settings.always_full {
+                        formatted_texts.passage = formatted_texts.passage
+                            [words[current_word_idx].len() + 1..formatted_texts.passage.len()]
+                            .to_vec();
+                    }
                     current_word_idx += 1;
-                    // BUG: Cursor stays in a forward position after clearing
-                    // As soon as the user types it goes back to the beginning position
-                    // Moving the cursor manually to the left does not fix
                     user_input.clear();
                 } else if c == '\n' || c == '\t' {
                     // Ignore a few types that can put the user in a weird spot
@@ -260,33 +301,35 @@ pub fn play_game(
             _ => {}
         }
 
-        formatted_texts = get_formatted_texts(
-            &words,
-            &user_input.to_string(),
-            current_word_idx,
-            formatted_texts.passage,
-        );
+        formatted_texts = if typeracer_config.display_settings.always_full {
+            get_formatted_texts(
+                &words,
+                &user_input.to_string(),
+                current_word_idx,
+                formatted_texts.passage,
+            )
+        } else {
+            get_formatted_texts_line_mode(
+                &words,
+                &user_input.to_string(),
+                current_word_idx,
+                formatted_texts.passage,
+            )
+        };
 
         if formatted_texts.error && new_char {
             stats.increment_errors();
         }
 
-        if current_word_idx == words.len() {
-            // We want one more render cycle at the end.
-            // Ignore the dangerous function call, and then do another bounds check and break
-            // before taking user input again.
-            user_input.clear();
-            formatted_texts.input = get_complete_string();
-            formatted_texts.complete = true;
-        } else if current_word_idx + 1 == words.len()
-            && check_word(words[current_word_idx], &user_input)
-        {
-            // Special case for the last word so the user doesn't need to hit space
+        if current_word_idx + 1 == words.len() && check_word(words[current_word_idx], &user_input) {
+            // Check to see if the user is on the last word and it is correct.
+            // If it is, we need to do a little extra work to set the passage back to the full
+            // passage. If the user is running with display_settings.always_max=false then they
+            // will only see the last word.
+            formatted_texts = get_reformatted_complete_texts(&words);
             current_word_idx += 1;
             stats.update_wpm(current_word_idx, &words);
             user_input.clear();
-            formatted_texts.input = get_complete_string();
-            formatted_texts.complete = true;
         }
     }
 
@@ -449,6 +492,49 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts(
+            &words,
+            user_input,
+            current_word_idx,
+            input_formatted_passage,
+        );
+
+        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
+
+    #[test]
+    fn test_get_formatted_line_mode() {
+        // Test that words are added in place to a set of formatted texts
+        // Do not need to check correct vs incorrect. All we need to verify is that the formatted
+        // texts are properly applied to the full set of formatted texts.
+        let words = vec!["the", "quick", "brown", "fox"];
+        let user_input = "bro";
+        let current_word_idx = 2;
+        let input_formatted_passage: Vec<Text> = vec![
+            Text::raw("b"),
+            Text::raw("r"),
+            Text::raw("o"),
+            Text::raw("w"),
+            Text::raw("n"),
+            Text::raw(" "),
+            Text::raw("f"),
+            Text::raw("o"),
+            Text::raw("x"),
+        ];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("b", Style::default().fg(Color::Green)),
+            Text::styled("r", Style::default().fg(Color::Green)),
+            Text::styled("o", Style::default().fg(Color::Green)),
+            Text::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("n"),
+            Text::raw(" "),
+            Text::raw("f"),
+            Text::raw("o"),
+            Text::raw("x"),
+        ];
+
+        let formatted_texts = get_formatted_texts_line_mode(
             &words,
             user_input,
             current_word_idx,
