@@ -337,7 +337,27 @@ pub fn play_game(
         let stdin = stdin();
         for c in stdin.keys() {
             match c.unwrap() {
-                Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
+                Key::Ctrl('a') => {
+                    show_info(&mut terminal, typeracer_version);
+                    game_render::render(
+                        &mut terminal,
+                        game_render::GameState {
+                            texts: &formatted_texts,
+                            user_input: &user_input,
+                            stats,
+                            title: &passage_info.title,
+                            debug_enabled,
+                            word_idx: current_word_idx,
+                            passage_path: &passage_info.passage_path,
+                            current_word: if current_word_idx == words.len() {
+                                "DONE"
+                            } else {
+                                words[current_word_idx]
+                            },
+                        },
+                        typeracer_version,
+                    );
+                }
                 Key::Ctrl('c') => return Action::Quit,
                 Key::Ctrl('n') => return Action::NextPassage,
                 Key::Ctrl('p') => return Action::PreviousPassage,
