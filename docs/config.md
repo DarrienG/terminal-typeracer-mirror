@@ -29,8 +29,8 @@ Windows:
 {FOLDERID_RoamingAppData}
 ```
 
--- Note typeracer uses whatever the proper mechanism is for data and config 
-folders are for your OS. e.g. XDG_DIRS on Linux. If you customize your XDG_DIRS, 
+-- Note typeracer uses whatever the proper mechanism is for data and config
+folders are for your OS. e.g. XDG_DIRS on Linux. If you customize your XDG_DIRS,
 it will respect that and may be elsewhere.
 
 ## Configuration
@@ -65,6 +65,14 @@ blacklisted and whitelisted cannot both be filled out at the same time.
 You can see what is and isn't enabled, and what is and isn't available with the
 `-s` flag: `typeracer -s`
 
+Parameters you can configure in the `[display_settings]` namespace:
+
+`always_full` = Decide whether or not to show the full passage at all times.
+* default: `false`
+* With this set to false, after a word is successfully typed, it will disappear
+    to make room for the rest of the words.
+* Setting to true sets the behavior back to the way it was in version `<=1.2.3`
+
 ## Example config
 
 Assuming you want to customize everything, a fully configured file might look
@@ -73,10 +81,13 @@ like this:
 ```toml
 repo = "https://gitlab.com/ttyperacer/lang-packs.git"
 repo_version = "lang-0.2"
-history_size = 20
+history_size = 50
 
 [lang_packs]
 blacklisted = ["default"]
+
+[display_settings]
+always_full = true
 ```
 
 Remember though that the config file is entirely optional and all parameters are
