@@ -183,24 +183,32 @@ fn get_formatted_texts<'a>(
 /// If they are, they will only see the final word, but showing the whole
 /// passage to them now that it is complete is a much better user experience.
 fn get_reformatted_complete_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(words, Color::Green, "COMPLETE", false)
+}
+
+fn get_reformatted_failed_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(words, Color::Red, "FAIL", true)
+}
+
+fn get_fully_reformatted_texts<'a>(
+    words: &[&str],
+    color: Color,
+    end_string: &'a str,
+    err: bool,
+) -> FormattedTexts<'a> {
     let reformatted_complete_texts = (*words)
         .iter()
-        .map(|word| Text::styled(format!("{} ", word), Style::default().fg(Color::Green)))
+        .map(|word| Text::styled(format!("{} ", word), Style::default().fg(color)))
         .collect();
     FormattedTexts {
         passage: reformatted_complete_texts,
-        input: get_complete_string(),
-        error: false,
+        input: vec![Text::styled(
+            end_string,
+            Style::default().bg(color).fg(Color::White),
+        )],
+        error: err,
         complete: true,
     }
-}
-
-/// Get default string to display when user completes a passage.
-fn get_complete_string() -> Vec<Text<'static>> {
-    vec![Text::styled(
-        "COMPLETE",
-        Style::default().bg(Color::Green).fg(Color::White),
-    )]
 }
 
 /// Event loop: Displays the typing input and renders keypresses.
@@ -210,6 +218,7 @@ pub fn play_game(
     passage_info: &PassageInfo,
     stats: &mut stats::Stats,
     debug_enabled: bool,
+    instant_death: bool,
     typeracer_version: &str,
     typeracer_config: &TyperacerConfig,
 ) -> Action {
@@ -245,7 +254,15 @@ pub fn play_game(
                 texts: &formatted_texts,
                 user_input: &user_input,
                 stats,
-                title: &passage_info.title,
+                title: &format!(
+                    "{}{}",
+                    if instant_death {
+                        "[INSTANT DEATH ENABLED] - "
+                    } else {
+                        ""
+                    },
+                    &passage_info.title
+                ),
                 debug_enabled,
                 word_idx: current_word_idx,
                 passage_path: &passage_info.passage_path,
@@ -316,6 +333,10 @@ pub fn play_game(
 
         if formatted_texts.error && new_char {
             stats.increment_errors();
+            if instant_death {
+                formatted_texts = get_reformatted_failed_texts(&words);
+                continue;
+            }
         }
 
         if current_word_idx + 1 == words.len() && check_word(words[current_word_idx], &user_input) {

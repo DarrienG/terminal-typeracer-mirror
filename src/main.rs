@@ -71,6 +71,14 @@ fn main() -> Result<(), Error> {
             .takes_value(false)
             .help("Show all currently available language packs")
         )
+        .arg(
+            clap::Arg::with_name("INSTANT_DEATH")
+            .short("i")
+            .long("instant-death")
+            .required(false)
+            .takes_value(false)
+            .help("Play with instant death mode. One mistype and you lose!")
+        )
         .get_matches();
 
     let mut passage_controller =
@@ -105,6 +113,8 @@ fn main() -> Result<(), Error> {
 
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
+    let instant_death = args.is_present("INSTANT_DEATH");
+
     let stats = &mut stats::Stats::new(legacy_wpm);
 
     if !lang_pack::check_lang_pack(&typeracer_config.repo_version) {
@@ -123,6 +133,7 @@ fn main() -> Result<(), Error> {
             passage_controller.retrieve_passage(action),
             stats,
             debug_enabled,
+            instant_death,
             VERSION,
             &typeracer_config,
         );
