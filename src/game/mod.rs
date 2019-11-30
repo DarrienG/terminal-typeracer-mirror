@@ -137,20 +137,18 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
 }
 
 fn get_formatted_texts_line_mode<'a>(
-    words: &[&str],
+    current_word: &str,
     user_input: &str,
-    current_word_idx: usize,
     mut formatted_passage: Vec<Text<'a>>,
 ) -> FormattedTexts<'a> {
-    let word_slice = words[current_word_idx..words.len()].to_vec();
-    let (formatted_passage_word, formatted_input) = get_formatted_words(word_slice[0], user_input);
+    let (formatted_passage_word, formatted_input) = get_formatted_words(current_word, user_input);
     formatted_passage[0..(formatted_passage_word.len())]
         .clone_from_slice(&formatted_passage_word[..]);
 
     FormattedTexts {
         passage: formatted_passage,
         input: formatted_input,
-        error: !check_like_word(word_slice[0], user_input),
+        error: !check_like_word(current_word, user_input),
         complete: false,
     }
 }
@@ -310,9 +308,8 @@ pub fn play_game(
             )
         } else {
             get_formatted_texts_line_mode(
-                &words,
+                &words[current_word_idx],
                 &user_input.to_string(),
-                current_word_idx,
                 formatted_texts.passage,
             )
         };
@@ -555,9 +552,8 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(
-            &words,
+            &words[current_word_idx],
             user_input,
-            current_word_idx,
             input_formatted_passage,
         );
 
