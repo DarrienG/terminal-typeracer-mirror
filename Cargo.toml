@@ -1,7 +1,7 @@
 [package]
 name = "typeracer"
-version = "1.3.0"
-authors = ["DarrienG <darrienglasser@outlook.com>", "Jeffas"]
+version = "1.3.1"
+authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 # Packaging for crates.io
 # We don't want assets included and the like
