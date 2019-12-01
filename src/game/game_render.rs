@@ -52,7 +52,11 @@ fn get_border_style(game_state: &GameState) -> Style {
     Style::default().fg(if game_state.instant_death {
         Color::Red
     } else {
-        Color::White
+        if game_state.stats.errors == 0 {
+            Color::Green
+        } else {
+            Color::Reset
+        }
     })
 }
 

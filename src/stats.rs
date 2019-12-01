@@ -41,7 +41,7 @@ impl Time {
 /// Store the current stats to be displayed to the user
 #[derive(Debug, Clone)]
 pub struct Stats {
-    errors: u16,
+    pub errors: u16,
     wpm: u64,
     legacy_wpm: bool,
     start_time: u64,
