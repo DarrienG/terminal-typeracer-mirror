@@ -16,6 +16,7 @@ pub struct GameState<'a> {
     pub user_input: &'a str,
     pub stats: &'a stats::Stats,
     pub title: &'a str,
+    pub instant_death: bool,
     // For debug
     pub debug_enabled: bool,
     pub word_idx: usize,
@@ -25,11 +26,12 @@ pub struct GameState<'a> {
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}\npassage_path: {}\ncurrent_word: {}",
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}  instant_death_enabled: {}\npassage_path: {}\ncurrent_word: {}",
                 self.stats.get_legacy_wpm(),
                 self.word_idx,
                 self.stats.get_start_time(),
                 self.texts.error,
+                self.instant_death,
                 self.passage_path,
                 self.current_word,
             )
@@ -44,6 +46,14 @@ fn get_typing_bounds(rect: Rect) -> [Constraint; 4] {
 /// Convenience method for retrieving constraints for the stats block.
 fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
     styles::get_stats_bounds(rect.height)
+}
+
+fn get_border_style(game_state: &GameState) -> Style {
+    Style::default().fg(if game_state.instant_death {
+        Color::Red
+    } else {
+        Color::White
+    })
 }
 
 pub fn render<B: Backend>(
@@ -86,6 +96,7 @@ pub fn render<B: Backend>(
                     if game_state.debug_enabled {
                         let debug_block = Block::default()
                             .borders(Borders::ALL)
+                            .border_style(get_border_style(&game_state))
                             .title_style(Style::default());
                         Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
                             .block(debug_block.clone().title("DEBUG ENABLED"))
@@ -95,6 +106,7 @@ pub fn render<B: Backend>(
                     }
                     let passage_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_style(get_border_style(&game_state))
                         .title_style(Style::default());
                     Paragraph::new(game_state.texts.passage.iter())
                         .block(passage_block.clone().title(&game_state.title))
@@ -104,6 +116,7 @@ pub fn render<B: Backend>(
 
                     let typing_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_style(get_border_style(&game_state))
                         .title_style(Style::default().modifier(Modifier::BOLD));
 
                     let style = if game_state.texts.error {
@@ -130,6 +143,7 @@ pub fn render<B: Backend>(
 
                     let stats_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_style(get_border_style(&game_state))
                         .title_style(Style::default());
 
                     let stats_text = game_state.stats.text();

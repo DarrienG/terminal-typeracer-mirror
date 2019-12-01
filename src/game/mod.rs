@@ -254,15 +254,8 @@ pub fn play_game(
                 texts: &formatted_texts,
                 user_input: &user_input,
                 stats,
-                title: &format!(
-                    "{}{}",
-                    if instant_death {
-                        "[INSTANT DEATH ENABLED] - "
-                    } else {
-                        ""
-                    },
-                    &passage_info.title
-                ),
+                title: &passage_info.title,
+                instant_death,
                 debug_enabled,
                 word_idx: current_word_idx,
                 passage_path: &passage_info.passage_path,
@@ -364,6 +357,7 @@ pub fn play_game(
                             user_input: &user_input,
                             stats,
                             title: &passage_info.title,
+                            instant_death,
                             debug_enabled,
                             word_idx: current_word_idx,
                             passage_path: &passage_info.passage_path,
