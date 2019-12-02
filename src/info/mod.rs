@@ -48,8 +48,16 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
     top_text.push(Text::raw(
         "main lang packs: https://gitlab.com/ttyperacer/lang-packs\n",
     ));
+    top_text.push(Text::raw(format!(
+        "docs: https://gitlab.com/ttyperacer/terminal-typeracer/tree/v{}/docs\n\n",
+        typeracer_version
+    )));
+    top_text.push(Text::raw(format!(
+        "current release notes: https://gitlab.com/ttyperacer/terminal-typeracer/-/tags/v{}\n",
+        typeracer_version
+    )));
     top_text.push(Text::raw(
-        "Binaries/release notes: https://gitlab.com/ttyperacer/terminal-typeracer/-/releases",
+        "all releases: https://gitlab.com/ttyperacer/terminal-typeracer/-/releases",
     ));
     let info_data = InfoData {
         top_text: &top_text,
