@@ -13,6 +13,7 @@ pub struct TyperacerConfig {
     pub repo: String,
     pub repo_version: String,
     pub history_size: usize,
+    pub combo_config: Combo,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,6 +29,15 @@ pub struct RawTyperacerConfig {
 pub struct LangPacks {
     pub whitelisted: Option<Vec<String>>,
     pub blacklisted: Option<Vec<String>>,
+}
+
+// Raw version not yet available. Still deciding how to properly surface
+// this to the user.
+// Should it go in its own struct? Be part of another? Do we even want to
+// surface?
+#[derive(Debug, Deserialize)]
+pub struct Combo {
+    pub combo_trigger: usize,
 }
 
 #[derive(Debug, Deserialize)]
@@ -90,6 +100,7 @@ fn construct_config(raw_config: RawTyperacerConfig) -> TyperacerConfig {
             raw_config.display_settings,
             default_config.display_settings,
         ),
+        combo_config: default_config.combo_config,
         repo: raw_config.repo.unwrap_or(default_config.repo),
         repo_version: raw_config
             .repo_version

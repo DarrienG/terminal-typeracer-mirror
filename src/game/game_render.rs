@@ -5,6 +5,7 @@ use tui::style::{Modifier, Style};
 use tui::terminal::Terminal;
 use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text, Widget};
 
+use crate::config::TyperacerConfig;
 use crate::game::FormattedTexts;
 use crate::stats;
 
@@ -17,6 +18,7 @@ pub struct GameState<'a> {
     pub stats: &'a stats::Stats,
     pub title: &'a str,
     pub instant_death: bool,
+    pub config: &'a TyperacerConfig,
     // For debug
     pub debug_enabled: bool,
     pub word_idx: usize,
@@ -50,9 +52,19 @@ fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
 
 fn get_border_style(game_state: &GameState) -> Style {
     Style::default().fg(if game_state.instant_death {
-        Color::Red
+        if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
+            Color::Magenta
+        } else {
+            Color::Red
+        }
     } else if game_state.stats.errors == 0 {
-        Color::Green
+        if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
+            Color::Cyan
+        } else {
+            Color::Green
+        }
+    } else if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
+        Color::Blue
     } else {
         Color::Reset
     })

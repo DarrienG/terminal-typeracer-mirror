@@ -46,6 +46,7 @@ pub struct Stats {
     legacy_wpm: bool,
     start_time: u64,
     time: Time,
+    pub combo: usize,
 }
 
 impl Stats {
@@ -57,6 +58,7 @@ impl Stats {
             legacy_wpm,
             start_time: 0,
             time: Time::new(),
+            combo: 0,
         }
     }
 
@@ -90,7 +92,16 @@ impl Stats {
 
     /// Increment the number of errors by 1
     pub fn increment_errors(&mut self) {
-        self.errors += 1
+        self.errors += 1;
+        self.reset_combo();
+    }
+
+    pub fn increment_combo(&mut self) {
+        self.combo += 1;
+    }
+
+    fn reset_combo(&mut self) {
+        self.combo = 0;
     }
 
     /// Reset the Stats struct to default values
@@ -98,6 +109,7 @@ impl Stats {
         self.wpm = 0;
         self.errors = 0;
         self.start_time = 0;
+        self.combo = 0;
     }
 
     /// Create the vector of text elements
@@ -105,6 +117,7 @@ impl Stats {
         vec![
             vec!["WPM".to_string(), self.wpm.to_string()],
             vec!["Errors".to_string(), self.errors.to_string()],
+            vec!["Combo".to_string(), self.combo.to_string()],
         ]
     }
 
