@@ -51,23 +51,11 @@ fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
 }
 
 fn get_border_style(game_state: &GameState) -> Style {
-    Style::default().fg(if game_state.instant_death {
-        if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
-            Color::Magenta
-        } else {
-            Color::Red
-        }
-    } else if game_state.stats.errors == 0 {
-        if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
-            Color::Cyan
-        } else {
-            Color::Green
-        }
-    } else if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
-        Color::Blue
+    if game_state.instant_death {
+        styles::instant_death_border_style(game_state)
     } else {
-        Color::Reset
-    })
+        styles::regular_border_style(game_state)
+    }
 }
 
 pub fn render<B: Backend>(

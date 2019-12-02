@@ -73,6 +73,17 @@ Parameters you can configure in the `[display_settings]` namespace:
     to make room for the rest of the words.
 * Setting to true sets the behavior back to the way it was in version `<=1.2.3`
 
+`simple_borders` = Decide whether or not to color borders in accordance with
+events
+* default: `false`
+* With this set to true, the border colors will stay constant over the course of
+    the game.
+* Things that currently will change border colors mid game:
+    * Missing a single letter in regular mode
+    * Getting a combo (consecutively typing letters correctly) > 60
+* Setting to false ensures the game borders never change once started
+
+
 ## Example config
 
 Assuming you want to customize everything, a fully configured file might look
@@ -88,6 +99,7 @@ blacklisted = ["default"]
 
 [display_settings]
 always_full = true
+simple_borders = true
 ```
 
 Remember though that the config file is entirely optional and all parameters are

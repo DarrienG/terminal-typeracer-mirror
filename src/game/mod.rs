@@ -17,7 +17,7 @@ use crate::info;
 use crate::passage_controller::PassageInfo;
 use crate::stats;
 
-mod game_render;
+pub mod game_render;
 
 #[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {

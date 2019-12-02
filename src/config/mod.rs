@@ -43,11 +43,13 @@ pub struct Combo {
 #[derive(Debug, Deserialize)]
 pub struct Display {
     pub always_full: bool,
+    pub simple_borders: bool,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RawDisplay {
     pub always_full: Option<bool>,
+    pub simple_borders: Option<bool>,
 }
 
 pub mod defaults;
@@ -116,6 +118,7 @@ fn construct_display(display_config: Option<RawDisplay>, default_display: Displa
         None => default_display,
         Some(d) => Display {
             always_full: d.always_full.unwrap_or(default_display.always_full),
+            simple_borders: d.simple_borders.unwrap_or(default_display.simple_borders),
         },
     }
 }
