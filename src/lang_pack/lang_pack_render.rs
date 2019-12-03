@@ -20,7 +20,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
                 .borders(Borders::ALL)
                 .title_style(Style::default());
             Paragraph::new([Text::raw(step_instruction)].iter())
-                .block(passage_block.clone().title("Checking bounds"))
+                .block(passage_block.clone().title("Installing quote packs"))
                 .wrap(true)
                 .alignment(Alignment::Left)
                 .render(&mut f, chunks[0]);

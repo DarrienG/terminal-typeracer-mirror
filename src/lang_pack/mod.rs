@@ -115,7 +115,10 @@ pub fn retrieve_lang_pack(
             }
             1 => {
                 step_count += 1;
-                step_instruction.push_str("Downloading and setting up lang packs...\n");
+                step_instruction.push_str("Downloading and setting up lang packs (this may take a while with slow internet)...\n");
+            }
+            2 => {
+                step_count += 1;
                 download_and_checkout(
                     &typeracer_config.repo,
                     &setup_dirs::get_quote_dir(),
@@ -126,7 +129,7 @@ pub fn retrieve_lang_pack(
                     )
             }
             _ => {
-                let c = stdin.keys().next().unwrap();
+                let c = stdin.keys().find_map(Result::ok);
                 return result.map(|()| match c.unwrap() {
                     Key::Ctrl('c') => false,
                     _ => true,
