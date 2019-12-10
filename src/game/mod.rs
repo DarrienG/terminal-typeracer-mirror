@@ -268,7 +268,7 @@ pub fn play_game(
             },
             typeracer_version,
         );
-        if current_word_idx == words.len() {
+        if formatted_texts.complete {
             break;
         }
 
