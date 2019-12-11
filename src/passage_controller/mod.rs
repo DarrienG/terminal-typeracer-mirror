@@ -109,15 +109,6 @@ impl<'a> Controller<'a> {
         });
     }
 
-    fn pick_quote_dir(&self) -> Option<DirEntry> {
-        let mut quote_dirs = self.get_filtered_quote_dirs();
-        if quote_dirs.is_empty() {
-            None
-        } else {
-            Some(quote_dirs.remove(rand::thread_rng().gen_range(0, quote_dirs.len())))
-        }
-    }
-
     /// Get shortnames of quote directories
     /// returns enabled quote dirs first, all quote dirs second
     pub fn get_quote_dir_shortnames(&self) -> (Vec<String>, Vec<String>) {
@@ -256,6 +247,13 @@ impl<'a> Controller<'a> {
         true_quote_dirs
     }
 
+    fn get_files_from_dir(&self, path: DirEntry) -> Vec<DirEntry> {
+        read_dir(path.path())
+            .unwrap()
+            .map(|entry| entry.expect("Failed to evaluate path when reading files"))
+            .collect()
+    }
+
     // Retrieve a random passage and title from quote database.
     // Defaults to boring passage if no files are found.
     // Returns (passage, author/title)
@@ -269,26 +267,27 @@ impl<'a> Controller<'a> {
             passage_path: "FALLBACK_PATH".to_owned(),
         };
 
-        let quote_opt = self.pick_quote_dir();
+        let quote_dirs = self.get_filtered_quote_dirs();
 
-        if quote_opt.is_none() {
+        if quote_dirs.is_empty() {
             return fallback;
         }
 
-        let quote_dir = quote_opt.unwrap();
+        let mut quotes: Vec<DirEntry> = vec![];
+        let mut num_files: usize = 0;
 
-        let num_files: usize = read_dir(quote_dir.path()).unwrap().count();
+        for dir in quote_dirs {
+            let quotes_in_dir = self.get_files_from_dir(dir);
+            num_files = quotes_in_dir.len();
+            for quote in quotes_in_dir {
+                quotes.push(quote);
+            }
+        }
 
         if num_files > 0 {
             let random_file_num = rand::thread_rng().gen_range(0, num_files);
-            let read_dir_iter = quote_dir.path();
-            for (count, path) in read_dir(read_dir_iter)
-                .expect("Failed to read from data dir")
-                .enumerate()
-            {
-                let path = path
-                    .expect("Failed to evaluate path while reading files")
-                    .path();
+            for (count, path) in quotes.iter().enumerate() {
+                let path = path.path();
                 if count == random_file_num {
                     let file = File::open(&path).expect("Unable to open quote file");
                     let mut passage: Vec<String> = vec![];
