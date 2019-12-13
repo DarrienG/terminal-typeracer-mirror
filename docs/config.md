@@ -1,6 +1,6 @@
 # Configuration
 
-Example at the bottom!
+**Fully customized example at the bottom!**
 
 What good would a terminal app be without the ability to configure it?
 
@@ -15,19 +15,13 @@ Linux:
 ~/.config/typeracer/config.toml
 ```
 
-And roughly in:
-
 macOS:
 
 ```
-$HOME/Library/Preferences
+$HOME/Library/Preferences/org.darrienglasser.com.typeracer/config.toml
 ```
 
-Windows:
-
-```
-{FOLDERID_RoamingAppData}
-```
+Windows is only supported through WSL. See the Linux section.
 
 -- Note typeracer uses whatever the proper mechanism is for data and config
 folders are for your OS. e.g. XDG_DIRS on Linux. If you customize your XDG_DIRS,

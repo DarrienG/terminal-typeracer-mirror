@@ -25,6 +25,9 @@ Binaries are statically linked and available for a few platforms (currently
 x86_64 Linux and macOS). To use them, download and execute like any regular
 binary.
 
+Windows is not supported if you are not running Windows Subsystem for Linux. If
+you would like to run on Windows, install WSL and use the Linux binaries.
+
 [Releases here](https://gitlab.com/DarrienG/terminal-typeracer/tags)
 
 ## Running
