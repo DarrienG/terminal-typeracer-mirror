@@ -277,11 +277,9 @@ impl<'a> Controller<'a> {
         let mut num_files: usize = 0;
 
         for dir in quote_dirs {
-            let quotes_in_dir = self.get_files_from_dir(dir);
+            let mut quotes_in_dir = self.get_files_from_dir(dir);
             num_files = quotes_in_dir.len();
-            for quote in quotes_in_dir {
-                quotes.push(quote);
-            }
+            quotes.append(&mut quotes_in_dir);
         }
 
         if num_files > 0 {
