@@ -24,7 +24,7 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
     let mut top_text: Vec<Text> = vec![];
     for (type_text, delay) in izip!(TYPERACER_MAGIC.iter(), TYPING_DELAY.iter()) {
         top_text.push(Text::styled(
-            type_text.to_string(),
+            (**type_text).to_string(),
             Style::default().fg(Color::Green),
         ));
         render(
