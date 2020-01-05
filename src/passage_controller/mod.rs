@@ -278,7 +278,7 @@ impl<'a> Controller<'a> {
 
         for dir in quote_dirs {
             let mut quotes_in_dir = self.get_files_from_dir(dir);
-            num_files = quotes_in_dir.len();
+            num_files += quotes_in_dir.len();
             quotes.append(&mut quotes_in_dir);
         }
 
