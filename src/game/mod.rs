@@ -153,7 +153,7 @@ fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input: &s
         letter_on += 1;
     }
 
-    return starting_idx + letter_on;
+    starting_idx + letter_on
 }
 
 fn get_formatted_texts_line_mode<'a>(

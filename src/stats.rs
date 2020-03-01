@@ -118,7 +118,7 @@ impl Stats {
             }
         }
 
-        return ((letter_count - mistakes) as f64 / letter_count as f64) * 100.0;
+        ((letter_count - mistakes) as f64 / letter_count as f64) * 100.0
     }
 
     fn update_accuracy(&mut self, error: bool, current_letter: usize) {
