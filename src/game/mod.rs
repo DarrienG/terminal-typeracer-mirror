@@ -141,7 +141,7 @@ fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input: &s
 
     let mut letter_on = 0;
 
-    if user_input.len() == 0 {
+    if user_input.is_empty() {
         return starting_idx;
     }
 
