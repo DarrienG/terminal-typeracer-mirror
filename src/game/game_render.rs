@@ -6,7 +6,7 @@ use tui::terminal::Terminal;
 use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text, Widget};
 
 use crate::config::TyperacerConfig;
-use crate::game::FormattedTexts;
+use crate::game::formatter::FormattedTexts;
 use crate::stats;
 
 mod styles;
