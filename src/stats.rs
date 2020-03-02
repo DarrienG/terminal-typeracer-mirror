@@ -155,7 +155,7 @@ impl Stats {
             vec!["Combo".to_string(), self.combo.to_string()],
             vec![
                 "Acc".to_string(),
-                format!("{}%", self.get_typing_accuracy().to_string()),
+                format!("{:.4}%", self.get_typing_accuracy().to_string()),
             ],
         ]
     }
