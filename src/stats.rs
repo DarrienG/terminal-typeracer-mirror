@@ -238,4 +238,55 @@ mod tests {
         let text = stats.text();
         assert_eq!(text[0][0], "WPM");
     }
+
+    #[test]
+    fn test_properly_typed_vec_correct() {
+        // does it give good values on increment_combo?
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![true, true, true, true, true];
+
+        stats.increment_combo(0);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+        stats.increment_combo(3);
+        stats.increment_combo(4);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 100.0);
+    }
+
+    #[test]
+    fn test_properly_typed_incorrect() {
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![false, false, false, false, false];
+
+        stats.increment_errors(0);
+        stats.increment_errors(1);
+        stats.increment_errors(2);
+        stats.increment_errors(3);
+        stats.increment_errors(4);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 0.0);
+    }
+
+    #[test]
+    fn test_no_overwrite_incorrect() {
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![false, false, false];
+
+        stats.increment_errors(0);
+        stats.increment_errors(1);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+        stats.increment_errors(2);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 0.0);
+    }
 }
