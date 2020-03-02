@@ -46,6 +46,7 @@ pub struct Stats {
     legacy_wpm: bool,
     start_time: u64,
     time: Time,
+    properly_typed: Vec<bool>,
     pub combo: usize,
 }
 
@@ -58,6 +59,7 @@ impl Stats {
             legacy_wpm,
             start_time: 0,
             time: Time::new(),
+            properly_typed: Vec::new(),
             combo: 0,
         }
     }
@@ -91,13 +93,45 @@ impl Stats {
     }
 
     /// Increment the number of errors by 1
-    pub fn increment_errors(&mut self) {
+    pub fn increment_errors(&mut self, current_letter: usize) {
         self.errors += 1;
         self.reset_combo();
+        self.update_accuracy(false, current_letter);
     }
 
-    pub fn increment_combo(&mut self) {
+    pub fn increment_combo(&mut self, current_letter: usize) {
         self.combo += 1;
+        self.update_accuracy(true, current_letter);
+    }
+
+    pub fn get_typing_accuracy(&self) -> f64 {
+        let letter_count = self.properly_typed.len();
+        let mut mistakes = 0;
+
+        if letter_count == 0 {
+            return 0.0;
+        }
+
+        for typed_correctly in self.properly_typed.iter() {
+            if !typed_correctly {
+                mistakes += 1;
+            }
+        }
+
+        ((letter_count - mistakes) as f64 / letter_count as f64) * 100.0
+    }
+
+    fn update_accuracy(&mut self, error: bool, current_letter: usize) {
+        if self.properly_typed.len() <= current_letter {
+            self.properly_typed.push(error);
+        } else {
+            // If the user has made a mistake, it is forever, otherwise we are
+            // allowed to update.
+            // If we didn't, then accuracy would always be 100% at the end!
+            if self.properly_typed[current_letter] {
+                self.properly_typed[current_letter] = error;
+            }
+        }
     }
 
     fn reset_combo(&mut self) {
@@ -110,6 +144,7 @@ impl Stats {
         self.errors = 0;
         self.start_time = 0;
         self.combo = 0;
+        self.properly_typed = Vec::new();
     }
 
     /// Create the vector of text elements
@@ -118,6 +153,10 @@ impl Stats {
             vec!["WPM".to_string(), self.wpm.to_string()],
             vec!["Errors".to_string(), self.errors.to_string()],
             vec!["Combo".to_string(), self.combo.to_string()],
+            vec![
+                "Acc".to_string(),
+                format!("{:.4}%", self.get_typing_accuracy().to_string()),
+            ],
         ]
     }
 
@@ -187,7 +226,7 @@ mod tests {
     fn test_errors() {
         let mut stats = Stats::new(false);
         assert_eq!(stats.errors, 0);
-        stats.increment_errors();
+        stats.increment_errors(0);
         assert_eq!(stats.errors, 1);
     }
 
@@ -198,5 +237,56 @@ mod tests {
         let stats = Stats::new(false);
         let text = stats.text();
         assert_eq!(text[0][0], "WPM");
+    }
+
+    #[test]
+    fn test_properly_typed_vec_correct() {
+        // does it give good values on increment_combo?
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![true, true, true, true, true];
+
+        stats.increment_combo(0);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+        stats.increment_combo(3);
+        stats.increment_combo(4);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 100.0);
+    }
+
+    #[test]
+    fn test_properly_typed_incorrect() {
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![false, false, false, false, false];
+
+        stats.increment_errors(0);
+        stats.increment_errors(1);
+        stats.increment_errors(2);
+        stats.increment_errors(3);
+        stats.increment_errors(4);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 0.0);
+    }
+
+    #[test]
+    fn test_no_overwrite_incorrect() {
+        let mut stats = Stats::new(false);
+
+        let correct_vec = vec![false, false, false];
+
+        stats.increment_errors(0);
+        stats.increment_errors(1);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+        stats.increment_errors(2);
+        stats.increment_combo(1);
+        stats.increment_combo(2);
+
+        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(stats.get_typing_accuracy(), 0.0);
     }
 }

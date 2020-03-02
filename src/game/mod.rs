@@ -136,6 +136,26 @@ fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
     passage_starting_idx
 }
 
+fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input: &str) -> usize {
+    let starting_idx = get_starting_idx(words, current_word_idx);
+
+    let mut letter_on = 0;
+
+    if user_input.is_empty() {
+        return starting_idx;
+    }
+
+    let user_in_chars: Vec<char> = user_input.chars().collect();
+    for c in words[current_word_idx].chars() {
+        if letter_on == user_input.len() - 1 || user_in_chars[letter_on] != c {
+            break;
+        }
+        letter_on += 1;
+    }
+
+    starting_idx + letter_on
+}
+
 fn get_formatted_texts_line_mode<'a>(
     current_word: &str,
     user_input: &str,
@@ -272,6 +292,9 @@ pub fn play_game(
             break;
         }
 
+        // backspace and clearing the line are technically new chars, but shouldn't be
+        // added to the combo. This lets us keep track of when when the user actually types
+        // a new character (useful for combo).
         let mut new_char = false;
 
         let stdin = stdin();
@@ -325,14 +348,15 @@ pub fn play_game(
             )
         };
 
+        let current_letter_idx = get_trying_letter_idx(&words, current_word_idx, &user_input);
         if formatted_texts.error && new_char {
-            stats.increment_errors();
+            stats.increment_errors(current_letter_idx);
             if instant_death {
                 formatted_texts = get_reformatted_failed_texts(&words);
                 continue;
             }
         } else {
-            stats.increment_combo();
+            stats.increment_combo(current_letter_idx);
         }
 
         if current_word_idx + 1 == words.len() && check_word(words[current_word_idx], &user_input) {
