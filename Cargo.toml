@@ -35,20 +35,20 @@ overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal
-tui = "0.6.2"
+tui = "0.8.0"
 termion = "1.5"
-unicode-width = "0.1.5"
+unicode-width = "0.1.7"
 
 # For lang pack and config
 directories = "2.0.2"
-toml = "0.5.3"
+toml = "0.5.6"
 serde = { version = "1.0", features = ["derive"] }
 
 # For downloading lang pack
-git2 = "0.9"
+git2 = "0.12"
 
 # For picking random files
-rand = "0.6.5"
+rand = "0.7.3"
 
 # Command line optoins
 clap = "2.33.0"

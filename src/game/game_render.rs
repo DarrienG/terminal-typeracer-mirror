@@ -163,7 +163,10 @@ pub fn render<B: Backend>(
                     let value_column_width = 5;
                     Table::new(headers, rows)
                         .block(stats_block.clone().title("Stats"))
-                        .widths(&[stat_column_width, value_column_width])
+                        .widths(&[
+                            Constraint::Length(stat_column_width),
+                            Constraint::Length(value_column_width),
+                        ])
                         .column_spacing(1)
                         .render(&mut f, chunks[2]);
                 }
