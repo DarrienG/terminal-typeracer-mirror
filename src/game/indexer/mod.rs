@@ -72,6 +72,12 @@ mod tests {
 
         // Case sensitivity
         assert!(!check_like_word("darrien", "Darrien"));
+
+        // Non-matching non-latin/Multibyte characters
+        assert!(!check_like_word("你好", "好你"));
+
+        // Matching non-latin/Multibyte characters
+        assert!(check_like_word("你好", "你好"));
     }
 
     #[test]
