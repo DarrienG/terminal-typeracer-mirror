@@ -39,6 +39,9 @@ tui = "0.8.0"
 termion = "1.5"
 unicode-width = "0.1.7"
 
+# For splitting across words with full unicode compatibility
+unicode-segmentation = "1.6.0"
+
 # For lang pack and config
 directories = "2.0.2"
 toml = "0.5.6"
