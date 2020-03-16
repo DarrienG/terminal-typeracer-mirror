@@ -94,19 +94,8 @@ fn main() -> Result<(), Error> {
 
     // Get user input text and strip out characters that are difficult to type
     if args.is_present("READ_TEXT") {
-        let mut constructed_string = "".to_owned();
         let input = args.values_of("READ_TEXT").unwrap();
-
-        for word in input {
-            if word == " " || word == "\n" {
-                continue;
-            } else {
-                constructed_string.push_str(word.trim());
-                constructed_string.push_str(" ");
-            }
-        }
-        passage_controller
-            .write_initial_passage(&constructed_string[0..constructed_string.chars().count() - 1]);
+        passage_controller.write_initial_passage(&input.collect::<Vec<&str>>().join(" "));
     }
 
     let debug_enabled = args.is_present("DEBUG_MODE") || debug_enabled_default();

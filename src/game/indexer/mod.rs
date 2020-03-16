@@ -1,20 +1,21 @@
+use unicode_segmentation::UnicodeSegmentation;
+
 /// Determine if two words are the same.
 /// Check to see if the "input" is like the word. This is effectively
 /// word.contains(input) but only if the first input.len characters are
 /// the same. e.g. apple, ap => true, apple ppl => false
 pub fn check_like_word(word: &str, input: &str) -> bool {
-    if input.is_empty() {
+    let word_graphene = UnicodeSegmentation::graphemes(word, true).collect::<Vec<&str>>();
+    let input_graphene = UnicodeSegmentation::graphemes(input, true).collect::<Vec<&str>>();
+
+    if word_graphene.is_empty() {
         return true;
     }
-    if input.len() > word.len() {
+    if input_graphene.len() > word_graphene.len() {
         return false;
     }
 
-    check_word(&word[..input.len()], input)
-}
-
-fn check_word(word: &str, input: &str) -> bool {
-    *word == *input
+    word_graphene[..input_graphene.len()] == input_graphene[..]
 }
 
 /// Given a vector of word and the current index of the word the user is typing,
@@ -59,13 +60,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_check_word() {
-        assert!(check_word("darrien", "darrien"));
-        assert!(!check_word("Darrien", "darrien"));
-        assert!(!check_word("Darrien", "Glasser"));
-    }
-
-    #[test]
     fn test_check_like_word() {
         // Normal case
         assert!(check_like_word("darrien", "darr"));
@@ -78,6 +72,12 @@ mod tests {
 
         // Case sensitivity
         assert!(!check_like_word("darrien", "Darrien"));
+
+        // Non-matching non-latin/Multibyte characters
+        assert!(!check_like_word("你好", "好你"));
+
+        // Matching non-latin/Multibyte characters
+        assert!(check_like_word("你好", "你好"));
     }
 
     #[test]
