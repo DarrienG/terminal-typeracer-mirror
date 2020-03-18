@@ -5,7 +5,7 @@ pub fn to_words(passage: &str) -> Vec<&str> {
     // We're working with multi-width characters. The input is likely
     // a word per character rather than split on space.
     if is_wide_character(passage) {
-        return UnicodeSegmentation::graphemes(passage, true).collect::<Vec<&str>>();
+        UnicodeSegmentation::graphemes(passage, true).collect::<Vec<&str>>()
     } else {
         passage.split(' ').collect()
     }
