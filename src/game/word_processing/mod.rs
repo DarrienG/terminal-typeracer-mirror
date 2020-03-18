@@ -9,7 +9,7 @@ pub enum GameMode {
 }
 
 pub fn get_game_mode(raw_passage: &str) -> GameMode {
-    if split::is_wide_charater(raw_passage) {
+    if split::is_wide_character(raw_passage) {
         GameMode::NonLatin
     } else {
         GameMode::Latin
