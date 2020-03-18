@@ -17,8 +17,10 @@ use crate::stats;
 
 pub mod formatter;
 pub mod indexer;
+pub mod split;
 
 mod game_render;
+mod word_processing;
 
 /// Event loop: Displays the typing input and renders keypresses.
 /// This is the entrance to the main game.
@@ -53,7 +55,9 @@ pub fn play_game(
     let mut user_input = String::new();
 
     // Split the passage into vec of words to work on one at a time
-    let words: Vec<&str> = passage_info.passage.split(' ').collect();
+    let words: Vec<&str> = split::to_words(&passage_info.passage);
+    let game_mode = word_processing::get_game_mode(&passage_info.passage);
+
     let mut current_word_idx = 0;
 
     loop {
@@ -103,11 +107,18 @@ pub fn play_game(
                 new_char = true;
                 stats.update_start_time();
 
-                if c == ' ' && (words[current_word_idx] == user_input) {
+                if word_processing::word_completed(
+                    &game_mode,
+                    c,
+                    words[current_word_idx],
+                    &user_input,
+                ) {
                     if !typeracer_config.display_settings.always_full {
-                        formatted_texts.passage = formatted_texts.passage
-                            [words[current_word_idx].len() + 1..formatted_texts.passage.len()]
-                            .to_vec();
+                        formatted_texts.passage = word_processing::get_updated_texts(
+                            &game_mode,
+                            formatted_texts.passage,
+                            words[current_word_idx],
+                        );
                     }
                     current_word_idx += 1;
                     user_input.clear();
