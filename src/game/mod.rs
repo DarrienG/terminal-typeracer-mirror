@@ -18,9 +18,9 @@ use crate::stats;
 pub mod formatter;
 pub mod indexer;
 pub mod split;
+pub mod word_processing;
 
 mod game_render;
-mod word_processing;
 
 /// Event loop: Displays the typing input and renders keypresses.
 /// This is the entrance to the main game.
@@ -73,7 +73,8 @@ pub fn play_game(
                 debug_enabled,
                 word_idx: current_word_idx,
                 passage_path: &passage_info.passage_path,
-                current_word: if current_word_idx == words.len() {
+                complete: formatted_texts.complete,
+                current_word: if current_word_idx == words.len() || formatted_texts.complete {
                     "DONE"
                 } else {
                     words[current_word_idx]
@@ -140,7 +141,10 @@ pub fn play_game(
                 current_word_idx,
                 formatted_texts.passage,
             )
+        } else if current_word_idx >= words.len() {
+            formatted_texts
         } else {
+            // current_word_idx goes past
             formatter::get_formatted_texts_line_mode(
                 &words[current_word_idx],
                 &user_input.to_string(),
@@ -153,19 +157,19 @@ pub fn play_game(
         if formatted_texts.error && new_char {
             stats.increment_errors(current_letter_idx);
             if instant_death {
-                formatted_texts = formatter::get_reformatted_failed_texts(&words);
+                formatted_texts = formatter::get_reformatted_failed_texts(&game_mode, &words);
                 continue;
             }
         } else {
             stats.increment_combo(current_letter_idx);
         }
 
-        if current_word_idx + 1 == words.len() && (words[current_word_idx] == user_input) {
+        if word_processing::decide_game_end(&game_mode, current_word_idx, &words, &user_input) {
             // Check to see if the user is on the last word and it is correct.
             // If it is, we need to do a little extra work to set the passage back to the full
             // passage. If the user is running with display_settings.always_max=false then they
             // will only see the last word.
-            formatted_texts = formatter::get_reformatted_complete_texts(&words);
+            formatted_texts = formatter::get_reformatted_complete_texts(&game_mode, &words);
             current_word_idx += 1;
             stats.update_wpm(current_word_idx, &words);
             user_input.clear();
@@ -188,6 +192,7 @@ pub fn play_game(
                             instant_death,
                             config: &typeracer_config,
                             debug_enabled,
+                            complete: formatted_texts.complete,
                             word_idx: current_word_idx,
                             passage_path: &passage_info.passage_path,
                             current_word: if current_word_idx == words.len() {

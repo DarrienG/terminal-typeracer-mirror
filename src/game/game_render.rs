@@ -24,16 +24,18 @@ pub struct GameState<'a> {
     pub word_idx: usize,
     pub passage_path: &'a str,
     pub current_word: &'a str,
+    pub complete: bool,
 }
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {},  instant_death_enabled: {}\npassage_path: {}\ncurrent_word: {}",
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {},  instant_death_enabled: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
                 self.stats.get_legacy_wpm(),
                 self.word_idx,
                 self.stats.get_start_time(),
                 self.texts.error,
                 self.instant_death,
+                self.complete,
                 self.passage_path,
                 self.current_word,
             )

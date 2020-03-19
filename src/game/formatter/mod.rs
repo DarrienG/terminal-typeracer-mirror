@@ -2,6 +2,7 @@ use tui::style::{Color, Style};
 use tui::widgets::Text;
 
 use crate::game::indexer;
+use crate::game::word_processing::GameMode;
 
 #[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {
@@ -17,12 +18,18 @@ pub struct FormattedTexts<'a> {
 /// running with display_settings.always_max=false.
 /// If they are, they will only see the final word, but showing the whole
 /// passage to them now that it is complete is a much better user experience.
-pub fn get_reformatted_complete_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
-    get_fully_reformatted_texts(words, Color::Green, "COMPLETE", false)
+pub fn get_reformatted_complete_texts<'a>(
+    game_mode: &GameMode,
+    words: &[&str],
+) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(game_mode, words, Color::Green, "COMPLETE", false)
 }
 
-pub fn get_reformatted_failed_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
-    get_fully_reformatted_texts(words, Color::Red, "FAIL", true)
+pub fn get_reformatted_failed_texts<'a>(
+    game_mode: &GameMode,
+    words: &[&str],
+) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(game_mode, words, Color::Red, "FAIL", true)
 }
 
 /// Get fully formatted versions of the passage, and the user's input.
@@ -140,6 +147,7 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
 }
 
 fn get_fully_reformatted_texts<'a>(
+    game_mode: &GameMode,
     words: &[&str],
     color: Color,
     end_string: &'a str,
@@ -147,7 +155,12 @@ fn get_fully_reformatted_texts<'a>(
 ) -> FormattedTexts<'a> {
     let reformatted_complete_texts = (*words)
         .iter()
-        .map(|word| Text::styled(format!("{} ", word), Style::default().fg(color)))
+        .map(|word| {
+            Text::styled(
+                format!("{}{}", word, maybe_add_space(game_mode)),
+                Style::default().fg(color),
+            )
+        })
         .collect();
     FormattedTexts {
         passage: reformatted_complete_texts,
@@ -157,6 +170,14 @@ fn get_fully_reformatted_texts<'a>(
         )],
         error: err,
         complete: true,
+    }
+}
+
+fn maybe_add_space(game_mode: &GameMode) -> &str {
+    if *game_mode == GameMode::Latin {
+        " "
+    } else {
+        ""
     }
 }
 
