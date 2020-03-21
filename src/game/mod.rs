@@ -91,6 +91,10 @@ pub fn play_game(
         // a new character (useful for combo).
         let mut new_char = false;
 
+        // Last input char, required for determining if non-latin input is
+        // set up properly for formatting.
+        let mut last_input_char = ' ';
+
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
 
@@ -107,11 +111,12 @@ pub fn play_game(
             }
             Key::Char(c) => {
                 new_char = true;
+                last_input_char = c;
                 stats.update_start_time();
 
                 if word_processing::word_completed(
                     &game_mode,
-                    c,
+                    last_input_char,
                     words[current_word_idx],
                     &user_input,
                 ) {
@@ -143,6 +148,8 @@ pub fn play_game(
                 &words,
                 &user_input.to_string(),
                 current_word_idx,
+                last_input_char,
+                new_char,
                 formatted_texts.passage,
             )
         } else {
@@ -150,6 +157,8 @@ pub fn play_game(
                 &game_mode,
                 &words[current_word_idx],
                 &user_input.to_string(),
+                last_input_char,
+                new_char,
                 formatted_texts.passage,
             )
         };

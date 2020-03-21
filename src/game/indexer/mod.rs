@@ -65,9 +65,10 @@ pub fn get_trying_letter_idx(
 pub fn get_maybe_decremented_idx(
     game_mode: &GameMode,
     user_has_error: bool,
+    new_char: bool,
     current_word_idx: usize,
 ) -> usize {
-    if *game_mode == GameMode::NonLatin && !user_has_error && current_word_idx > 0 {
+    if *game_mode == GameMode::NonLatin && !user_has_error && current_word_idx > 0 && new_char {
         current_word_idx - 1
     } else {
         current_word_idx
