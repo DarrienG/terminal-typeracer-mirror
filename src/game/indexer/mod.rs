@@ -1,5 +1,7 @@
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::game::word_processing::GameMode;
+
 /// Determine if two words are the same.
 /// Check to see if the "input" is like the word. This is effectively
 /// word.contains(input) but only if the first input.len characters are
@@ -26,17 +28,22 @@ pub fn check_like_word(word: &str, input: &str) -> bool {
 /// In this case, we would get 8 back.
 /// "this is a vector"
 /// ---------^
-pub fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
+pub fn get_starting_idx(game_mode: &GameMode, words: &[&str], current_word_idx: usize) -> usize {
     let mut passage_starting_idx: usize = 0;
     for word in words.iter().take(current_word_idx) {
-        passage_starting_idx += word.chars().count() + 1
+        passage_starting_idx += word.chars().count() + maybe_account_for_space(game_mode);
     }
     passage_starting_idx
 }
 
 /// Get the index of the letter as if words were a full string. Spaces counted.
-pub fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input: &str) -> usize {
-    let starting_idx = get_starting_idx(words, current_word_idx);
+pub fn get_trying_letter_idx(
+    game_mode: &GameMode,
+    words: &[&str],
+    current_word_idx: usize,
+    user_input: &str,
+) -> usize {
+    let starting_idx = get_starting_idx(game_mode, words, current_word_idx);
 
     let mut letter_on = 0;
 
@@ -53,6 +60,14 @@ pub fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input
     }
 
     starting_idx + letter_on
+}
+
+fn maybe_account_for_space(game_mode: &GameMode) -> usize {
+    if *game_mode == GameMode::Latin {
+        1
+    } else {
+        0
+    }
 }
 
 #[cfg(test)]
@@ -83,9 +98,9 @@ mod tests {
     #[test]
     fn test_get_starting_idx() {
         let words = vec!["this", "is", "a", "vector"];
-        assert!(get_starting_idx(&words, 2) == 8);
-        assert!(get_starting_idx(&words, 0) == 0);
-        assert!(get_starting_idx(&words, 1) == 5);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 2) == 8);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 0) == 0);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 1) == 5);
     }
 
     #[test]
@@ -95,7 +110,7 @@ mod tests {
         let user_input = "qui";
 
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             6
         );
     }
@@ -108,7 +123,7 @@ mod tests {
 
         // Should be trying (and failing) the next letter
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             7
         );
     }
@@ -122,7 +137,7 @@ mod tests {
         // Should not advance to the next character even though it's correct
         // because the previous is incorrect.
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             7
         );
     }

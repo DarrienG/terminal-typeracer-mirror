@@ -34,6 +34,7 @@ pub fn get_reformatted_failed_texts<'a>(
 
 /// Get fully formatted versions of the passage, and the user's input.
 pub fn get_formatted_texts<'a>(
+    game_mode: &GameMode,
     words: &[&str],
     user_input: &str,
     current_word_idx: usize,
@@ -42,7 +43,7 @@ pub fn get_formatted_texts<'a>(
     let (formatted_passage_word, formatted_input) =
         get_formatted_words(words[current_word_idx], user_input);
 
-    let starting_idx = indexer::get_starting_idx(words, current_word_idx);
+    let starting_idx = indexer::get_starting_idx(game_mode, words, current_word_idx);
 
     formatted_passage[starting_idx..(formatted_passage_word.len() + starting_idx)]
         .clone_from_slice(&formatted_passage_word[..]);
@@ -295,6 +296,7 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts(
+            &GameMode::Latin,
             &words,
             user_input,
             current_word_idx,

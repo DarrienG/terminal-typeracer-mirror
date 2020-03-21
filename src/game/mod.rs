@@ -134,15 +134,16 @@ pub fn play_game(
             _ => {}
         }
 
-        formatted_texts = if typeracer_config.display_settings.always_full {
+        formatted_texts = if current_word_idx >= words.len() {
+            formatted_texts
+        } else if typeracer_config.display_settings.always_full {
             formatter::get_formatted_texts(
+                &game_mode,
                 &words,
                 &user_input.to_string(),
                 current_word_idx,
                 formatted_texts.passage,
             )
-        } else if current_word_idx >= words.len() {
-            formatted_texts
         } else {
             formatter::get_formatted_texts_line_mode(
                 &words[current_word_idx],
@@ -152,7 +153,7 @@ pub fn play_game(
         };
 
         let current_letter_idx =
-            indexer::get_trying_letter_idx(&words, current_word_idx, &user_input);
+            indexer::get_trying_letter_idx(&game_mode, &words, current_word_idx, &user_input);
         if formatted_texts.error && new_char {
             stats.increment_errors(current_letter_idx);
             if instant_death {
