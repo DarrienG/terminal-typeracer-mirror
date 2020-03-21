@@ -144,7 +144,6 @@ pub fn play_game(
         } else if current_word_idx >= words.len() {
             formatted_texts
         } else {
-            // current_word_idx goes past
             formatter::get_formatted_texts_line_mode(
                 &words[current_word_idx],
                 &user_input.to_string(),

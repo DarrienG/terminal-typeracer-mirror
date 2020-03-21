@@ -29,7 +29,7 @@ pub struct GameState<'a> {
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {},  instant_death_enabled: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}, instant_death_enabled: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
                 self.stats.get_legacy_wpm(),
                 self.word_idx,
                 self.stats.get_start_time(),
