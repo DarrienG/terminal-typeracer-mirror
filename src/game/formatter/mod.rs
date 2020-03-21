@@ -40,8 +40,12 @@ pub fn get_formatted_texts<'a>(
     current_word_idx: usize,
     mut formatted_passage: Vec<Text<'a>>,
 ) -> FormattedTexts<'a> {
+    let user_has_err = !indexer::check_like_word(words[current_word_idx], user_input);
+    let current_word_idx =
+        indexer::get_maybe_decremented_idx(game_mode, user_has_err, current_word_idx);
+
     let (formatted_passage_word, formatted_input) =
-        get_formatted_words(words[current_word_idx], user_input);
+        get_formatted_words(game_mode, words[current_word_idx], user_input);
 
     let starting_idx = indexer::get_starting_idx(game_mode, words, current_word_idx);
 
@@ -51,18 +55,20 @@ pub fn get_formatted_texts<'a>(
     FormattedTexts {
         passage: formatted_passage,
         input: formatted_input,
-        error: !indexer::check_like_word(words[current_word_idx], user_input),
+        error: user_has_err,
         complete: false,
     }
 }
 
 /// Get formatted texts with the assumption the word we are typing is the first word.
 pub fn get_formatted_texts_line_mode<'a>(
+    game_mode: &GameMode,
     current_word: &str,
     user_input: &str,
     mut formatted_passage: Vec<Text<'a>>,
 ) -> FormattedTexts<'a> {
-    let (formatted_passage_word, formatted_input) = get_formatted_words(current_word, user_input);
+    let (formatted_passage_word, formatted_input) =
+        get_formatted_words(game_mode, current_word, user_input);
     formatted_passage[0..(formatted_passage_word.len())]
         .clone_from_slice(&formatted_passage_word[..]);
 
@@ -83,7 +89,11 @@ pub fn get_formatted_texts_line_mode<'a>(
 /// - The entirety of the user's input is colored red.
 ///
 /// Returns a tuple with the formatted version of the: word and the input.
-fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
+fn get_formatted_words<'a>(
+    game_mode: &GameMode,
+    word: &str,
+    input: &str,
+) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
     let idx_word_count = indexable_word.len();
@@ -112,8 +122,10 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
 
     formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
 
-    while word_dex < idx_word_count && word_dex < idx_input_count {
-        if indexable_word[word_dex] != indexable_input[word_dex] {
+    while word_dex < idx_word_count
+        && (word_dex < idx_input_count || *game_mode == GameMode::NonLatin)
+    {
+        if decide_break(game_mode, &indexable_word, &indexable_input, word_dex) {
             break;
         }
 
@@ -146,6 +158,27 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
     }
 
     (formatted_word, formatted_input)
+}
+
+fn decide_break(
+    game_mode: &GameMode,
+    indexable_word: &[char],
+    indexable_input: &[char],
+    word_dex: usize,
+) -> bool {
+    if *game_mode == GameMode::Latin {
+        decide_break_latin(indexable_word, indexable_input, word_dex)
+    } else {
+        decide_break_nonlatin(indexable_input)
+    }
+}
+
+fn decide_break_latin(indexable_word: &[char], indexable_input: &[char], word_dex: usize) -> bool {
+    indexable_word[word_dex] != indexable_input[word_dex]
+}
+
+fn decide_break_nonlatin(indexable_input: &[char]) -> bool {
+    !indexable_input.is_empty()
 }
 
 fn get_fully_reformatted_texts<'a>(
@@ -190,7 +223,8 @@ mod tests {
     fn test_get_formatted_words_correct() {
         // Test all letters are correct condition
         let test_word = "terminal-typeracer";
-        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_word);
+        let (formatted_word, formatted_input) =
+            get_formatted_words(&GameMode::Latin, test_word, test_word);
         let properly_formatted_word: Vec<Text> = test_word
             .chars()
             .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
@@ -237,7 +271,8 @@ mod tests {
             .collect();
         properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
 
-        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_input);
+        let (formatted_word, formatted_input) =
+            get_formatted_words(&GameMode::Latin, test_word, test_input);
 
         assert!(properly_formatted_word == formatted_word);
         assert!(properly_formatted_input == formatted_input);
@@ -340,6 +375,7 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::Latin,
             &words[current_word_idx],
             user_input,
             input_formatted_passage,

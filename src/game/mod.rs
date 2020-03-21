@@ -93,6 +93,7 @@ pub fn play_game(
 
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
+
         match c.unwrap() {
             Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
             Key::Ctrl('c') => return Action::Quit,
@@ -146,6 +147,7 @@ pub fn play_game(
             )
         } else {
             formatter::get_formatted_texts_line_mode(
+                &game_mode,
                 &words[current_word_idx],
                 &user_input.to_string(),
                 formatted_texts.passage,

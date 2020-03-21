@@ -62,6 +62,18 @@ pub fn get_trying_letter_idx(
     starting_idx + letter_on
 }
 
+pub fn get_maybe_decremented_idx(
+    game_mode: &GameMode,
+    user_has_error: bool,
+    current_word_idx: usize,
+) -> usize {
+    if *game_mode == GameMode::NonLatin && !user_has_error && current_word_idx > 0 {
+        current_word_idx - 1
+    } else {
+        current_word_idx
+    }
+}
+
 fn maybe_account_for_space(game_mode: &GameMode) -> usize {
     if *game_mode == GameMode::Latin {
         1
