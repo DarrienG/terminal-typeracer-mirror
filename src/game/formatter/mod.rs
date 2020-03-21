@@ -55,6 +55,7 @@ pub fn get_formatted_texts<'a>(
     }
 }
 
+/// Get formatted texts with the assumption the word we are typing is the first word.
 pub fn get_formatted_texts_line_mode<'a>(
     current_word: &str,
     user_input: &str,
