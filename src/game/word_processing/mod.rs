@@ -260,15 +260,84 @@ mod tests {
 
     #[test]
     fn nonlatin_word_completed() {
-        let mut c = ' ';
-        let mut user_input = "fox";
-        let current_word = "fox";
+        let mut c = '好';
+        let mut user_input = "";
+        let current_word = "好";
 
         assert!(word_completed(
-            &GameMode::Latin,
+            &GameMode::NonLatin,
             c,
             &current_word,
             &user_input
         ));
+
+        user_input = "你";
+        assert!(!word_completed(
+            &GameMode::NonLatin,
+            c,
+            &current_word,
+            &user_input
+        ));
+
+        c = '你';
+        user_input = "";
+        assert!(!word_completed(
+            &GameMode::NonLatin,
+            c,
+            &current_word,
+            &user_input
+        ));
+    }
+
+    #[test]
+    fn get_updated_texts_latin() {
+        let formatted_passage: Vec<Text> = vec![
+            Text::raw("b"),
+            Text::raw("r"),
+            Text::raw("o"),
+            Text::raw("w"),
+            Text::raw("n"),
+            Text::raw(" "),
+            Text::raw("f"),
+            Text::raw("o"),
+            Text::raw("x"),
+        ];
+        let current_word = "brown";
+
+        let expected_formatted_passage: Vec<Text> =
+            vec![Text::raw("f"), Text::raw("o"), Text::raw("x")];
+
+        assert!(
+            get_updated_texts(&GameMode::Latin, formatted_passage, &current_word)
+                == expected_formatted_passage
+        );
+    }
+
+    #[test]
+    fn get_updated_texts_nonlatin() {
+        let formatted_passage: Vec<Text> = vec![
+            Text::raw("亂"),
+            Text::raw("數"),
+            Text::raw("假"),
+            Text::raw("文"),
+            Text::raw("產"),
+            Text::raw("生"),
+            Text::raw("器"),
+        ];
+        let current_word = "亂";
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::raw("數"),
+            Text::raw("假"),
+            Text::raw("文"),
+            Text::raw("產"),
+            Text::raw("生"),
+            Text::raw("器"),
+        ];
+
+        assert!(
+            get_updated_texts(&GameMode::NonLatin, formatted_passage, &current_word)
+                == expected_formatted_passage
+        );
     }
 }
