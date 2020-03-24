@@ -265,8 +265,8 @@ mod tests {
             .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
             .collect();
         properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
-        assert!(formatted_word == properly_formatted_word);
-        assert!(formatted_input == properly_formatted_input);
+        assert_eq!(formatted_word, properly_formatted_word);
+        assert_eq!(formatted_input, properly_formatted_input);
     }
 
     #[test]
@@ -305,8 +305,8 @@ mod tests {
         let (formatted_word, formatted_input) =
             get_formatted_words(&GameMode::Latin, test_word, test_input, 'e', true);
 
-        assert!(properly_formatted_word == formatted_word);
-        assert!(properly_formatted_input == formatted_input);
+        assert_eq!(properly_formatted_word, formatted_word);
+        assert_eq!(properly_formatted_input, formatted_input);
     }
 
     #[test]
@@ -371,7 +371,7 @@ mod tests {
             input_formatted_passage,
         );
 
-        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
         assert!(!formatted_texts.error);
     }
 
@@ -416,7 +416,63 @@ mod tests {
             input_formatted_passage,
         );
 
-        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
+
+    #[test]
+    fn test_get_formatted_nonlatin_line_mode() {
+        let words = vec!["你", "好", "你", "好"];
+        let user_input = "";
+        let current_word_idx = 1;
+
+        let input_formatted_passage: Vec<Text> =
+            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("你"),
+            Text::raw("好"),
+        ];
+
+        let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::NonLatin,
+            &words[current_word_idx],
+            user_input,
+            '你',
+            true,
+            input_formatted_passage,
+        );
+
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
+
+    #[test]
+    fn get_formatted_texts_nonlatin() {
+        let words = vec!["你", "好", "你", "好"];
+        let user_input = "";
+        let current_word_idx = 1;
+
+        let input_formatted_passage: Vec<Text> =
+            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("你"),
+            Text::raw("好"),
+        ];
+
+        let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::NonLatin,
+            &words[current_word_idx],
+            user_input,
+            '你',
+            true,
+            input_formatted_passage,
+        );
+
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
         assert!(!formatted_texts.error);
     }
 }
