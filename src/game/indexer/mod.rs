@@ -109,11 +109,20 @@ mod tests {
     }
 
     #[test]
-    fn test_get_starting_idx() {
+    fn test_get_starting_idx_latin() {
         let words = vec!["this", "is", "a", "vector"];
         assert!(get_starting_idx(&GameMode::Latin, &words, 2) == 8);
         assert!(get_starting_idx(&GameMode::Latin, &words, 0) == 0);
         assert!(get_starting_idx(&GameMode::Latin, &words, 1) == 5);
+    }
+
+    #[test]
+    fn get_starting_idx_nonlatin() {
+        let words = vec!["你", "好", "你", "好", "你", "好"];
+
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 2) == 2);
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 0) == 0);
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 5) == 5);
     }
 
     #[test]
@@ -153,5 +162,29 @@ mod tests {
             get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             7
         );
+    }
+
+    #[test]
+    fn ensure_empty_input_is_valid() {
+        let word = "quick";
+        let user_input = "";
+
+        assert!(check_like_word(word, user_input));
+    }
+
+    #[test]
+    fn test_like_nonlatin() {
+        let word = "你";
+        let user_input = "你";
+
+        assert!(check_like_word(word, user_input));
+    }
+
+    #[test]
+    fn test_unlike_nonlatin() {
+        let word = "你";
+        let user_input = "好";
+
+        assert!(!check_like_word(word, user_input));
     }
 }
