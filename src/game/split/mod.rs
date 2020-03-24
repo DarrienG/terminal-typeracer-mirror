@@ -19,3 +19,24 @@ pub fn is_wide_character(passage: &str) -> bool {
         .width()
         == 2
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_to_words_latin() {
+        let passage = "the quick brown fox";
+        let expected = ["the", "quick", "brown", "fox"];
+
+        assert_eq!(to_words(passage), expected);
+    }
+
+    #[test]
+    fn test_to_words_nonlatin() {
+        let passage = "你好你好你好";
+        let expected = ["你", "好", "你", "好", "你", "好"];
+
+        assert_eq!(to_words(passage), expected);
+    }
+}
