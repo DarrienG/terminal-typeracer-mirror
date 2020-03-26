@@ -2,6 +2,7 @@ use tui::style::{Color, Style};
 use tui::widgets::Text;
 
 use crate::game::indexer;
+use crate::game::word_processing::GameMode;
 
 #[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {
@@ -17,25 +18,43 @@ pub struct FormattedTexts<'a> {
 /// running with display_settings.always_max=false.
 /// If they are, they will only see the final word, but showing the whole
 /// passage to them now that it is complete is a much better user experience.
-pub fn get_reformatted_complete_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
-    get_fully_reformatted_texts(words, Color::Green, "COMPLETE", false)
+pub fn get_reformatted_complete_texts<'a>(
+    game_mode: &GameMode,
+    words: &[&str],
+) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(game_mode, words, Color::Green, "COMPLETE", false)
 }
 
-pub fn get_reformatted_failed_texts<'a>(words: &[&str]) -> FormattedTexts<'a> {
-    get_fully_reformatted_texts(words, Color::Red, "FAIL", true)
+pub fn get_reformatted_failed_texts<'a>(
+    game_mode: &GameMode,
+    words: &[&str],
+) -> FormattedTexts<'a> {
+    get_fully_reformatted_texts(game_mode, words, Color::Red, "FAIL", true)
 }
 
 /// Get fully formatted versions of the passage, and the user's input.
 pub fn get_formatted_texts<'a>(
+    game_mode: &GameMode,
     words: &[&str],
     user_input: &str,
     current_word_idx: usize,
+    last_input_char: char,
+    new_char: bool,
     mut formatted_passage: Vec<Text<'a>>,
 ) -> FormattedTexts<'a> {
-    let (formatted_passage_word, formatted_input) =
-        get_formatted_words(words[current_word_idx], user_input);
+    let user_has_err = !indexer::check_like_word(words[current_word_idx], user_input);
+    let current_word_idx =
+        indexer::get_maybe_decremented_idx(game_mode, user_has_err, new_char, current_word_idx);
 
-    let starting_idx = indexer::get_starting_idx(words, current_word_idx);
+    let (formatted_passage_word, formatted_input) = get_formatted_words(
+        game_mode,
+        words[current_word_idx],
+        user_input,
+        last_input_char,
+        new_char,
+    );
+
+    let starting_idx = indexer::get_starting_idx(game_mode, words, current_word_idx);
 
     formatted_passage[starting_idx..(formatted_passage_word.len() + starting_idx)]
         .clone_from_slice(&formatted_passage_word[..]);
@@ -43,17 +62,27 @@ pub fn get_formatted_texts<'a>(
     FormattedTexts {
         passage: formatted_passage,
         input: formatted_input,
-        error: !indexer::check_like_word(words[current_word_idx], user_input),
+        error: user_has_err,
         complete: false,
     }
 }
 
+/// Get formatted texts with the assumption the word we are typing is the first word.
 pub fn get_formatted_texts_line_mode<'a>(
+    game_mode: &GameMode,
     current_word: &str,
     user_input: &str,
+    last_input_char: char,
+    new_char: bool,
     mut formatted_passage: Vec<Text<'a>>,
 ) -> FormattedTexts<'a> {
-    let (formatted_passage_word, formatted_input) = get_formatted_words(current_word, user_input);
+    let (formatted_passage_word, formatted_input) = get_formatted_words(
+        game_mode,
+        current_word,
+        user_input,
+        last_input_char,
+        new_char,
+    );
     formatted_passage[0..(formatted_passage_word.len())]
         .clone_from_slice(&formatted_passage_word[..]);
 
@@ -74,7 +103,13 @@ pub fn get_formatted_texts_line_mode<'a>(
 /// - The entirety of the user's input is colored red.
 ///
 /// Returns a tuple with the formatted version of the: word and the input.
-fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
+fn get_formatted_words<'a>(
+    game_mode: &GameMode,
+    word: &str,
+    input: &str,
+    last_input_char: char,
+    new_char: bool,
+) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
     let idx_word_count = indexable_word.len();
@@ -103,8 +138,18 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
 
     formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
 
-    while word_dex < idx_word_count && word_dex < idx_input_count {
-        if indexable_word[word_dex] != indexable_input[word_dex] {
+    while word_dex < idx_word_count
+        && (word_dex < idx_input_count || *game_mode == GameMode::NonLatin)
+    {
+        // see if c is the same and new_char == true also
+        if decide_break(
+            game_mode,
+            &indexable_word,
+            &indexable_input,
+            word_dex,
+            last_input_char,
+            new_char,
+        ) {
             break;
         }
 
@@ -139,7 +184,36 @@ fn get_formatted_words<'a>(word: &str, input: &str) -> (Vec<Text<'a>>, Vec<Text<
     (formatted_word, formatted_input)
 }
 
+fn decide_break(
+    game_mode: &GameMode,
+    indexable_word: &[char],
+    indexable_input: &[char],
+    word_dex: usize,
+    last_input_char: char,
+    new_char: bool,
+) -> bool {
+    if *game_mode == GameMode::Latin {
+        decide_break_latin(indexable_word, indexable_input, word_dex)
+    } else {
+        decide_break_nonlatin(indexable_word, indexable_input, last_input_char, new_char)
+    }
+}
+
+fn decide_break_latin(indexable_word: &[char], indexable_input: &[char], word_dex: usize) -> bool {
+    indexable_word[word_dex] != indexable_input[word_dex]
+}
+
+fn decide_break_nonlatin(
+    indexable_word: &[char],
+    indexable_input: &[char],
+    last_input_char: char,
+    new_char: bool,
+) -> bool {
+    !indexable_input.is_empty() || !new_char || vec![last_input_char] != indexable_word
+}
+
 fn get_fully_reformatted_texts<'a>(
+    game_mode: &GameMode,
     words: &[&str],
     color: Color,
     end_string: &'a str,
@@ -147,7 +221,12 @@ fn get_fully_reformatted_texts<'a>(
 ) -> FormattedTexts<'a> {
     let reformatted_complete_texts = (*words)
         .iter()
-        .map(|word| Text::styled(format!("{} ", word), Style::default().fg(color)))
+        .map(|word| {
+            Text::styled(
+                format!("{}{}", word, maybe_add_space(game_mode)),
+                Style::default().fg(color),
+            )
+        })
         .collect();
     FormattedTexts {
         passage: reformatted_complete_texts,
@@ -160,6 +239,14 @@ fn get_fully_reformatted_texts<'a>(
     }
 }
 
+fn maybe_add_space(game_mode: &GameMode) -> &str {
+    if *game_mode == GameMode::Latin {
+        " "
+    } else {
+        ""
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -167,7 +254,8 @@ mod tests {
     fn test_get_formatted_words_correct() {
         // Test all letters are correct condition
         let test_word = "terminal-typeracer";
-        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_word);
+        let (formatted_word, formatted_input) =
+            get_formatted_words(&GameMode::Latin, test_word, test_word, 'r', true);
         let properly_formatted_word: Vec<Text> = test_word
             .chars()
             .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
@@ -177,8 +265,8 @@ mod tests {
             .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
             .collect();
         properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
-        assert!(formatted_word == properly_formatted_word);
-        assert!(formatted_input == properly_formatted_input);
+        assert_eq!(formatted_word, properly_formatted_word);
+        assert_eq!(formatted_input, properly_formatted_input);
     }
 
     #[test]
@@ -214,10 +302,11 @@ mod tests {
             .collect();
         properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
 
-        let (formatted_word, formatted_input) = get_formatted_words(test_word, test_input);
+        let (formatted_word, formatted_input) =
+            get_formatted_words(&GameMode::Latin, test_word, test_input, 'e', true);
 
-        assert!(properly_formatted_word == formatted_word);
-        assert!(properly_formatted_input == formatted_input);
+        assert_eq!(properly_formatted_word, formatted_word);
+        assert_eq!(properly_formatted_input, formatted_input);
     }
 
     #[test]
@@ -273,13 +362,16 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts(
+            &GameMode::Latin,
             &words,
             user_input,
             current_word_idx,
+            'x',
+            true,
             input_formatted_passage,
         );
 
-        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
         assert!(!formatted_texts.error);
     }
 
@@ -316,12 +408,71 @@ mod tests {
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::Latin,
             &words[current_word_idx],
             user_input,
+            'x',
+            true,
             input_formatted_passage,
         );
 
-        assert!(expected_formatted_passage == formatted_texts.passage);
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
+
+    #[test]
+    fn test_get_formatted_nonlatin_line_mode() {
+        let words = vec!["你", "好", "你", "好"];
+        let user_input = "";
+        let current_word_idx = 1;
+
+        let input_formatted_passage: Vec<Text> =
+            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("你"),
+            Text::raw("好"),
+        ];
+
+        let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::NonLatin,
+            &words[current_word_idx],
+            user_input,
+            '你',
+            true,
+            input_formatted_passage,
+        );
+
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
+        assert!(!formatted_texts.error);
+    }
+
+    #[test]
+    fn get_formatted_texts_nonlatin() {
+        let words = vec!["你", "好", "你", "好"];
+        let user_input = "";
+        let current_word_idx = 1;
+
+        let input_formatted_passage: Vec<Text> =
+            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+
+        let expected_formatted_passage: Vec<Text> = vec![
+            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Text::raw("你"),
+            Text::raw("好"),
+        ];
+
+        let formatted_texts = get_formatted_texts_line_mode(
+            &GameMode::NonLatin,
+            &words[current_word_idx],
+            user_input,
+            '你',
+            true,
+            input_formatted_passage,
+        );
+
+        assert_eq!(expected_formatted_passage, formatted_texts.passage);
         assert!(!formatted_texts.error);
     }
 }

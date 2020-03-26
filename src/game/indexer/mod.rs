@@ -1,5 +1,7 @@
 use unicode_segmentation::UnicodeSegmentation;
 
+use crate::game::word_processing::GameMode;
+
 /// Determine if two words are the same.
 /// Check to see if the "input" is like the word. This is effectively
 /// word.contains(input) but only if the first input.len characters are
@@ -26,17 +28,22 @@ pub fn check_like_word(word: &str, input: &str) -> bool {
 /// In this case, we would get 8 back.
 /// "this is a vector"
 /// ---------^
-pub fn get_starting_idx(words: &[&str], current_word_idx: usize) -> usize {
+pub fn get_starting_idx(game_mode: &GameMode, words: &[&str], current_word_idx: usize) -> usize {
     let mut passage_starting_idx: usize = 0;
     for word in words.iter().take(current_word_idx) {
-        passage_starting_idx += word.chars().count() + 1
+        passage_starting_idx += word.chars().count() + maybe_account_for_space(game_mode);
     }
     passage_starting_idx
 }
 
 /// Get the index of the letter as if words were a full string. Spaces counted.
-pub fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input: &str) -> usize {
-    let starting_idx = get_starting_idx(words, current_word_idx);
+pub fn get_trying_letter_idx(
+    game_mode: &GameMode,
+    words: &[&str],
+    current_word_idx: usize,
+    user_input: &str,
+) -> usize {
+    let starting_idx = get_starting_idx(game_mode, words, current_word_idx);
 
     let mut letter_on = 0;
 
@@ -53,6 +60,27 @@ pub fn get_trying_letter_idx(words: &[&str], current_word_idx: usize, user_input
     }
 
     starting_idx + letter_on
+}
+
+pub fn get_maybe_decremented_idx(
+    game_mode: &GameMode,
+    user_has_error: bool,
+    new_char: bool,
+    current_word_idx: usize,
+) -> usize {
+    if *game_mode == GameMode::NonLatin && !user_has_error && current_word_idx > 0 && new_char {
+        current_word_idx - 1
+    } else {
+        current_word_idx
+    }
+}
+
+fn maybe_account_for_space(game_mode: &GameMode) -> usize {
+    if *game_mode == GameMode::Latin {
+        1
+    } else {
+        0
+    }
 }
 
 #[cfg(test)]
@@ -81,11 +109,20 @@ mod tests {
     }
 
     #[test]
-    fn test_get_starting_idx() {
+    fn test_get_starting_idx_latin() {
         let words = vec!["this", "is", "a", "vector"];
-        assert!(get_starting_idx(&words, 2) == 8);
-        assert!(get_starting_idx(&words, 0) == 0);
-        assert!(get_starting_idx(&words, 1) == 5);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 2) == 8);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 0) == 0);
+        assert!(get_starting_idx(&GameMode::Latin, &words, 1) == 5);
+    }
+
+    #[test]
+    fn get_starting_idx_nonlatin() {
+        let words = vec!["你", "好", "你", "好", "你", "好"];
+
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 2) == 2);
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 0) == 0);
+        assert!(get_starting_idx(&GameMode::NonLatin, &words, 5) == 5);
     }
 
     #[test]
@@ -95,7 +132,7 @@ mod tests {
         let user_input = "qui";
 
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             6
         );
     }
@@ -108,7 +145,7 @@ mod tests {
 
         // Should be trying (and failing) the next letter
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             7
         );
     }
@@ -122,8 +159,32 @@ mod tests {
         // Should not advance to the next character even though it's correct
         // because the previous is incorrect.
         assert_eq!(
-            get_trying_letter_idx(&words, current_word_idx, user_input),
+            get_trying_letter_idx(&GameMode::Latin, &words, current_word_idx, user_input),
             7
         );
+    }
+
+    #[test]
+    fn ensure_empty_input_is_valid() {
+        let word = "quick";
+        let user_input = "";
+
+        assert!(check_like_word(word, user_input));
+    }
+
+    #[test]
+    fn test_like_nonlatin() {
+        let word = "你";
+        let user_input = "你";
+
+        assert!(check_like_word(word, user_input));
+    }
+
+    #[test]
+    fn test_unlike_nonlatin() {
+        let word = "你";
+        let user_input = "好";
+
+        assert!(!check_like_word(word, user_input));
     }
 }
