@@ -2,7 +2,7 @@ use tui::backend::Backend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::Style;
 use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, Text};
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
     terminal
@@ -19,11 +19,13 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
             let passage_block = Block::default()
                 .borders(Borders::ALL)
                 .title_style(Style::default());
-            Paragraph::new([Text::raw(step_instruction)].iter())
-                .block(passage_block.clone().title("Installing quote packs"))
-                .wrap(true)
-                .alignment(Alignment::Left)
-                .render(&mut f, chunks[0]);
+            f.render_widget(
+                Paragraph::new([Text::raw(step_instruction)].iter())
+                    .block(passage_block.clone().title("Installing quote packs"))
+                    .wrap(true)
+                    .alignment(Alignment::Left),
+                chunks[0],
+            );
         })
         .expect("Failed to write to term");
 }

@@ -2,7 +2,7 @@ use info::InfoData;
 use tui::backend::Backend;
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Widget};
+use tui::widgets::{Block, Borders, Paragraph};
 
 use crate::info;
 
@@ -31,16 +31,18 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 Paragraph::new(info_data.top_text.iter())
                     .block(top_block.clone().title("About page"))
                     .wrap(true)
-                    .alignment(Alignment::Left)
-                    .render(&mut f, root_layout[1]);
+                    .alignment(Alignment::Left);
+
+                f.render_widget(top_block, root_layout[1]);
 
                 if !info_data.bottom_text.is_empty() {
                     let bottom_block = Block::default().borders(Borders::NONE);
                     Paragraph::new(info_data.bottom_text.iter())
                         .block(bottom_block.clone())
                         .wrap(true)
-                        .alignment(Alignment::Center)
-                        .render(&mut f, root_layout[3]);
+                        .alignment(Alignment::Center);
+
+                    f.render_widget(bottom_block, root_layout[3]);
                 }
             }
         })

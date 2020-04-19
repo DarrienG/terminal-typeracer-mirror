@@ -3,7 +3,7 @@ use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::Color;
 use tui::style::{Modifier, Style};
 use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text};
 
 use crate::config::TyperacerConfig;
 use crate::game::formatter::FormattedTexts;
@@ -103,21 +103,26 @@ pub fn render<B: Backend>(
                             .borders(Borders::ALL)
                             .border_style(get_border_style(&game_state))
                             .title_style(Style::default());
-                        Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
-                            .block(debug_block.clone().title("DEBUG ENABLED"))
-                            .wrap(true)
-                            .alignment(Alignment::Left)
-                            .render(&mut f, chunks[1]);
+                        f.render_widget(
+                            Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
+                                .block(debug_block.clone().title("DEBUG ENABLED"))
+                                .wrap(true)
+                                .alignment(Alignment::Left),
+                            chunks[1],
+                        );
                     }
                     let passage_block = Block::default()
                         .borders(Borders::ALL)
                         .border_style(get_border_style(&game_state))
                         .title_style(Style::default());
-                    Paragraph::new(game_state.texts.passage.iter())
-                        .block(passage_block.clone().title(&game_state.title))
-                        .wrap(true)
-                        .alignment(Alignment::Left)
-                        .render(&mut f, chunks[2]);
+
+                    f.render_widget(
+                        Paragraph::new(game_state.texts.passage.iter())
+                            .block(passage_block.clone().title(&game_state.title))
+                            .wrap(true)
+                            .alignment(Alignment::Left),
+                        chunks[2],
+                    );
 
                     let typing_block = Block::default()
                         .borders(Borders::ALL)
@@ -132,12 +137,14 @@ pub fn render<B: Backend>(
                         Style::default()
                     };
 
-                    Paragraph::new(game_state.texts.input.iter())
-                        .block(typing_block.clone().title("Type out passage here"))
-                        .wrap(true)
-                        .alignment(Alignment::Left)
-                        .style(style)
-                        .render(&mut f, chunks[3]);
+                    f.render_widget(
+                        Paragraph::new(game_state.texts.input.iter())
+                            .block(typing_block.clone().title("Type out passage here"))
+                            .wrap(true)
+                            .alignment(Alignment::Left)
+                            .style(style),
+                        chunks[3],
+                    );
                 }
                 {
                     let chunks = Layout::default()
@@ -164,14 +171,16 @@ pub fn render<B: Backend>(
                     let stat_column_width = 5;
                     // set to be an arbitrary value, 5 digits should be plenty to show the values for now
                     let value_column_width = 5;
-                    Table::new(headers, rows)
-                        .block(stats_block.clone().title("Stats"))
-                        .widths(&[
-                            Constraint::Length(stat_column_width),
-                            Constraint::Length(value_column_width),
-                        ])
-                        .column_spacing(1)
-                        .render(&mut f, chunks[2]);
+                    f.render_widget(
+                        Table::new(headers, rows)
+                            .block(stats_block.clone().title("Stats"))
+                            .widths(&[
+                                Constraint::Length(stat_column_width),
+                                Constraint::Length(value_column_width),
+                            ])
+                            .column_spacing(1),
+                        chunks[2],
+                    );
                 }
 
                 let chunks = Layout::default()
@@ -183,6 +192,7 @@ pub fn render<B: Backend>(
                 let shortcut_block = Block::default()
                     .borders(Borders::NONE)
                     .title_style(Style::default());
+                f.render_widget(
                 Paragraph::new(
                     [
                         Text::raw(
@@ -196,8 +206,7 @@ pub fn render<B: Backend>(
                     .iter(),
                 )
                 .block(shortcut_block.clone())
-                .alignment(Alignment::Center)
-                .render(&mut f, chunks[0]);
+                .alignment(Alignment::Center), chunks[0]);
             }
         })
         .expect("Failed to draw terminal widgets.");

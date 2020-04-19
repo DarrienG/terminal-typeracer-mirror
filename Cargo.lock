@@ -155,9 +155,9 @@ dependencies = [
 
 [[package]]
 name = "git2"
-version = "0.12.0"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26e07ef27260a78f7e8d218ebac2c72f2c4db50493741b190b6e8eade1da7c68"
+checksum = "2cfb93ca10f2934069c3aaafb753fbe0663f08ee009a01b6d62e062391447b15"
 dependencies = [
  "bitflags",
  "libc",
@@ -190,9 +190,9 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.8.2"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f56a2d0bc861f9165be4eb3442afd3c236d8a98afd426f65d92324ae1091a484"
+checksum = "284f18f85651fe11e8a991b2adb42cb078325c996ed026d994719efcfca1d54b"
 dependencies = [
  "either",
 ]
@@ -220,9 +220,9 @@ checksum = "99e85c08494b21a9054e7fe1374a732aeadaff3980b6990b94bfd3a70f690005"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.11.0+0.99.0"
+version = "0.12.3+1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d5d1459353d397a029fb18862166338de938e6be976606bd056cf8f1a912ecf"
+checksum = "7637dc15e7f05a16011723e0448655081fc01a374bcd368e2c9b9c7f5c5ab3ea"
 dependencies = [
  "cc",
  "libc",
@@ -488,15 +488,14 @@ dependencies = [
 
 [[package]]
 name = "tui"
-version = "0.8.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b871b61f4c4b81e630215cd12e0ec29953d4545898e21a9e023b7520a74a9f9"
+checksum = "b7de74b91c6cb83119a2140e7c215d95d9e54db27b58a500a2cbdeec4987b0a2"
 dependencies = [
  "bitflags",
  "cassowary",
  "either",
  "itertools",
- "log",
  "termion",
  "unicode-segmentation",
  "unicode-width",
