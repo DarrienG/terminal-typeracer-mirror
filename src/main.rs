@@ -1,6 +1,6 @@
 #![cfg_attr(test, allow(dead_code, unused_imports))]
 use clap;
-use std::io::Error;
+use std::io::{Error, ErrorKind};
 
 mod game;
 mod lang_pack;
@@ -11,6 +11,7 @@ mod dirs {
 
 pub mod actions;
 pub mod config;
+pub mod db;
 pub mod info;
 pub mod stats;
 
@@ -113,6 +114,13 @@ fn main() -> Result<(), Error> {
             Err(e) => return Err(e),
             Ok(false) => return Ok(()),
             Ok(true) => (),
+        }
+    }
+
+    if !db::check_stats_db() {
+        match db::create_database(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
+            Ok(_) => (),
+            Err(e) => return Result::Err(Error::new(ErrorKind::ConnectionRefused, e)),
         }
     }
 

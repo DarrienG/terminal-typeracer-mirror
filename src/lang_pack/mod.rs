@@ -1,7 +1,7 @@
 use git2::{build, Repository};
 use std::fs::{read_dir, File};
 use std::io::{stdin, stdout, BufRead, BufReader, Error};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -14,7 +14,7 @@ use crate::dirs::setup_dirs;
 
 mod lang_pack_render;
 
-fn download_and_checkout(url: &str, repo_path: &str, data_pack_version: &str) {
+fn download_and_checkout(url: &str, repo_path: &PathBuf, data_pack_version: &str) {
     let repo = if Path::new(repo_path).exists() {
         match Repository::open(repo_path) {
             Ok(repo) => repo,
@@ -46,10 +46,10 @@ fn download_and_checkout(url: &str, repo_path: &str, data_pack_version: &str) {
     .expect("Failed to checkout HEAD");
 }
 
-fn check_proper_version(lang_pack_version: &str, data_dir: &str) -> bool {
+fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
     // Somehow the file doesn't exist, so we should just get the right version
-    let version_file = format!("{}/version", data_dir);
-    if !Path::new(&version_file).exists() {
+    let version_file = data_dir.join("version");
+    if !version_file.exists() {
         return false;
     }
 
@@ -104,7 +104,7 @@ pub fn retrieve_lang_pack(
                             step_count += 1;
                             step_instruction.push_str(&format!(
                                 "\nMaking data dir at: {}\n",
-                                setup_dirs::create_data_dir()
+                                setup_dirs::create_data_dir(None).to_str().unwrap()
                             ));
                             break;
                         }

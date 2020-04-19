@@ -58,3 +58,4 @@ clap = "2.33.0"
 
 # For zipping lists
 itertools = "0.9.0"
+rusqlite = "0.22.0"
