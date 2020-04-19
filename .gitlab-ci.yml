@@ -4,7 +4,6 @@ lint:
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
-
 style-check:
   image: rust:1.40.0-stretch
   script:
@@ -12,10 +11,5 @@ style-check:
     - cargo fmt -- --check
 test:
   image: rust:1.40.0-stretch
-  script:
-    - cargo test
-
-legacy_test:
-  image: rust:1.36.0-stretch
   script:
     - cargo test
