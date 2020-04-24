@@ -28,6 +28,11 @@ pub fn create_database(path: &PathBuf) -> Result<(), rusqlite::Error> {
     )?;
 
     conn.execute(
+        "INSERT INTO schema_info (schema_version) VALUES (?1)",
+        params![1],
+    )?;
+
+    conn.execute(
         "CREATE TABLE IF NOT EXISTS passages (
             passage TEXT PRIMARY KEY,
             passage_len INTEGER
