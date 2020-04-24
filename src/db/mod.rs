@@ -10,7 +10,7 @@ use std::path::Path;
 pub fn check_stats_db() -> bool {
     let db_dir = setup_dirs::get_db_dir();
     Path::new(&db_dir).exists()
-        && dbg!(read_dir(&db_dir))
+        && read_dir(&db_dir)
             .unwrap()
             .filter(|item| item.is_ok() && item.as_ref().unwrap().file_name() == "stats.db")
             .count()
@@ -28,6 +28,11 @@ pub fn create_database(path: &PathBuf) -> Result<(), rusqlite::Error> {
     )?;
 
     conn.execute(
+        "INSERT INTO schema_info (schema_version) VALUES (?1)",
+        params![1],
+    )?;
+
+    conn.execute(
         "CREATE TABLE IF NOT EXISTS passages (
             passage TEXT PRIMARY KEY,
             passage_len INTEGER
@@ -42,6 +47,8 @@ pub fn create_database(path: &PathBuf) -> Result<(), rusqlite::Error> {
             wpm INTEGER,
             accuracy REAL,
             highest_combo INTEGER,
+            instant_death INTEGER,
+            when_played_secs INTEGER,
             FOREIGN KEY(passage) REFERENCES passages(passage)
         )",
         params![],

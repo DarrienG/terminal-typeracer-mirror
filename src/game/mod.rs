@@ -11,6 +11,7 @@ use tui::Terminal;
 
 use crate::actions::Action;
 use crate::config;
+use crate::dirs::setup_dirs::get_db_path;
 use crate::info;
 use crate::passage_controller::PassageInfo;
 use crate::stats;
@@ -20,6 +21,7 @@ pub mod indexer;
 pub mod split;
 pub mod word_processing;
 
+mod game_db;
 mod game_render;
 
 /// Event loop: Displays the typing input and renders keypresses.
@@ -185,6 +187,10 @@ pub fn play_game(
             stats.update_wpm(current_word_idx, &words);
             user_input.clear();
         }
+    }
+
+    if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, instant_death) {
+        println!("HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
     }
 
     loop {

@@ -1,5 +1,5 @@
 #![cfg_attr(test, allow(dead_code, unused_imports))]
-use clap;
+use clap::{App, AppSettings, Arg};
 use std::io::{Error, ErrorKind};
 
 mod game;
@@ -35,12 +35,12 @@ const VERSION: &str = "1.6.0";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
-    let args = clap::App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
+    let args = App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, typeracer_config.repo_version))
         .author("Darrien Glasser <me@darrien.dev>")
-        .setting(clap::AppSettings::TrailingVarArg)
+        .setting(AppSettings::TrailingVarArg)
         .arg(
-            clap::Arg::with_name("READ_TEXT")
+            Arg::with_name("READ_TEXT")
             .short("r")
             .long("read-text")
             .multiple(true)
@@ -49,7 +49,7 @@ fn main() -> Result<(), Error> {
             .help("Read passage as an arg rather than from local set of passages.")
         )
         .arg(
-            clap::Arg::with_name("LEGACY_WPM")
+            Arg::with_name("LEGACY_WPM")
             .short("l")
             .long("legacy-wpm")
             .required(false)
@@ -57,7 +57,7 @@ fn main() -> Result<(), Error> {
             .help("Derive words per minute as actual words/minute instead of letters/5 over minute")
         )
         .arg(
-            clap::Arg::with_name("DEBUG_MODE")
+            Arg::with_name("DEBUG_MODE")
             .short("d")
             .long("debug-mode")
             .required(false)
@@ -65,7 +65,7 @@ fn main() -> Result<(), Error> {
             .help("Run with debug info")
         )
         .arg(
-            clap::Arg::with_name("SHOW_PACKS")
+            Arg::with_name("SHOW_PACKS")
             .short("s")
             .long("show-packs")
             .required(false)
@@ -73,7 +73,7 @@ fn main() -> Result<(), Error> {
             .help("Show all currently available language packs")
         )
         .arg(
-            clap::Arg::with_name("INSTANT_DEATH")
+            Arg::with_name("INSTANT_DEATH")
             .short("i")
             .long("instant-death")
             .required(false)
