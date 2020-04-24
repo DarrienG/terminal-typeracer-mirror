@@ -1,3 +1,4 @@
+use std::cmp::max;
 #[cfg(not(test))]
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -48,6 +49,7 @@ pub struct Stats {
     time: Time,
     properly_typed: Vec<bool>,
     pub combo: usize,
+    highest_combo: usize,
 }
 
 impl Stats {
@@ -61,6 +63,7 @@ impl Stats {
             time: Time::new(),
             properly_typed: Vec::new(),
             combo: 0,
+            highest_combo: 0,
         }
     }
 
@@ -102,6 +105,7 @@ impl Stats {
     pub fn increment_combo(&mut self, current_letter: usize) {
         self.combo += 1;
         self.update_accuracy(true, current_letter);
+        self.highest_combo = max(self.highest_combo, self.combo);
     }
 
     pub fn get_typing_accuracy(&self) -> f64 {
@@ -158,6 +162,14 @@ impl Stats {
                 format!("{:.4}%", self.get_typing_accuracy().to_string()),
             ],
         ]
+    }
+
+    pub fn get_wpm(&self) -> u64 {
+        self.wpm
+    }
+
+    pub fn get_highest_combo(&self) -> usize {
+        self.highest_combo
     }
 
     /// Get the value of `legacy_wpm`
