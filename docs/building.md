@@ -1,6 +1,6 @@
 # Building
 
-It's a rust project with one external dependency: git
+It's a rust project with two external dependencies: git and sqlite
 
 You may need openssl installed as well.
 
