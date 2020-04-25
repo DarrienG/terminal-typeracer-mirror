@@ -28,21 +28,25 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 .split(f.size());
             {
                 let top_block = Block::default().borders(Borders::ALL);
-                Paragraph::new(info_data.top_text.iter())
-                    .block(top_block.clone().title("About page"))
-                    .wrap(true)
-                    .alignment(Alignment::Left);
 
-                f.render_widget(top_block, root_layout[1]);
+                f.render_widget(
+                    Paragraph::new(info_data.top_text.iter())
+                        .block(top_block.clone().title("About page"))
+                        .wrap(true)
+                        .alignment(Alignment::Left),
+                    root_layout[1],
+                );
 
                 if !info_data.bottom_text.is_empty() {
                     let bottom_block = Block::default().borders(Borders::NONE);
-                    Paragraph::new(info_data.bottom_text.iter())
-                        .block(bottom_block.clone())
-                        .wrap(true)
-                        .alignment(Alignment::Center);
 
-                    f.render_widget(bottom_block, root_layout[3]);
+                    f.render_widget(
+                        Paragraph::new(info_data.bottom_text.iter())
+                            .block(bottom_block.clone())
+                            .wrap(true)
+                            .alignment(Alignment::Center),
+                        root_layout[3],
+                    );
                 }
             }
         })
