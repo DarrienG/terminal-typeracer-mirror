@@ -12,6 +12,7 @@ mod dirs {
 pub mod actions;
 pub mod config;
 pub mod db;
+pub mod graphs;
 pub mod info;
 pub mod stats;
 

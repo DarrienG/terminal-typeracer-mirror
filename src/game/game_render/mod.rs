@@ -66,7 +66,7 @@ pub fn render<B: Backend>(
     game_state: GameState,
     typeracer_version: &str,
 ) {
-    let term_size = terminal.size().unwrap();
+    let term_size = terminal.size().expect("Unable to get terminal size");
     terminal
         .draw(|mut f| {
             // Because there is no way to specify vertical but not horizontal margins

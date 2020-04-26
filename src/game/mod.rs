@@ -1,4 +1,5 @@
 use config::TyperacerConfig;
+use graphs::show_graphs;
 use info::show_info;
 use std::io::{stdin, stdout};
 use termion::event::Key;
@@ -12,6 +13,7 @@ use tui::Terminal;
 use crate::actions::Action;
 use crate::config;
 use crate::dirs::setup_dirs::get_db_path;
+use crate::graphs;
 use crate::info;
 use crate::passage_controller::PassageInfo;
 use crate::stats;
@@ -106,6 +108,7 @@ pub fn play_game(
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
+            Key::Ctrl('s') => show_graphs(&mut terminal),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
@@ -225,6 +228,7 @@ pub fn play_game(
                 Key::Ctrl('n') => return Action::NextPassage,
                 Key::Ctrl('p') => return Action::PreviousPassage,
                 Key::Ctrl('r') => return Action::RestartPassage,
+                Key::Ctrl('s') => show_graphs(&mut terminal),
                 _ => (),
             }
         }
