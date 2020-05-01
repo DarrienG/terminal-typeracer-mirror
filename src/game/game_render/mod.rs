@@ -196,7 +196,7 @@ pub fn render<B: Backend>(
                 Paragraph::new(
                     [
                         Text::raw(
-                            "^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]  ^A[bout]\n",
+                            "^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]\n^G[raphs]  ^A[bout]\n",
                         ),
                         Text::styled(
                             format!("Build: {}", typeracer_version),

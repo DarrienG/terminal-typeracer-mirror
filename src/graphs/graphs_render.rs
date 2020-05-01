@@ -1,9 +1,9 @@
 use tui::backend::Backend;
-use tui::layout::{Constraint, Direction, Layout};
+use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
 use tui::symbols;
 use tui::terminal::Terminal;
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType};
+use tui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph, Text};
 
 use crate::graphs::UserResults;
 
@@ -33,6 +33,19 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, ordered_user_results: &[Us
                     .as_ref(),
                 )
                 .split(f.size());
+
+            let main_layout = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(
+                    [
+                        Constraint::Percentage(5),
+                        Constraint::Percentage(80),
+                        Constraint::Percentage(10),
+                        Constraint::Percentage(5),
+                    ]
+                    .as_ref(),
+                )
+                .split(padding_layout[1]);
 
             let chart_block = Block::default()
                 .borders(Borders::ALL)
@@ -77,7 +90,14 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, ordered_user_results: &[Us
                             .labels(&["0", "100", "216"]),
                     )
                     .datasets(&datasets),
-                padding_layout[1],
+                main_layout[1],
+            );
+
+            f.render_widget(
+                Paragraph::new(&mut [Text::raw("^C to go back")].iter())
+                    .alignment(Alignment::Center)
+                    .block(Block::default().borders(Borders::NONE)),
+                main_layout[2],
             );
         })
         .expect("Failed to draw to terminal");
