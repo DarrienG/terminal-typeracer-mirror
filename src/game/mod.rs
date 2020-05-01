@@ -108,7 +108,8 @@ pub fn play_game(
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
-            Key::Ctrl('s') => show_graphs(&mut terminal),
+            Key::Ctrl('s') => show_graphs(&mut terminal, &get_db_path(), instant_death)
+                .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
@@ -228,7 +229,8 @@ pub fn play_game(
                 Key::Ctrl('n') => return Action::NextPassage,
                 Key::Ctrl('p') => return Action::PreviousPassage,
                 Key::Ctrl('r') => return Action::RestartPassage,
-                Key::Ctrl('s') => show_graphs(&mut terminal),
+                Key::Ctrl('s') => show_graphs(&mut terminal, &get_db_path(), instant_death)
+                    .expect("Unable to get data for graph"),
                 _ => (),
             }
         }
