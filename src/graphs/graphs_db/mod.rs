@@ -1,11 +1,11 @@
 use rusqlite::{params, Connection, Result};
 
-use crate::graphs::UserResults;
+use crate::graphs::RawUserResults;
 
 pub fn aggregrate_graph_data(
     conn: &Connection,
     instant_death: bool,
-) -> Result<Vec<UserResults>, rusqlite::Error> {
+) -> Result<Vec<RawUserResults>, rusqlite::Error> {
     let mut stmt = conn.prepare(
         "SELECT wpm, accuracy, highest_combo, when_played_secs
             FROM passage_stats
@@ -14,7 +14,7 @@ pub fn aggregrate_graph_data(
     )?;
 
     let user_results_iter = stmt.query_map(params![instant_death], |row| {
-        Ok(UserResults {
+        Ok(RawUserResults {
             wpm: row.get(0)?,
             accuracy: row.get(1)?,
             highest_combo: row.get(2)?,
@@ -24,5 +24,5 @@ pub fn aggregrate_graph_data(
 
     Ok(user_results_iter
         .map(|result| result.unwrap())
-        .collect::<Vec<UserResults>>())
+        .collect::<Vec<RawUserResults>>())
 }

@@ -7,15 +7,24 @@ use tui::backend::Backend;
 use tui::terminal::Terminal;
 
 mod graphs_render;
+mod user_result_mapper;
 
 pub mod graphs_db;
 
 #[derive(Clone)]
-pub struct UserResults {
+pub struct RawUserResults {
     wpm: i64,
     accuracy: f64,
     highest_combo: i64,
     when_played_secs: i64,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct UserResults {
+    wpm: i64,
+    accuracy: f64,
+    highest_combo: i64,
+    days_back_played: f64,
 }
 
 pub fn show_graphs<B: Backend>(
@@ -25,7 +34,10 @@ pub fn show_graphs<B: Backend>(
 ) -> Result<(), rusqlite::Error> {
     let conn = Connection::open(db_path)?;
 
-    let mut user_results = graphs_db::aggregrate_graph_data(&conn, instant_death)?;
+    let mut user_results = user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
+        &conn,
+        instant_death,
+    )?);
 
     graphs_render::render(terminal, &mut user_results);
 
