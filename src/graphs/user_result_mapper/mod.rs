@@ -3,12 +3,12 @@ use crate::graphs::{RawUserResults, UserResults};
 /// Takes ordered list of raw user results and maps to a list of
 /// UserResults ready for consumption by the graph render.
 pub fn as_user_results(ordered_user_results: &[RawUserResults]) -> Vec<UserResults> {
-    let latest_play_time = match ordered_user_results.last() {
+    let days_played_for = &days_played_for(ordered_user_results);
+
+    let first_played_time = match (*ordered_user_results).first() {
         Some(v) => v.when_played_secs,
         None => 0,
     };
-
-    let days_played_for = &days_played_for(ordered_user_results);
 
     let mut mapped_results = (*ordered_user_results)
         .iter()
@@ -16,9 +16,10 @@ pub fn as_user_results(ordered_user_results: &[RawUserResults]) -> Vec<UserResul
             wpm: raw_user_result.wpm,
             accuracy: raw_user_result.accuracy,
             highest_combo: raw_user_result.highest_combo,
-            days_back_played: days_back_played(
+            days_back_played: days_played_back(
                 *days_played_for,
-                percentage_back_played(latest_play_time, raw_user_result.when_played_secs),
+                first_played_time,
+                raw_user_result.when_played_secs,
             ),
         })
         .collect::<Vec<UserResults>>();
@@ -66,16 +67,10 @@ fn days_played_for(ordered_user_results: &[RawUserResults]) -> f64 {
     (last_day - first_day) as f64 / 86400.0
 }
 
-fn percentage_back_played(latest_play_time: i64, when_played: i64) -> f64 {
-    (latest_play_time as f64 - when_played as f64) / latest_play_time as f64
-}
+fn days_played_back(days_played_for: f64, first_played_time: i64, when_played_secs: i64) -> f64 {
+    let normalized_play_time = (when_played_secs - first_played_time) as f64;
+    let played_percent_days = normalized_play_time / days_played_for;
+    let inverted_percent = 1.0 - played_percent_days;
 
-fn days_back_played(max_days_back: f64, percentage_days_back_played: f64) -> f64 {
-    max_days_back * percentage_days_back_played
+    inverted_percent * days_played_for
 }
-
-/*
- * (LATEST_PLAY_TIME - WHEN_PLAYED) / LATEST_PLAY_TIME => PERCENTAGE_DAYS_BACK_PLAYED
- *
- * MAX_DAYS_PLAYED_BACK * PERCENTAGE_DAYS_BACK_PLAYED = DAYS_BACK_PLAYED
- */
