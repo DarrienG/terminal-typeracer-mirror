@@ -47,30 +47,20 @@ pub fn show_graphs<B: Backend>(
 
     loop {
         let stdin = stdin();
-        let mut user_results = user_result_mapper::as_user_results(
-            &graphs_db::aggregrate_graph_data(&conn, instant_death)?,
-        );
-
-        graphs_render::render(
-            terminal,
-            &mut user_results,
+        let user_results = user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
+            &conn,
             instant_death,
-            &MODES[current_mode],
-        );
+        )?);
 
-        for c in stdin.keys() {
-            let keypress = c.unwrap();
-            if keypress == Key::Ctrl('c') {
-                return Ok(());
-            } else if keypress == Key::Up || keypress == Key::Down {
-                instant_death = !instant_death;
-            } else if keypress == Key::Left {
-                current_mode = decrement_current_mode(current_mode);
-            } else if keypress == Key::Right {
-                current_mode = increment_current_mode(current_mode);
-            }
+        graphs_render::render(terminal, &user_results, instant_death, &MODES[current_mode]);
 
-            break;
+        let c = stdin.keys().find_map(Result::ok);
+        match c.unwrap() {
+            Key::Ctrl('c') => return Ok(()),
+            Key::Up | Key::Down => instant_death = !instant_death,
+            Key::Left => current_mode = decrement_current_mode(current_mode),
+            Key::Right => current_mode = increment_current_mode(current_mode),
+            _ => (),
         }
     }
 }
