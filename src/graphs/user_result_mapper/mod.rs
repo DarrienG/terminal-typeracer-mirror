@@ -68,7 +68,7 @@ fn days_played_for(ordered_user_results: &[RawUserResults]) -> f64 {
 }
 
 fn days_played_back(days_played_for: f64, first_played_time: i64, when_played_secs: i64) -> f64 {
-    let normalized_play_time = (when_played_secs - first_played_time) as f64;
+    let normalized_play_time = ((when_played_secs - first_played_time) as f64) / 86400.0;
     let played_percent_days = normalized_play_time / days_played_for;
     let inverted_percent = 1.0 - played_percent_days;
 
