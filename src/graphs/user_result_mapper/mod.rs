@@ -74,3 +74,40 @@ fn days_played_back(days_played_for: f64, first_played_time: i64, when_played_se
 
     inverted_percent * days_played_for
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use itertools::izip;
+
+    #[test]
+    fn days_back_set_correctly() {
+        let raw_user_results = vec![
+            RawUserResults {
+                wpm: 80,
+                accuracy: 100.0,
+                highest_combo: 100,
+                when_played_secs: 1588464000,
+            },
+            RawUserResults {
+                wpm: 80,
+                accuracy: 100.0,
+                highest_combo: 100,
+                when_played_secs: 1588550400,
+            },
+            RawUserResults {
+                wpm: 80,
+                accuracy: 100.0,
+                highest_combo: 100,
+                when_played_secs: 1588636800,
+            },
+        ];
+
+        let user_results = as_user_results(&raw_user_results);
+        let expected_days = vec![2.0, 1.0, 0.0];
+
+        for (result, expected) in izip!(user_results.iter(), expected_days.iter()) {
+            assert_eq!(result.days_back_played, *expected);
+        }
+    }
+}
