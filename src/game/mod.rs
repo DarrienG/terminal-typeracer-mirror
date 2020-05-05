@@ -5,7 +5,7 @@ use std::io::{stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
+//use termion::screen::AlternateScreen;
 use tui::backend::TermionBackend;
 use tui::widgets::Text;
 use tui::Terminal;
@@ -40,8 +40,8 @@ pub fn play_game(
     let stdout = stdout()
         .into_raw_mode()
         .expect("Failed to manipulate terminal to raw mode");
-    let screen = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(screen);
+    //let screen = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend).expect("Unable to get handle to terminal.");
     terminal.hide_cursor().expect("Failed to hide the cursor");
 

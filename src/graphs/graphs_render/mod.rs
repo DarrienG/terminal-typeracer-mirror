@@ -74,6 +74,8 @@ pub fn render<B: Backend>(
                 .graph_type(GraphType::Line)
                 .data(&filtered_results)];
 
+            let y_axis_data = styles::y_axis_data(active_mode, ordered_user_results);
+
             f.render_widget(
                 Chart::default()
                     .block(chart_block)
@@ -99,8 +101,8 @@ pub fn render<B: Backend>(
                             .title(&styles::graph_title(active_mode))
                             .style(Style::default().fg(Color::Gray))
                             .labels_style(Style::default().modifier(Modifier::ITALIC))
-                            .bounds(styles::y_axis_bounds(active_mode))
-                            .labels(&styles::y_axis_labels(active_mode)),
+                            .bounds(y_axis_data.bounds)
+                            .labels(&y_axis_data.labels),
                     )
                     .datasets(&datasets),
                 main_layout[1],
