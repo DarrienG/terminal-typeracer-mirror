@@ -108,7 +108,8 @@ pub fn play_game(
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
-            Key::Ctrl('s') => show_graphs(&mut terminal),
+            Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), instant_death)
+                .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
             Key::Backspace => {
@@ -228,7 +229,31 @@ pub fn play_game(
                 Key::Ctrl('n') => return Action::NextPassage,
                 Key::Ctrl('p') => return Action::PreviousPassage,
                 Key::Ctrl('r') => return Action::RestartPassage,
-                Key::Ctrl('s') => show_graphs(&mut terminal),
+                Key::Ctrl('g') => {
+                    show_graphs(&mut terminal, &get_db_path(), instant_death)
+                        .expect("Unable to get data for graph");
+                    game_render::render(
+                        &mut terminal,
+                        game_render::GameState {
+                            texts: &formatted_texts,
+                            user_input: &user_input,
+                            stats,
+                            title: &passage_info.title,
+                            instant_death,
+                            config: &typeracer_config,
+                            debug_enabled,
+                            complete: formatted_texts.complete,
+                            word_idx: current_word_idx,
+                            passage_path: &passage_info.passage_path,
+                            current_word: if current_word_idx == words.len() {
+                                "DONE"
+                            } else {
+                                words[current_word_idx]
+                            },
+                        },
+                        typeracer_version,
+                    );
+                }
                 _ => (),
             }
         }

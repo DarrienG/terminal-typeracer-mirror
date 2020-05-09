@@ -64,7 +64,7 @@ pub fn store_stats(
 /// user given passages vary in length and content, so we do not want to persist
 /// any data about them.
 fn should_persist(passage_info: &PassageInfo) -> bool {
-    passage_info.passage_path != "User input" || passage_info.passage_path != "FALLBACK_PATH"
+    passage_info.passage_path != "User input" && passage_info.passage_path != "FALLBACK_PATH"
 }
 
 /// Trims out all parts of passage path outside of typeracer data dir
