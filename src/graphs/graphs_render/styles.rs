@@ -73,7 +73,7 @@ fn y_axis_labels(mode: &Mode, first: &UserResults, last: &UserResults) -> [Strin
         ],
         Mode::Accuracy => [
             format!("{:.2}", first.accuracy),
-            format!("{:.2}", (first.accuracy - 1.0 + last.accuracy) / 2.0),
+            format!("{:.2}", (first.accuracy + last.accuracy) / 2.0),
             format!("{:.2}", last.accuracy),
         ],
 
