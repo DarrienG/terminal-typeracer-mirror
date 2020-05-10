@@ -1,6 +1,13 @@
 use directories::ProjectDirs;
 use std::fs;
+use std::fs::read_dir;
 use std::path::{Path, PathBuf};
+
+pub struct LangPackFolders {
+    pub main_pack_dir: PathBuf,
+    pub extra_pack_dir: PathBuf,
+    pub extra_packs: Vec<PathBuf>,
+}
 
 /// Create data dir for quotes, database, etc. if they don't exist and return it
 pub fn create_data_dir(addon_path: Option<&str>) -> PathBuf {
@@ -14,8 +21,13 @@ pub fn create_data_dir(addon_path: Option<&str>) -> PathBuf {
 
 #[cfg(not(test))]
 /// Get dir quotes are in
-pub fn get_quote_dir() -> PathBuf {
-    create_data_dir(None).join("lang-packs")
+pub fn get_quote_dirs() -> LangPackFolders {
+    let extra_pack_dir = create_data_dir(None).join("additional-lang-packs");
+    LangPackFolders {
+        main_pack_dir: create_data_dir(None).join("lang-packs"),
+        extra_packs: extra_packs(&extra_pack_dir),
+        extra_pack_dir: extra_pack_dir,
+    }
 }
 
 /// Get path to folder database is in
@@ -41,4 +53,12 @@ fn append_if_present(path: &Path, addon_path: Option<&str>) -> PathBuf {
         Some(addon) => path.join(addon),
         None => path.to_path_buf(),
     }
+}
+
+fn extra_packs(extra_pack_dir: &PathBuf) -> Vec<PathBuf> {
+    read_dir(extra_pack_dir)
+        .unwrap()
+        .map(|entry| entry.expect("Failed to evaluate path when reading files"))
+        .map(|entry| entry.path())
+        .collect()
 }

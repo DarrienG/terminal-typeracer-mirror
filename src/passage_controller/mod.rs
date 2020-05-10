@@ -148,7 +148,7 @@ impl<'a> Controller<'a> {
 
     fn get_quote_dirs(&self) -> Vec<DirEntry> {
         self.without_bad_paths(
-            read_dir(setup_dirs::get_quote_dir())
+            read_dir(setup_dirs::get_quote_dirs().main_pack_dir)
                 .unwrap()
                 .map(|dir| dir.unwrap())
                 .collect(),

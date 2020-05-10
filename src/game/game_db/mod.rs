@@ -3,7 +3,7 @@ use rusqlite::{params, Connection, Result};
 
 use std::path::PathBuf;
 
-use crate::dirs::setup_dirs::get_quote_dir;
+use crate::dirs::setup_dirs::get_quote_dirs;
 use crate::passage_controller::PassageInfo;
 use crate::stats::Stats;
 use std::convert::TryFrom;
@@ -72,7 +72,12 @@ fn should_persist(passage_info: &PassageInfo) -> bool {
 /// becomes -> /default/1.txt
 fn local_passage_path(absolute_passage: String) -> String {
     absolute_passage
-        .trim_start_matches(&get_quote_dir().to_string_lossy().into_owned())
+        .trim_start_matches(
+            &get_quote_dirs()
+                .main_pack_dir
+                .to_string_lossy()
+                .into_owned(),
+        )
         .to_owned()
 }
 
@@ -82,7 +87,7 @@ mod tests {
 
     #[test]
     fn properly_trims_to_local_path() {
-        let quote_dir = get_quote_dir();
+        let quote_dir = get_quote_dirs().main_pack_dir;
 
         assert_eq!(
             local_passage_path(
