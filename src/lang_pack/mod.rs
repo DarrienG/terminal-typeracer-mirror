@@ -68,8 +68,8 @@ fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
 }
 
 pub fn check_lang_pack(lang_pack_version: &str) -> bool {
-    let quote_dir = setup_dirs::get_quote_dir();
-    if Path::new(&quote_dir).exists() && read_dir(&quote_dir).unwrap().count() > 0 {
+    let quote_dir = setup_dirs::get_quote_dirs().main_pack_dir;
+    if read_dir(&quote_dir).unwrap().count() > 0 {
         check_proper_version(lang_pack_version, &quote_dir)
     } else {
         false
@@ -121,7 +121,7 @@ pub fn retrieve_lang_pack(
                 step_count += 1;
                 download_and_checkout(
                     &typeracer_config.repo,
-                    &setup_dirs::get_quote_dir(),
+                    &setup_dirs::get_quote_dirs().main_pack_dir,
                     data_pack_version,
                 );
                 step_instruction.push_str(
