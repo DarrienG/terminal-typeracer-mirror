@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "1.6.0"
+version = "1.7.0"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 # Packaging for crates.io
@@ -35,8 +35,7 @@ overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal
-#tui = "0.9.1"
-tui = { git = "https://github.com/darrieng/tui-rs" }
+tui = "0.9.2"
 termion = "1.5.5"
 unicode-width = "0.1.7"
 

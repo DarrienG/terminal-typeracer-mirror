@@ -1,15 +1,15 @@
 
 lint:
-  image: rust:1.43.0-stretch
+  image: rust:1.43.1-stretch
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
 style-check:
-  image: rust:1.43.0-stretch
+  image: rust:1.43.1-stretch
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 test:
-  image: rust:1.40.0-stretch
+  image: rust:1.43.1-stretch
   script:
     - cargo test
