@@ -1,6 +1,9 @@
+use itertools::izip;
 use rand::Rng;
 use std::fs::{read_dir, DirEntry, File};
 use std::io::{BufRead, BufReader};
+use std::path;
+use std::path::PathBuf;
 
 use crate::actions::Action;
 use crate::config::TyperacerConfig;
@@ -21,6 +24,11 @@ pub struct Controller<'a> {
     start_idx: usize,
     first_run: bool,
     config: &'a TyperacerConfig,
+}
+
+enum DirType {
+    MainDir(Vec<DirEntry>),
+    ExtraDirs(Vec<DirEntry>),
 }
 
 /// A slightly smarter ringbuffer for preserving history
@@ -112,50 +120,46 @@ impl<'a> Controller<'a> {
     /// Get shortnames of quote directories
     /// returns enabled quote dirs first, all quote dirs second
     pub fn get_quote_dir_shortnames(&self) -> (Vec<String>, Vec<String>) {
-        let mut filtered_dirs: Vec<String> = self
-            .get_filtered_quote_dirs()
-            .iter()
-            .map(|dir| {
-                dir.path()
-                    .file_stem()
-                    .expect("Unable to get file")
-                    .to_string_lossy()
-                    .to_string()
-            })
-            .collect();
+        let quote_dirs = self.get_quote_dirs();
+        let mut filtered_dirs: Vec<String> = vec![];
+        let mut all_dirs: Vec<String> = vec![];
+
+        for quote_dir in quote_dirs.into_iter() {
+            all_dirs.append(&mut self.dir_mini_path(&quote_dir));
+            filtered_dirs.append(&mut self.dir_mini_path(&self.filter_user_dirs(quote_dir)));
+        }
 
         filtered_dirs.sort();
-
-        let mut all_dirs: Vec<String> = self
-            .get_quote_dirs()
-            .iter()
-            .map(|dir| {
-                dir.path()
-                    .file_stem()
-                    .expect("Unable to get file")
-                    .to_string_lossy()
-                    .to_string()
-            })
-            .collect();
-
         all_dirs.sort();
         (filtered_dirs, all_dirs)
     }
 
-    fn get_filtered_quote_dirs(&self) -> Vec<DirEntry> {
-        self.filter_user_dirs(self.get_quote_dirs())
-    }
+    fn get_quote_dirs(&self) -> Vec<DirType> {
+        let quote_dirs = setup_dirs::get_quote_dirs();
 
-    fn get_quote_dirs(&self) -> Vec<DirEntry> {
-        self.without_bad_paths(
-            read_dir(setup_dirs::get_quote_dirs().main_pack_dir)
+        let extra_dirs = quote_dirs.extra_packs.iter().map(|quote_dir| {
+            self.without_bad_paths(
+                read_dir(quote_dir)
+                    .unwrap()
+                    .map(|dir| dir.unwrap())
+                    .collect(),
+            )
+        });
+
+        let main_dirs = self.without_bad_paths(
+            read_dir(quote_dirs.main_pack_dir)
                 .unwrap()
                 .map(|dir| dir.unwrap())
                 .collect(),
-        )
+        );
+
+        vec![
+            DirType::MainDir(main_dirs),
+            DirType::ExtraDirs(extra_dirs.flatten().collect::<Vec<DirEntry>>()),
+        ]
     }
 
-    fn filter_user_dirs(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+    fn filter_user_dirs(&self, dir_type: DirType) -> DirType {
         if self.config.lang_packs.is_some() {
             if self
                 .config
@@ -165,16 +169,16 @@ impl<'a> Controller<'a> {
                 .blacklisted
                 .is_some()
             {
-                self.filter_blacklist(entries)
+                self.filter_blacklist(dir_type)
             } else {
-                self.filter_whitelist(entries)
+                self.filter_whitelist(dir_type)
             }
         } else {
-            entries
+            dir_type
         }
     }
 
-    fn filter_blacklist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+    fn filter_blacklist(&self, dir_type: DirType) -> DirType {
         let fallback_blacklist = vec![];
         let blacklist = self
             .config
@@ -185,23 +189,32 @@ impl<'a> Controller<'a> {
             .as_ref()
             .unwrap_or(&fallback_blacklist);
         let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
-        for entry in entries {
-            let str_entry = entry
-                .path()
-                .file_stem()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
-            if !blacklist.contains(&str_entry) {
-                filtered_quote_dirs.push(entry);
+
+        let entries = self.dir_mini_path(&dir_type);
+        match dir_type {
+            DirType::MainDir(dir_entries) => {
+                for (str_entry, dir_entry) in izip!(entries.into_iter(), dir_entries.into_iter()) {
+                    if !blacklist.contains(&str_entry) {
+                        filtered_quote_dirs.push(dir_entry);
+                    }
+                }
+
+                DirType::MainDir(filtered_quote_dirs)
+            }
+            DirType::ExtraDirs(dir_entries) => {
+                for (str_entry, dir_entry) in izip!(entries.into_iter(), dir_entries.into_iter()) {
+                    if !blacklist.contains(&str_entry) {
+                        filtered_quote_dirs.push(dir_entry);
+                    }
+                }
+                DirType::ExtraDirs(filtered_quote_dirs)
             }
         }
-        filtered_quote_dirs
     }
 
-    fn filter_whitelist(&self, entries: Vec<DirEntry>) -> Vec<DirEntry> {
+    fn filter_whitelist(&self, dir_type: DirType) -> DirType {
         let fallback_whitelist = vec![];
+
         let whitelist = self
             .config
             .lang_packs
@@ -211,22 +224,35 @@ impl<'a> Controller<'a> {
             .as_ref()
             .unwrap_or(&fallback_whitelist);
         if whitelist.is_empty() || whitelist[0] == "*" {
-            entries
+            dir_type
         } else {
             let mut filtered_quote_dirs: Vec<DirEntry> = vec![];
-            for entry in entries {
-                let str_entry = entry
-                    .path()
-                    .file_stem()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string();
-                if whitelist.contains(&str_entry) {
-                    filtered_quote_dirs.push(entry);
+
+            let entries = self.dir_mini_path(&dir_type);
+
+            match dir_type {
+                DirType::MainDir(dir_entries) => {
+                    for (str_entry, dir_entry) in
+                        izip!(entries.into_iter(), dir_entries.into_iter())
+                    {
+                        if !whitelist.contains(&str_entry) {
+                            filtered_quote_dirs.push(dir_entry);
+                        }
+                    }
+
+                    DirType::MainDir(filtered_quote_dirs)
+                }
+                DirType::ExtraDirs(dir_entries) => {
+                    for (str_entry, dir_entry) in
+                        izip!(entries.into_iter(), dir_entries.into_iter())
+                    {
+                        if !whitelist.contains(&str_entry) {
+                            filtered_quote_dirs.push(dir_entry);
+                        }
+                    }
+                    DirType::ExtraDirs(filtered_quote_dirs)
                 }
             }
-            filtered_quote_dirs
         }
     }
 
@@ -254,6 +280,51 @@ impl<'a> Controller<'a> {
             .collect()
     }
 
+    /// Gets the mini path from a lang pack.
+    /// If working with the main set of directories, it will get the file_stem
+    /// If working with extra directories, it will instead get file_stem and parent
+    /// of the directory.
+    ///
+    /// e.g. MainDir: default, ExtraDir: extra_lang_packs/default
+    fn dir_mini_path(&self, dir_type: &DirType) -> Vec<String> {
+        match dir_type {
+            DirType::MainDir(d) => d
+                .iter()
+                .map(|dir| {
+                    dir.path()
+                        .file_stem()
+                        .expect("Unable to get filestem")
+                        .to_string_lossy()
+                        .to_string()
+                })
+                .collect::<Vec<String>>(),
+            DirType::ExtraDirs(d) => d
+                .iter()
+                .map(|dir| self.dir_and_parent(dir.path()))
+                .filter(|maybe_dir| maybe_dir.is_some())
+                .map(|dir| dir.unwrap())
+                .collect::<Vec<String>>(),
+        }
+    }
+
+    fn dir_and_parent(&self, path: PathBuf) -> Option<String> {
+        let str_path = path.display().to_string();
+        let split_dirs = str_path
+            .split(&path::MAIN_SEPARATOR.to_string())
+            .collect::<Vec<&str>>();
+
+        if split_dirs.len() < 2 {
+            None
+        } else {
+            Some(format!(
+                "{}{}{}",
+                split_dirs[split_dirs.len() - 2],
+                path::MAIN_SEPARATOR.to_string(),
+                split_dirs[split_dirs.len() - 1]
+            ))
+        }
+    }
+
     // Retrieve a random passage and title from quote database.
     // Defaults to boring passage if no files are found.
     // Returns (passage, author/title)
@@ -267,7 +338,13 @@ impl<'a> Controller<'a> {
             passage_path: "FALLBACK_PATH".to_owned(),
         };
 
-        let quote_dirs = self.get_filtered_quote_dirs();
+        let mut quote_dirs: Vec<DirEntry> = vec![];
+
+        for dir in self.get_quote_dirs().into_iter() {
+            quote_dirs.append(&mut match self.filter_user_dirs(dir) {
+                DirType::MainDir(v) | DirType::ExtraDirs(v) => v,
+            });
+        }
 
         if quote_dirs.is_empty() {
             return fallback;
