@@ -24,6 +24,7 @@ pub fn create_data_dir(addon_path: Option<&str>) -> PathBuf {
 /// Get dir quotes are in
 pub fn get_quote_dirs() -> LangPackFolders {
     let extra_pack_dir = create_data_dir(Some("additional-lang-packs"));
+
     LangPackFolders {
         main_pack_dir: create_data_dir(None).join("lang-packs"),
         extra_packs: extra_packs(&extra_pack_dir),

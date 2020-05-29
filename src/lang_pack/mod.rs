@@ -69,7 +69,7 @@ fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
 
 pub fn check_lang_pack(lang_pack_version: &str) -> bool {
     let quote_dir = setup_dirs::get_quote_dirs().main_pack_dir;
-    if read_dir(&quote_dir).unwrap().count() > 0 {
+    if quote_dir.exists() && read_dir(&quote_dir).unwrap().count() > 0 {
         check_proper_version(lang_pack_version, &quote_dir)
     } else {
         false
