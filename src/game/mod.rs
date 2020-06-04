@@ -1,6 +1,7 @@
 use config::TyperacerConfig;
 use graphs::show_graphs;
 use info::show_info;
+use std::fmt;
 use std::io::{stdin, stdout};
 use termion::event::Key;
 use termion::input::TermRead;
@@ -26,6 +27,48 @@ pub mod word_processing;
 mod game_db;
 mod game_render;
 
+#[derive(PartialEq, Clone, Copy, Debug)]
+pub enum GameMode {
+    Default,
+    InstantDeath,
+}
+
+impl GameMode {
+    pub fn next(self) -> Self {
+        match self {
+            GameMode::InstantDeath => GameMode::Default,
+            GameMode::Default => GameMode::InstantDeath,
+        }
+    }
+}
+
+impl fmt::Display for GameMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            GameMode::InstantDeath => write!(f, "Instant Death"),
+            GameMode::Default => write!(f, "Default"),
+        }
+    }
+}
+
+// Used to convert to/from a num for sqlite
+impl From<GameMode> for i64 {
+    fn from(gm: GameMode) -> i64 {
+        match gm {
+            GameMode::InstantDeath => 1,
+            GameMode::Default => 0,
+        }
+    }
+}
+impl From<i64> for GameMode {
+    fn from(i: i64) -> Self {
+        match i {
+            1 => GameMode::InstantDeath,
+            _ => GameMode::Default,
+        }
+    }
+}
+
 /// Event loop: Displays the typing input and renders keypresses.
 /// This is the entrance to the main game.
 // TODO: Provide get_backend method in game_render
@@ -33,7 +76,7 @@ pub fn play_game(
     passage_info: &PassageInfo,
     stats: &mut stats::Stats,
     debug_enabled: bool,
-    instant_death: bool,
+    game_mode: GameMode,
     typeracer_version: &str,
     typeracer_config: &TyperacerConfig,
 ) -> Action {
@@ -60,7 +103,7 @@ pub fn play_game(
 
     // Split the passage into vec of words to work on one at a time
     let words: Vec<&str> = split::to_words(&passage_info.passage);
-    let game_mode = word_processing::get_game_mode(&passage_info.passage);
+    let text_mode = word_processing::get_game_mode(&passage_info.passage);
 
     let mut current_word_idx = 0;
 
@@ -72,7 +115,7 @@ pub fn play_game(
                 user_input: &user_input,
                 stats,
                 title: &passage_info.title,
-                instant_death,
+                game_mode,
                 config: typeracer_config,
                 debug_enabled,
                 word_idx: current_word_idx,
@@ -108,7 +151,7 @@ pub fn play_game(
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
-            Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), instant_death)
+            Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), game_mode)
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
@@ -121,14 +164,14 @@ pub fn play_game(
                 stats.update_start_time();
 
                 if word_processing::word_completed(
-                    &game_mode,
+                    &text_mode,
                     last_input_char,
                     words[current_word_idx],
                     &user_input,
                 ) {
                     if !typeracer_config.display_settings.always_full {
                         formatted_texts.passage = word_processing::get_updated_texts(
-                            &game_mode,
+                            &text_mode,
                             formatted_texts.passage,
                             words[current_word_idx],
                         );
@@ -150,7 +193,7 @@ pub fn play_game(
             formatted_texts
         } else if typeracer_config.display_settings.always_full {
             formatter::get_formatted_texts(
-                &game_mode,
+                &text_mode,
                 &words,
                 &user_input.to_string(),
                 current_word_idx,
@@ -160,7 +203,7 @@ pub fn play_game(
             )
         } else {
             formatter::get_formatted_texts_line_mode(
-                &game_mode,
+                &text_mode,
                 &words[current_word_idx],
                 &user_input.to_string(),
                 last_input_char,
@@ -170,30 +213,30 @@ pub fn play_game(
         };
 
         let current_letter_idx =
-            indexer::get_trying_letter_idx(&game_mode, &words, current_word_idx, &user_input);
+            indexer::get_trying_letter_idx(&text_mode, &words, current_word_idx, &user_input);
         if formatted_texts.error && new_char {
             stats.increment_errors(current_letter_idx);
-            if instant_death {
-                formatted_texts = formatter::get_reformatted_failed_texts(&game_mode, &words);
+            if game_mode == GameMode::InstantDeath {
+                formatted_texts = formatter::get_reformatted_failed_texts(&text_mode, &words);
                 continue;
             }
         } else {
             stats.increment_combo(current_letter_idx);
         }
 
-        if word_processing::decide_game_end(&game_mode, current_word_idx, &words, &user_input) {
+        if word_processing::decide_game_end(&text_mode, current_word_idx, &words, &user_input) {
             // Check to see if the user is on the last word and it is correct.
             // If it is, we need to do a little extra work to set the passage back to the full
             // passage. If the user is running with display_settings.always_max=false then they
             // will only see the last word.
-            formatted_texts = formatter::get_reformatted_complete_texts(&game_mode, &words);
+            formatted_texts = formatter::get_reformatted_complete_texts(&text_mode, &words);
             current_word_idx += 1;
             stats.update_wpm(current_word_idx, &words);
             user_input.clear();
         }
     }
 
-    if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, instant_death) {
+    if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, game_mode) {
         println!("HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
     }
 
@@ -210,7 +253,7 @@ pub fn play_game(
                             user_input: &user_input,
                             stats,
                             title: &passage_info.title,
-                            instant_death,
+                            game_mode,
                             config: &typeracer_config,
                             debug_enabled,
                             complete: formatted_texts.complete,
@@ -230,7 +273,7 @@ pub fn play_game(
                 Key::Ctrl('p') => return Action::PreviousPassage,
                 Key::Ctrl('r') => return Action::RestartPassage,
                 Key::Ctrl('g') => {
-                    show_graphs(&mut terminal, &get_db_path(), instant_death)
+                    show_graphs(&mut terminal, &get_db_path(), game_mode)
                         .expect("Unable to get data for graph");
                     game_render::render(
                         &mut terminal,
@@ -239,7 +282,7 @@ pub fn play_game(
                             user_input: &user_input,
                             stats,
                             title: &passage_info.title,
-                            instant_death,
+                            game_mode,
                             config: &typeracer_config,
                             debug_enabled,
                             complete: formatted_texts.complete,

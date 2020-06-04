@@ -7,6 +7,7 @@ use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text};
 
 use crate::config::TyperacerConfig;
 use crate::game::formatter::FormattedTexts;
+use crate::game::GameMode;
 use crate::stats;
 
 mod styles;
@@ -17,7 +18,7 @@ pub struct GameState<'a> {
     pub user_input: &'a str,
     pub stats: &'a stats::Stats,
     pub title: &'a str,
-    pub instant_death: bool,
+    pub game_mode: GameMode,
     pub config: &'a TyperacerConfig,
     // For debug
     pub debug_enabled: bool,
@@ -29,12 +30,12 @@ pub struct GameState<'a> {
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}, instant_death_enabled: {}, num words: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}, game mode: {}, num words: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
                 self.stats.get_legacy_wpm(),
                 self.word_idx,
                 self.stats.get_start_time(),
                 self.texts.error,
-                self.instant_death,
+                self.game_mode,
                 self.texts.passage.len(),
                 self.complete,
                 self.passage_path,
@@ -54,7 +55,7 @@ fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
 }
 
 fn get_border_style(game_state: &GameState) -> Style {
-    if game_state.instant_death {
+    if game_state.game_mode == GameMode::InstantDeath {
         styles::instant_death_border_style(game_state)
     } else {
         styles::regular_border_style(game_state)

@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use tui::style::{Color, Style};
 
+use crate::game::GameMode;
 use crate::graphs::{Mode, UserResults};
 
 pub struct YAxisData {
@@ -8,8 +9,8 @@ pub struct YAxisData {
     pub labels: [String; 3],
 }
 
-pub fn borders(instant_death: bool) -> Style {
-    if instant_death {
+pub fn borders(game_mode: GameMode) -> Style {
+    if game_mode == GameMode::InstantDeath {
         Style::default().fg(Color::Red)
     } else {
         Style::default()

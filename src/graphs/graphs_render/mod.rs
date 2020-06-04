@@ -5,6 +5,7 @@ use tui::symbols;
 use tui::terminal::Terminal;
 use tui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph, Text};
 
+use crate::game::GameMode;
 use crate::graphs::{Mode, UserResults};
 
 mod dataset;
@@ -15,7 +16,7 @@ mod styles;
 pub fn render<B: Backend>(
     terminal: &mut Terminal<B>,
     ordered_user_results: &[UserResults],
-    instant_death: bool,
+    game_mode: GameMode,
     active_mode: &Mode,
 ) {
     let days_played_for = match ordered_user_results.first() {
@@ -54,7 +55,7 @@ pub fn render<B: Backend>(
 
             let chart_block = Block::default()
                 .borders(Borders::ALL)
-                .border_style(styles::borders(instant_death))
+                .border_style(styles::borders(game_mode))
                 .title_style(Style::default());
 
             let filtered_results: Vec<(f64, f64)> = (*ordered_user_results)
@@ -68,7 +69,11 @@ pub fn render<B: Backend>(
                 .collect::<Vec<(f64, f64)>>();
 
             let datasets = [Dataset::default()
-                .name(format!("{} over time", styles::graph_title(&active_mode)))
+                .name(format!(
+                    "{}: {} over time",
+                    game_mode,
+                    styles::graph_title(&active_mode)
+                ))
                 .marker(symbols::Marker::Braille)
                 .style(Style::default().fg(Color::Yellow))
                 .graph_type(GraphType::Line)
@@ -111,7 +116,7 @@ pub fn render<B: Backend>(
             f.render_widget(
                 Paragraph::new(
                     &mut [Text::raw(
-                        "^C to go back  ⇕ toggle instant death  ⇔ switch graph",
+                        "^C to go back  ⇕ cycle game mode  ⇔ switch graph",
                     )]
                     .iter(),
                 )

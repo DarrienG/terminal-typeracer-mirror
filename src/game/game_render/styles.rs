@@ -2,6 +2,7 @@ use tui::layout::Constraint;
 use tui::style::{Color, Style};
 
 use crate::game::game_render::GameState;
+use crate::game::GameMode;
 
 const LARGE_TYPING_LAYOUT: [Constraint; 4] = [
     Constraint::Percentage(0),
@@ -59,7 +60,9 @@ pub fn get_stats_bounds(height: u16) -> [Constraint; 3] {
 }
 
 pub fn instant_death_border_style(game_state: &GameState) -> Style {
-    if game_state.config.display_settings.simple_borders && !game_state.instant_death {
+    if game_state.config.display_settings.simple_borders
+        && game_state.game_mode != GameMode::InstantDeath
+    {
         return Style::default().fg(Color::Red);
     }
 
@@ -73,7 +76,9 @@ pub fn instant_death_border_style(game_state: &GameState) -> Style {
 }
 
 pub fn regular_border_style(game_state: &GameState) -> Style {
-    if game_state.config.display_settings.simple_borders && !game_state.instant_death {
+    if game_state.config.display_settings.simple_borders
+        && game_state.game_mode != GameMode::InstantDeath
+    {
         return Style::default().fg(Color::Reset);
     }
 

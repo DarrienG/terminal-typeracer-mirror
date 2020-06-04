@@ -104,7 +104,11 @@ fn main() -> Result<(), Error> {
 
     let legacy_wpm = args.is_present("LEGACY_WPM");
 
-    let instant_death = args.is_present("INSTANT_DEATH");
+    let game_mode = if args.is_present("INSTANT_DEATH") {
+        game::GameMode::InstantDeath
+    } else {
+        game::GameMode::Default
+    };
 
     let stats = &mut stats::Stats::new(legacy_wpm);
 
@@ -124,6 +128,12 @@ fn main() -> Result<(), Error> {
             Err(e) => return Result::Err(Error::new(ErrorKind::ConnectionRefused, e)),
         }
     }
+    if !db::check_for_migration(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
+        match db::do_migration(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
+            Ok(_) => (),
+            Err(e) => return Result::Err(Error::new(ErrorKind::ConnectionRefused, e)),
+        }
+    }
 
     let mut action = Action::NextPassage;
     while action != actions::Action::Quit {
@@ -131,7 +141,7 @@ fn main() -> Result<(), Error> {
             passage_controller.retrieve_passage(action),
             stats,
             debug_enabled,
-            instant_death,
+            game_mode,
             VERSION,
             &typeracer_config,
         );

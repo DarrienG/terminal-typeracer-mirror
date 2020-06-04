@@ -4,6 +4,7 @@ use rusqlite::{params, Connection, Result};
 use std::path::PathBuf;
 
 use crate::dirs::setup_dirs::get_quote_dirs;
+use crate::game;
 use crate::passage_controller::PassageInfo;
 use crate::stats::Stats;
 use std::convert::TryFrom;
@@ -13,7 +14,7 @@ pub fn store_stats(
     db_path: &PathBuf,
     game_stats: &Stats,
     passage_info: &PassageInfo,
-    instant_death: bool,
+    game_mode: game::GameMode,
 ) -> Result<(), rusqlite::Error> {
     if !should_persist(passage_info) {
         return Ok(());
@@ -36,7 +37,7 @@ pub fn store_stats(
             wpm,
             accuracy,
             highest_combo,
-            instant_death,
+            game_mode,
             when_played_secs
         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         params![
@@ -44,7 +45,7 @@ pub fn store_stats(
             ToSql::to_sql(&i64::try_from(game_stats.get_wpm()).unwrap())?,
             game_stats.get_typing_accuracy(),
             ToSql::to_sql(&i64::try_from(game_stats.get_highest_combo()).unwrap())?,
-            instant_death,
+            game_mode as i64,
             ToSql::to_sql(
                 &i64::try_from(
                     SystemTime::now()

@@ -6,6 +6,8 @@ use termion::input::TermRead;
 use tui::backend::Backend;
 use tui::terminal::Terminal;
 
+use crate::game::GameMode;
+
 mod graphs_render;
 mod user_result_mapper;
 
@@ -38,26 +40,25 @@ const MODES: [Mode; 3] = [Mode::Wpm, Mode::Accuracy, Mode::Combo];
 pub fn show_graphs<B: Backend>(
     terminal: &mut Terminal<B>,
     db_path: &PathBuf,
-    instant_death_from_game: bool,
+    game_mode_from_game: GameMode,
 ) -> Result<(), rusqlite::Error> {
     let conn = Connection::open(db_path)?;
 
-    let mut instant_death = instant_death_from_game;
+    let mut game_mode = game_mode_from_game;
     let mut current_mode = 0;
 
     loop {
         let stdin = stdin();
         let user_results = user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
-            &conn,
-            instant_death,
+            &conn, game_mode,
         )?);
 
-        graphs_render::render(terminal, &user_results, instant_death, &MODES[current_mode]);
+        graphs_render::render(terminal, &user_results, game_mode, &MODES[current_mode]);
 
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
             Key::Ctrl('c') => return Ok(()),
-            Key::Up | Key::Down => instant_death = !instant_death,
+            Key::Up | Key::Down => game_mode = game_mode.next(),
             Key::Left => current_mode = decrement_current_mode(current_mode),
             Key::Right => current_mode = increment_current_mode(current_mode),
             _ => (),
