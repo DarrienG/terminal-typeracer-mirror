@@ -112,7 +112,7 @@ fn main() -> Result<(), Error> {
 
     let stats = &mut stats::Stats::new(legacy_wpm);
 
-    if !lang_pack::check_lang_pack(&typeracer_config.repo_version) {
+    if !lang_pack::check_lang_pack(&typeracer_config) {
         let result =
             lang_pack::retrieve_lang_pack(&typeracer_config.repo_version, &typeracer_config);
         match result {
@@ -121,7 +121,6 @@ fn main() -> Result<(), Error> {
             Ok(true) => (),
         }
     }
-
     if !db::check_stats_db() {
         match db::create_database(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
             Ok(_) => (),
