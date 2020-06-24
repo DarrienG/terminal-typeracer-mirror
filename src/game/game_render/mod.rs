@@ -106,7 +106,7 @@ pub fn render<B: Backend>(
                             .title_style(Style::default());
                         f.render_widget(
                             Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
-                                .block(debug_block.clone().title("DEBUG ENABLED"))
+                                .block(debug_block.title("DEBUG ENABLED"))
                                 .wrap(true)
                                 .alignment(Alignment::Left),
                             chunks[1],
@@ -119,7 +119,7 @@ pub fn render<B: Backend>(
 
                     f.render_widget(
                         Paragraph::new(game_state.texts.passage.iter())
-                            .block(passage_block.clone().title(&game_state.title))
+                            .block(passage_block.title(&game_state.title))
                             .wrap(true)
                             .alignment(Alignment::Left),
                         chunks[2],
@@ -140,7 +140,7 @@ pub fn render<B: Backend>(
 
                     f.render_widget(
                         Paragraph::new(game_state.texts.input.iter())
-                            .block(typing_block.clone().title("Type out passage here"))
+                            .block(typing_block.title("Type out passage here"))
                             .wrap(true)
                             .alignment(Alignment::Left)
                             .style(style),
@@ -174,7 +174,7 @@ pub fn render<B: Backend>(
                     let value_column_width = 5;
                     f.render_widget(
                         Table::new(headers, rows)
-                            .block(stats_block.clone().title("Stats"))
+                            .block(stats_block.title("Stats"))
                             .widths(&[
                                 Constraint::Length(stat_column_width),
                                 Constraint::Length(value_column_width),
@@ -206,7 +206,7 @@ pub fn render<B: Backend>(
                     ]
                     .iter(),
                 )
-                .block(shortcut_block.clone())
+                .block(shortcut_block)
                 .alignment(Alignment::Center), chunks[0]);
             }
         })

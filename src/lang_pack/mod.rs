@@ -89,12 +89,7 @@ fn check_extra_lang_packs(config: &TyperacerConfig) -> bool {
         .read_dir()
         .expect("Directory disappeared when we tried to read it.")
         .map(|wrapped_dir| wrapped_dir.expect("Unable to read dir"))
-        .map(|dir| {
-            (
-                dir.file_name().to_string_lossy().to_string(),
-                PathBuf::from(dir.path()),
-            )
-        })
+        .map(|dir| (dir.file_name().to_string_lossy().to_string(), dir.path()))
         .collect::<HashMap<String, PathBuf>>();
 
     for repo in config.extra_repos.iter() {
