@@ -1,4 +1,4 @@
-use directories::ProjectDirs;
+use directories_next::ProjectDirs;
 use serde::Deserialize;
 use std::fs;
 use std::fs::File;

@@ -1,4 +1,4 @@
-use directories::ProjectDirs;
+use directories_next::ProjectDirs;
 use std::fs;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};

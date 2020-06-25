@@ -35,7 +35,7 @@ overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal
-tui = "0.9.4"
+tui = "0.9.5"
 termion = "1.5.5"
 unicode-width = "0.1.7"
 
@@ -43,12 +43,12 @@ unicode-width = "0.1.7"
 unicode-segmentation = "1.6.0"
 
 # For lang pack and config
-directories = "2.0.2"
+directories-next = "1.0.1"
 toml = "0.5.6"
-serde = { version = "1.0.110", features = ["derive"] }
+serde = { version = "1.0.114", features = ["derive"] }
 
 # For downloading lang pack
-git2 = "0.13.5"
+git2 = "0.13.6"
 
 # For picking random files
 rand = "0.7.3"
