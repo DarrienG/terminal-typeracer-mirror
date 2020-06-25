@@ -177,8 +177,8 @@ pub fn retrieve_lang_pack(
                     ) {
                         Ok(()) => {
                             step_instruction.push_str(&format!(
-                                "Downloaded and installed user repo: {}\n",
-                                repo.url
+                                "Downloaded and installed user repo: {} as {}\n",
+                                repo.url, repo.name
                             ));
                         }
                         Err(e) => step_instruction.push_str(&format!(
