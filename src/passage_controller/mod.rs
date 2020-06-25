@@ -404,7 +404,7 @@ mod tests {
     fn test_get_next_passage_overwrite() {
         // Check to see if we keep asking for next passages they're always valid
         // History of 5 so we can loop through history multiple times
-        let default = defaults::construct_default();
+        let default = Default::default();
         let mut passage_controller = Controller::new(5, &default);
         for _ in 0..4000 {
             passage_controller.retrieve_next_passage();
@@ -420,7 +420,7 @@ mod tests {
 
         // Since we return a reference to a passage_info, and these methods require a mutable
         // reference, we have to clone to make the borrow checker happy.
-        let default = defaults::construct_default();
+        let default = Default::default();
         let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
         let mut previous_passage = (*passage_controller.retrieve_previous_passage()).clone();
@@ -433,7 +433,7 @@ mod tests {
 
     #[test]
     fn test_verify_history_integrity() {
-        let default = defaults::construct_default();
+        let default = Default::default();
         let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
         let passage0 = (*passage_controller.retrieve_passage(Action::PreviousPassage)).clone();
@@ -465,7 +465,7 @@ mod tests {
 
     #[test]
     fn test_verify_restart() {
-        let default = defaults::construct_default();
+        let default = Default::default();
         let mut passage_controller = Controller::new(5, &default);
         passage_controller.retrieve_next_passage();
 

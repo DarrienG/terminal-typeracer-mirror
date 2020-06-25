@@ -12,6 +12,7 @@ pub struct TyperacerConfig {
     pub display_settings: Display,
     pub repo: String,
     pub repo_version: String,
+    pub extra_repos: Vec<ExtraRepo>,
     pub history_size: usize,
     pub combo_config: Combo,
 }
@@ -22,6 +23,7 @@ pub struct RawTyperacerConfig {
     pub display_settings: Option<RawDisplay>,
     pub repo: Option<String>,
     pub repo_version: Option<String>,
+    pub extra_repos: Option<Vec<ExtraRepo>>,
     pub history_size: Option<usize>,
 }
 
@@ -29,6 +31,13 @@ pub struct RawTyperacerConfig {
 pub struct LangPacks {
     pub whitelisted: Option<Vec<String>>,
     pub blacklisted: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ExtraRepo {
+    pub version: String,
+    pub url: String,
+    pub name: String,
 }
 
 // Raw version not yet available. Still deciding how to properly surface
@@ -65,14 +74,14 @@ pub fn get_config() -> TyperacerConfig {
             );
             println!("Press <ENTER> to continue");
             user_enter();
-            defaults::construct_default()
+            Default::default()
         }
         Ok(v) => match validator::validate_config(v) {
             Err(validate_err) => {
                 println!("Error validating config file:\n{:#?}", validate_err);
                 println!("Press <ENTER> to continue");
                 user_enter();
-                defaults::construct_default()
+                Default::default()
             }
             Ok(cfg) => construct_config(cfg),
         },
@@ -95,7 +104,7 @@ fn get_config_raw() -> Result<RawTyperacerConfig, Error> {
 }
 
 fn construct_config(raw_config: RawTyperacerConfig) -> TyperacerConfig {
-    let default_config = defaults::construct_default();
+    let default_config: TyperacerConfig = Default::default();
     TyperacerConfig {
         lang_packs: raw_config.lang_packs,
         display_settings: construct_display(
@@ -107,6 +116,7 @@ fn construct_config(raw_config: RawTyperacerConfig) -> TyperacerConfig {
         repo_version: raw_config
             .repo_version
             .unwrap_or(default_config.repo_version),
+        extra_repos: raw_config.extra_repos.unwrap_or(default_config.extra_repos),
         history_size: raw_config
             .history_size
             .unwrap_or(default_config.history_size),

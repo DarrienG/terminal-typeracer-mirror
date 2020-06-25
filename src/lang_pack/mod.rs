@@ -1,4 +1,6 @@
+use git2::Error as GitError;
 use git2::{build, Repository};
+use std::collections::HashMap;
 use std::fs::{read_dir, File};
 use std::io::{stdin, stdout, BufRead, BufReader, Error};
 use std::path::{Path, PathBuf};
@@ -14,17 +16,15 @@ use crate::dirs::setup_dirs;
 
 mod lang_pack_render;
 
-fn download_and_checkout(url: &str, repo_path: &PathBuf, data_pack_version: &str) {
+fn download_and_checkout(
+    url: &str,
+    repo_path: &PathBuf,
+    data_pack_version: &str,
+) -> Result<(), GitError> {
     let repo = if Path::new(repo_path).exists() {
-        match Repository::open(repo_path) {
-            Ok(repo) => repo,
-            Err(e) => panic!("Unable to open repo: {}", e),
-        }
+        Repository::open(repo_path)?
     } else {
-        match Repository::clone(url, repo_path) {
-            Ok(repo) => repo,
-            Err(e) => panic!("Unable to clone repo: {}", e),
-        }
+        Repository::clone(url, repo_path)?
     };
 
     let mut remote = repo
@@ -33,17 +33,15 @@ fn download_and_checkout(url: &str, repo_path: &PathBuf, data_pack_version: &str
 
     let mut fetch_options = git2::FetchOptions::new();
     fetch_options.download_tags(git2::AutotagOption::All);
-    remote
-        .fetch(&[data_pack_version], Some(&mut fetch_options), None)
-        .expect("Failed to fetch");
+    remote.fetch(&[data_pack_version], Some(&mut fetch_options), None)?;
 
-    repo.set_head(&format!("refs/remotes/origin/{}", data_pack_version))
-        .expect("Unable to checkout version of lang pack");
+    repo.set_head(&format!("refs/remotes/origin/{}", data_pack_version))?;
 
     repo.checkout_head(Some(
         build::CheckoutBuilder::new().remove_untracked(true).force(),
-    ))
-    .expect("Failed to checkout HEAD");
+    ))?;
+
+    Ok(())
 }
 
 fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
@@ -67,13 +65,42 @@ fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
     }
 }
 
-pub fn check_lang_pack(lang_pack_version: &str) -> bool {
+pub fn check_lang_pack(config: &TyperacerConfig) -> bool {
+    check_main_lang_pack(&config.repo_version) && check_extra_lang_packs(config)
+}
+
+fn check_main_lang_pack(lang_pack_version: &str) -> bool {
     let quote_dir = setup_dirs::get_quote_dirs().main_pack_dir;
     if quote_dir.exists() && read_dir(&quote_dir).unwrap().count() > 0 {
         check_proper_version(lang_pack_version, &quote_dir)
     } else {
         false
     }
+}
+
+fn check_extra_lang_packs(config: &TyperacerConfig) -> bool {
+    let mut clean = true;
+    let extra_dir_location = setup_dirs::get_quote_dirs().extra_pack_dir;
+    if !extra_dir_location.exists() {
+        return false;
+    }
+
+    let extra_repos = extra_dir_location
+        .read_dir()
+        .expect("Directory disappeared when we tried to read it.")
+        .map(|wrapped_dir| wrapped_dir.expect("Unable to read dir"))
+        .map(|dir| (dir.file_name().to_string_lossy().to_string(), dir.path()))
+        .collect::<HashMap<String, PathBuf>>();
+
+    for repo in config.extra_repos.iter() {
+        if !extra_repos.contains_key(&repo.name) {
+            clean = false;
+        } else {
+            clean = check_proper_version(&repo.version, &extra_repos[&repo.name]);
+        }
+    }
+
+    clean
 }
 
 /// Retrieves the langpack with the given version.
@@ -88,7 +115,8 @@ pub fn retrieve_lang_pack(
 
     let mut terminal = Terminal::new(backend)?;
 
-    let mut step_instruction = "Lang pack (1.5Mi installed) not on version compatible with your typeracer, install the proper version? (requires an internet connection)\nYes: y, No: n\n".to_string();
+    let mut step_instruction =
+        "Found updated lang packs! Update to the latest versions? (y/n)\n".to_string();
     let mut step_count = 0;
 
     let result: Result<(), Error> = Ok(());
@@ -103,7 +131,7 @@ pub fn retrieve_lang_pack(
                         Key::Char('y') | Key::Char('Y') => {
                             step_count += 1;
                             step_instruction.push_str(&format!(
-                                "\nMaking data dir at: {}\n",
+                                "Making data dir at: {}\n",
                                 setup_dirs::create_data_dir(None).to_str().unwrap()
                             ));
                             break;
@@ -119,14 +147,50 @@ pub fn retrieve_lang_pack(
             }
             2 => {
                 step_count += 1;
-                download_and_checkout(
+                match download_and_checkout(
                     &typeracer_config.repo,
                     &setup_dirs::get_quote_dirs().main_pack_dir,
                     data_pack_version,
-                );
-                step_instruction.push_str(
-                        "Lang pack downloaded and ready to go!\nPress any key to continue or ^C to exit.\n",
-                    )
+                ) {
+                    Ok(()) => {
+                        step_instruction.push_str(&format!(
+                            "Main lang pack downloaded and ready to go!\n{}",
+                            get_extra_repos_string(&typeracer_config)
+                        ));
+                    }
+                    Err(e) => {
+                        step_count = 4;
+                        step_instruction.push_str(&format!(
+                            "Trouble downloading main repo at: {} error: {} please try again\n",
+                            typeracer_config.repo, e
+                        ));
+                    }
+                };
+            }
+            3 => {
+                step_count += 1;
+                for repo in typeracer_config.extra_repos.iter() {
+                    match download_and_checkout(
+                        &repo.url,
+                        &setup_dirs::get_quote_dirs().extra_pack_dir.join(&repo.name),
+                        &repo.version,
+                    ) {
+                        Ok(()) => {
+                            step_instruction.push_str(&format!(
+                                "Downloaded and installed user repo: {} as {}\n",
+                                repo.url, repo.name
+                            ));
+                        }
+                        Err(e) => step_instruction.push_str(&format!(
+                            "Trouble downloading extra repo: {}, error: {}. Please try again.\n",
+                            repo.url, e
+                        )),
+                    };
+                }
+            }
+            4 => {
+                step_count += 1;
+                step_instruction.push_str("Press any key to continue or ^C to exit.\n");
             }
             _ => {
                 let c = stdin.keys().find_map(Result::ok);
@@ -136,5 +200,16 @@ pub fn retrieve_lang_pack(
                 });
             }
         }
+    }
+}
+
+fn get_extra_repos_string(config: &TyperacerConfig) -> String {
+    if config.extra_repos.is_empty() {
+        "".to_owned()
+    } else {
+        format!(
+            "Downloading [{}] extra user configured repos\n",
+            config.extra_repos.len()
+        )
     }
 }

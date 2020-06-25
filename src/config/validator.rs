@@ -41,6 +41,7 @@ mod tests {
             display_settings: None,
             repo: None,
             repo_version: None,
+            extra_repos: None,
             history_size: None,
         })
         .is_ok());
@@ -56,6 +57,7 @@ mod tests {
             display_settings: None,
             repo: None,
             repo_version: None,
+            extra_repos: None,
             history_size: None,
         })
         .is_err());
@@ -71,6 +73,7 @@ mod tests {
             display_settings: None,
             repo: None,
             repo_version: None,
+            extra_repos: None,
             history_size: None,
         })
         .is_ok());
@@ -83,6 +86,7 @@ mod tests {
             display_settings: None,
             repo: None,
             repo_version: None,
+            extra_repos: None,
             history_size: None,
         })
         .is_ok());
