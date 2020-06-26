@@ -7,6 +7,7 @@ edition = "2018"
 # We don't want assets included and the like
 include = [
     "**/*.rs",
+    "**/*.sql",
     "Cargo.toml",
 ]
 description="A terminal typing game. Race to see the fastest time you can get!"
