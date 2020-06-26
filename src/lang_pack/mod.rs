@@ -1,7 +1,8 @@
 use git2::Error as GitError;
 use git2::{build, Repository};
-use std::collections::HashMap;
-use std::fs::{read_dir, File};
+use itertools::Itertools;
+use std::collections::{HashMap, HashSet};
+use std::fs::{read_dir, remove_dir_all, File};
 use std::io::{stdin, stdout, BufRead, BufReader, Error};
 use std::path::{Path, PathBuf};
 use termion::event::Key;
@@ -78,6 +79,16 @@ fn check_main_lang_pack(lang_pack_version: &str) -> bool {
     }
 }
 
+/// Get extra directories as map of {simple simple name, actual path on computer}
+fn extra_repos_as_map(extra_dir_location: &PathBuf) -> HashMap<String, PathBuf> {
+    extra_dir_location
+        .read_dir()
+        .expect("Directory disappeared when we tried to read it.")
+        .map(|wrapped_dir| wrapped_dir.expect("Unable to read dir"))
+        .map(|dir| (dir.file_name().to_string_lossy().to_string(), dir.path()))
+        .collect::<HashMap<String, PathBuf>>()
+}
+
 fn check_extra_lang_packs(config: &TyperacerConfig) -> bool {
     let mut clean = true;
     let extra_dir_location = setup_dirs::get_quote_dirs().extra_pack_dir;
@@ -85,22 +96,41 @@ fn check_extra_lang_packs(config: &TyperacerConfig) -> bool {
         return false;
     }
 
-    let extra_repos = extra_dir_location
-        .read_dir()
-        .expect("Directory disappeared when we tried to read it.")
-        .map(|wrapped_dir| wrapped_dir.expect("Unable to read dir"))
-        .map(|dir| (dir.file_name().to_string_lossy().to_string(), dir.path()))
-        .collect::<HashMap<String, PathBuf>>();
+    let extra_repos = extra_repos_as_map(&extra_dir_location);
+    clean = clean && config.extra_repos.len() == extra_repos.len();
 
     for repo in config.extra_repos.iter() {
         if !extra_repos.contains_key(&repo.name) {
             clean = false;
         } else {
-            clean = check_proper_version(&repo.version, &extra_repos[&repo.name]);
+            clean = clean && check_proper_version(&repo.version, &extra_repos[&repo.name]);
         }
     }
 
     clean
+}
+
+fn repos_to_clean(config: &TyperacerConfig) -> HashSet<PathBuf> {
+    let extra_dir_location = setup_dirs::get_quote_dirs().extra_pack_dir;
+    if !extra_dir_location.exists() {
+        return Default::default();
+    }
+    let mut currently_installed_repos = extra_repos_as_map(&extra_dir_location);
+
+    for repo in config.extra_repos.iter() {
+        currently_installed_repos.remove(&repo.name);
+    }
+
+    currently_installed_repos.values().cloned().collect()
+}
+
+fn clean_extra_repos(stale_repos: &HashSet<PathBuf>) -> bool {
+    let mut success = true;
+    for stale_repo in stale_repos.iter() {
+        success = success && remove_dir_all(stale_repo).is_ok();
+    }
+
+    success
 }
 
 /// Retrieves the langpack with the given version.
@@ -118,6 +148,7 @@ pub fn retrieve_lang_pack(
     let mut step_instruction =
         "Found updated lang packs! Update to the latest versions? (y/n)\n".to_string();
     let mut step_count = 0;
+    let mut stale_repo_paths: HashSet<PathBuf> = Default::default();
 
     let result: Result<(), Error> = Ok(());
 
@@ -159,7 +190,7 @@ pub fn retrieve_lang_pack(
                         ));
                     }
                     Err(e) => {
-                        step_count = 4;
+                        step_count = 5;
                         step_instruction.push_str(&format!(
                             "Trouble downloading main repo at: {} error: {} please try again\n",
                             typeracer_config.repo, e
@@ -187,8 +218,38 @@ pub fn retrieve_lang_pack(
                         )),
                     };
                 }
+                stale_repo_paths = repos_to_clean(typeracer_config);
+                if !stale_repo_paths.is_empty() {
+                    step_instruction.push_str(&format!(
+                        "Found unreferenced repos:\n{}\nWould you like to delete them? (y/n)\n",
+                        stale_repo_paths
+                            .iter()
+                            .map(|path| format!("- {}", path.to_str().unwrap()))
+                            .join("\n")
+                    ));
+                } else {
+                    step_count += 1;
+                }
             }
             4 => {
+                step_count += 1;
+                for c in stdin.keys() {
+                    match c.unwrap() {
+                        Key::Char('y') | Key::Char('Y') => {
+                            step_instruction.push_str(&get_cleaned_repos_string(
+                                clean_extra_repos(&stale_repo_paths),
+                            ));
+                            break;
+                        }
+                        Key::Char('n') | Key::Char('N') => {
+                            step_instruction.push_str("Requested not to delete old repos.\n");
+                            break;
+                        }
+                        _ => (),
+                    }
+                }
+            }
+            5 => {
                 step_count += 1;
                 step_instruction.push_str("Press any key to continue or ^C to exit.\n");
             }
@@ -208,8 +269,16 @@ fn get_extra_repos_string(config: &TyperacerConfig) -> String {
         "".to_owned()
     } else {
         format!(
-            "Downloading [{}] extra user configured repos\n",
+            "Downloading [{}] extra user configured repos...\n",
             config.extra_repos.len()
         )
+    }
+}
+
+fn get_cleaned_repos_string(successful: bool) -> String {
+    if successful {
+        "Successfully deleted old repos!\n".to_owned()
+    } else {
+        "Issue deleting old repos. Try again later.\n".to_owned()
     }
 }
