@@ -235,7 +235,7 @@ impl<'a> Controller<'a> {
                     for (str_entry, dir_entry) in
                         izip!(entries.into_iter(), dir_entries.into_iter())
                     {
-                        if !whitelist.contains(&str_entry) {
+                        if whitelist.contains(&str_entry) {
                             filtered_quote_dirs.push(dir_entry);
                         }
                     }
@@ -246,7 +246,7 @@ impl<'a> Controller<'a> {
                     for (str_entry, dir_entry) in
                         izip!(entries.into_iter(), dir_entries.into_iter())
                     {
-                        if !whitelist.contains(&str_entry) {
+                        if whitelist.contains(&str_entry) {
                             filtered_quote_dirs.push(dir_entry);
                         }
                     }
