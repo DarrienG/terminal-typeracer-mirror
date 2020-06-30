@@ -1,14 +1,17 @@
-use tui::backend::Backend;
-use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use tui::style::Color;
-use tui::style::{Modifier, Style};
-use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Row, Table, Text};
+use tui::{
+    backend::Backend,
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    style::Color,
+    style::{Modifier, Style},
+    terminal::Terminal,
+    widgets::{Block, Borders, Paragraph, Row, Table, Text},
+};
 
-use crate::config::TyperacerConfig;
-use crate::game::formatter::FormattedTexts;
-use crate::game::GameMode;
-use crate::stats;
+use crate::{
+    config::TyperacerConfig,
+    game::{formatter::FormattedTexts, GameMode},
+    stats,
+};
 
 mod styles;
 

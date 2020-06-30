@@ -1,19 +1,17 @@
-use git2::Error as GitError;
-use git2::{build, Repository};
+use git2::{
+    Error as GitError, {build, Repository},
+};
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
-use std::fs::{read_dir, remove_dir_all, File};
-use std::io::{stdin, stdout, BufRead, BufReader, Error};
 use std::path::{Path, PathBuf};
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use tui::backend::TermionBackend;
-use tui::Terminal;
+use std::{
+    collections::{HashMap, HashSet},
+    fs::{read_dir, remove_dir_all, File},
+    io::{stdin, stdout, BufRead, BufReader, Error},
+};
+use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
+use tui::{backend::TermionBackend, Terminal};
 
-use crate::config::TyperacerConfig;
-use crate::dirs::setup_dirs;
+use crate::{config::TyperacerConfig, dirs::setup_dirs};
 
 mod lang_pack_render;
 

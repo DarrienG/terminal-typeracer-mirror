@@ -1,5 +1,7 @@
-use tui::style::{Color, Style};
-use tui::widgets::Text;
+use tui::{
+    style::{Color, Style},
+    widgets::Text,
+};
 
 use crate::game::indexer;
 use crate::game::word_processing::GameMode;

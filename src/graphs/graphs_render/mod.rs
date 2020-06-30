@@ -1,9 +1,11 @@
-use tui::backend::Backend;
-use tui::layout::{Alignment, Constraint, Direction, Layout};
-use tui::style::{Color, Modifier, Style};
-use tui::symbols;
-use tui::terminal::Terminal;
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph, Text};
+use tui::{
+    backend::Backend,
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Modifier, Style},
+    symbols,
+    terminal::Terminal,
+    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph, Text},
+};
 
 use crate::game::GameMode;
 use crate::graphs::{Mode, UserResults};

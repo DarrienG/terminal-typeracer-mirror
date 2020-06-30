@@ -1,10 +1,11 @@
 use rusqlite::{Connection, Result, NO_PARAMS};
 
-use std::path::PathBuf;
+use std::{
+    fs::read_dir,
+    path::{Path, PathBuf},
+};
 
 use crate::dirs::setup_dirs;
-use std::fs::read_dir;
-use std::path::Path;
 
 mod embedded {
     use refinery::embed_migrations;

@@ -1,14 +1,16 @@
 use info_render::render;
 use itertools::izip;
-use std::io::stdin;
-use std::{thread, time};
-use termion::event::Key;
-use termion::input::TermRead;
-use tui::backend::Backend;
-use tui::style::Color;
-use tui::style::Style;
-use tui::terminal::Terminal;
-use tui::widgets::Text;
+use std::{
+    io::stdin,
+    {thread, time},
+};
+use termion::{event::Key, input::TermRead};
+use tui::{
+    backend::Backend,
+    style::{Color, Style},
+    terminal::Terminal,
+    widgets::Text,
+};
 
 mod info_render;
 

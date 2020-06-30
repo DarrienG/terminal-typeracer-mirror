@@ -1,7 +1,6 @@
 use rusqlite::{params, Connection, Result};
 
-use crate::game::GameMode;
-use crate::graphs::RawUserResults;
+use crate::{game::GameMode, graphs::RawUserResults};
 
 pub fn aggregrate_graph_data(
     conn: &Connection,

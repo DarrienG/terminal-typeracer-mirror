@@ -1,10 +1,11 @@
 use directories_next::ProjectDirs;
 use serde::Deserialize;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
-use std::io::{stdin, stdout, Error, ErrorKind, Write};
 use std::path::PathBuf;
+use std::{
+    fs,
+    fs::File,
+    io::{stdin, stdout, Error, ErrorKind, Read, Write},
+};
 
 #[derive(Debug, Deserialize)]
 pub struct TyperacerConfig {

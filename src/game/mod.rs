@@ -1,23 +1,17 @@
 use config::TyperacerConfig;
 use graphs::show_graphs;
 use info::show_info;
-use std::fmt;
-use std::io::{stdin, stdout};
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use tui::backend::TermionBackend;
-use tui::widgets::Text;
-use tui::Terminal;
+use std::{
+    fmt,
+    io::{stdin, stdout},
+};
+use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
+use tui::{backend::TermionBackend, widgets::Text, Terminal};
 
-use crate::actions::Action;
-use crate::config;
-use crate::dirs::setup_dirs::get_db_path;
-use crate::graphs;
-use crate::info;
-use crate::passage_controller::PassageInfo;
-use crate::stats;
+use crate::{
+    actions::Action, config, dirs::setup_dirs::get_db_path, graphs, info,
+    passage_controller::PassageInfo, stats,
+};
 
 pub mod formatter;
 pub mod indexer;

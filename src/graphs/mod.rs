@@ -1,10 +1,7 @@
 use rusqlite::{Connection, Result};
-use std::io::stdin;
-use std::path::PathBuf;
-use termion::event::Key;
-use termion::input::TermRead;
-use tui::backend::Backend;
-use tui::terminal::Terminal;
+use std::{io::stdin, path::PathBuf};
+use termion::{event::Key, input::TermRead};
+use tui::{backend::Backend, terminal::Terminal};
 
 use crate::game::GameMode;
 

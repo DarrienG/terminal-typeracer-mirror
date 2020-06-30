@@ -1,13 +1,13 @@
 use itertools::izip;
 use rand::Rng;
-use std::fs::{read_dir, DirEntry, File};
-use std::io::{BufRead, BufReader};
-use std::path;
-use std::path::PathBuf;
+use std::{
+    fs::{read_dir, DirEntry, File},
+    io::{BufRead, BufReader},
+    path,
+    path::PathBuf,
+};
 
-use crate::actions::Action;
-use crate::config::TyperacerConfig;
-use crate::dirs::setup_dirs;
+use crate::{actions::Action, config::TyperacerConfig, dirs::setup_dirs};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PassageInfo {

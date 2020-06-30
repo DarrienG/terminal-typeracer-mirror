@@ -1,5 +1,6 @@
-use crate::config::RawTyperacerConfig;
 use std::io::{Error, ErrorKind};
+
+use crate::config::RawTyperacerConfig;
 
 /// Validates that the given config is valid.
 /// If config is not valid, returns an err rather than the

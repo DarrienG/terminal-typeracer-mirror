@@ -1,8 +1,10 @@
 use std::cmp::Ordering;
 use tui::style::{Color, Style};
 
-use crate::game::GameMode;
-use crate::graphs::{Mode, UserResults};
+use crate::{
+    game::GameMode,
+    graphs::{Mode, UserResults},
+};
 
 pub struct YAxisData {
     pub bounds: [f64; 2],

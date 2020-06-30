@@ -1,8 +1,10 @@
 use info::InfoData;
-use tui::backend::Backend;
-use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph};
+use tui::{
+    backend::Backend,
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    terminal::Terminal,
+    widgets::{Block, Borders, Paragraph},
+};
 
 use crate::info;
 

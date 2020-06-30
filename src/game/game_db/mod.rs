@@ -1,14 +1,14 @@
-use rusqlite::types::ToSql;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{params, types::ToSql, Connection, Result};
 
-use std::path::PathBuf;
+use std::{
+    convert::TryFrom,
+    path::PathBuf,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-use crate::dirs::setup_dirs::get_quote_dirs;
-use crate::game;
-use crate::passage_controller::PassageInfo;
-use crate::stats::Stats;
-use std::convert::TryFrom;
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::{
+    dirs::setup_dirs::get_quote_dirs, game, passage_controller::PassageInfo, stats::Stats,
+};
 
 pub fn store_stats(
     db_path: &PathBuf,

@@ -1,5 +1,7 @@
-use tui::layout::Constraint;
-use tui::style::{Color, Style};
+use tui::{
+    layout::Constraint,
+    style::{Color, Style},
+};
 
 use crate::game::game_render::GameState;
 use crate::game::GameMode;

@@ -1,8 +1,10 @@
-use tui::backend::Backend;
-use tui::layout::{Alignment, Constraint, Direction, Layout};
-use tui::style::Style;
-use tui::terminal::Terminal;
-use tui::widgets::{Block, Borders, Paragraph, Text};
+use tui::{
+    backend::Backend,
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::Style,
+    terminal::Terminal,
+    widgets::{Block, Borders, Paragraph, Text},
+};
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
     terminal
