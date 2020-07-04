@@ -2,9 +2,9 @@ use config::{Combo, Display, TyperacerConfig};
 
 use crate::config;
 
-const DEFAULT_LANG_PACK_VERSION: &str = "lang-0.3";
+const DEFAULT_LANG_PACK_VERSION: &str = "1.0.0";
 
-const DEFAULT_HISTORY_SIZE: usize = 20;
+const DEFAULT_HISTORY_SIZE: usize = 50;
 
 const DEFAULT_COMBO_TRIGGER: usize = 60;
 
