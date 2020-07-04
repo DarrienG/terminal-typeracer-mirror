@@ -54,7 +54,7 @@ repo
 
 ## history_size
 `history_size` = number of previous passages to remember during runtime
-* default: `20`
+* default: `50`
 * This buffer is dynamically allocated, so memory usage will not balloon on
     start if this is set to a high number
 * The content of passages is stored in a buffer in history though, so a long
