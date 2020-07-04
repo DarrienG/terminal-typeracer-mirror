@@ -104,13 +104,14 @@ like this:
 
 ```toml
 repo = "https://gitlab.com/ttyperacer/lang-packs.git"
-repo_version = "lang-0.2"
+repo_version = "1.0.0"
 
 extra_repos = [
-  { name = "darrien-pack", url = "https://gitlab.com/DarrienG/extra-lang-packs.git", version = "neato-version2" }
+  { name = "legacy-pack", url = "https://gitlab.com/ttyperacer/extra-packs/legacy-pack.git", version = "1.0.0" },
+  { name = "chinese-pack", url = "https://gitlab.com/ttyperacer/extra-packs/chinese-pack.git", version = "0.1" },
 ]
 
-history_size = 50
+history_size = 100
 
 [lang_packs]
 blacklisted = ["default"]
