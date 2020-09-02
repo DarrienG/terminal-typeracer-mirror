@@ -12,6 +12,7 @@ use crate::{
     game::{formatter::FormattedTexts, GameMode},
     stats,
 };
+use std::collections::HashSet;
 
 mod styles;
 
@@ -28,22 +29,24 @@ pub struct GameState<'a> {
     pub word_idx: usize,
     pub passage_path: &'a str,
     pub current_word: &'a str,
+    pub mistaken_words: &'a HashSet<String>,
     pub complete: bool,
 }
 
 impl<'a> GameState<'a> {
     fn get_debug_output(&self) -> String {
-        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}, game mode: {}, num words: {}, complete: {}\npassage_path: {}\ncurrent_word: {}",
-                self.stats.get_legacy_wpm(),
-                self.word_idx,
-                self.stats.get_start_time(),
-                self.texts.error,
-                self.game_mode,
-                self.texts.passage.len(),
-                self.complete,
-                self.passage_path,
-                self.current_word,
-            )
+        format!("Running with options:\n Legacy WPM: {},  word_idx: {},  start: {}\nUser has err: {}, game mode: {}, num words: {}, complete: {}\npassage_path: {}\ncurrent_word: {}\nmistaken_words: {:?}",
+            self.stats.get_legacy_wpm(),
+            self.word_idx,
+            self.stats.get_start_time(),
+            self.texts.error,
+            self.game_mode,
+            self.texts.passage.len(),
+            self.complete,
+            self.passage_path,
+            self.current_word,
+            self.mistaken_words
+        )
     }
 }
 

@@ -12,7 +12,7 @@ mod embedded {
     embed_migrations!("src/db/migrations");
 }
 
-static DB_VERSION: i64 = 2;
+static DB_VERSION: i64 = 3;
 
 /// See if the stats db exists
 pub fn check_stats_db() -> bool {
@@ -25,6 +25,10 @@ pub fn check_stats_db() -> bool {
             > 0
 }
 
+/// Checks the existing database to see if we need to add/update tables.
+///
+/// returns false if we DO need to perform some update, specifically if the DB schema version
+/// doesn't match the version in the binary we're running.
 pub fn check_for_migration(path: &PathBuf) -> bool {
     let conn = Connection::open(path).expect("Unreachable DB");
     let db_version: Result<i64, rusqlite::Error> =
@@ -65,11 +69,12 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
             NO_PARAMS,
         )?;
     }
+    if let Err(a) = embedded::migrations::runner().run(&mut conn) {
+        println!("Error during migration: {}", a);
 
-    if embedded::migrations::runner().run(&mut conn).is_err() {
+        // This isn't an accurate error but not sure what to replace it with...
         return Err(rusqlite::Error::InvalidPath(path.to_path_buf()));
     }
-
     // UPDATE THIS MIGRATION CODE AS NEEDED. This should migrate data from
     // ancient_passage_stats to the most current schema
     if db_version == 0 && table_exists {

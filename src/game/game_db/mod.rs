@@ -1,13 +1,14 @@
 use rusqlite::{params, types::ToSql, Connection, Result};
 
+use crate::{
+    dirs::setup_dirs::get_quote_dirs, game, passage_controller::PassageInfo, stats::Stats,
+};
+use rand::Rng;
+use std::collections::HashSet;
 use std::{
     convert::TryFrom,
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
-};
-
-use crate::{
-    dirs::setup_dirs::get_quote_dirs, game, passage_controller::PassageInfo, stats::Stats,
 };
 
 pub fn store_stats(
@@ -59,6 +60,52 @@ pub fn store_stats(
     )?;
 
     Ok(())
+}
+
+pub fn store_mistaken_words(
+    db_path: &PathBuf,
+    mistaken_words: &HashSet<String>,
+) -> Result<(), rusqlite::Error> {
+    let mut conn = Connection::open(db_path)?;
+    let tx = conn.transaction()?;
+
+    for word in mistaken_words {
+        tx.execute(
+            "INSERT OR REPLACE INTO mistaken_words (word) VALUES (?1)",
+            params![word,],
+        )?;
+    }
+
+    tx.commit()
+}
+
+pub fn roll_to_delete_mistaken_words_typed_correctly(
+    db_path: &PathBuf,
+    words: &[&str],
+    mistaken_words: &HashSet<String>,
+) -> Result<(), rusqlite::Error> {
+    let mut conn = Connection::open(db_path)?;
+    let mut rng = rand::thread_rng();
+
+    let tx = conn.transaction()?;
+
+    for word in words {
+        match mistaken_words.get(&word.to_string()) {
+            Some(_a) => (),
+            _ => {
+                let random_val: f32 = rng.gen(); // in [0,1]
+                if random_val < 0.33 {
+                    // 1/3 chance of removing the word from the db
+                    tx.execute(
+                        "DELETE FROM mistaken_words where word = (?1)",
+                        params![word,],
+                    )?;
+                }
+            }
+        }
+    }
+
+    tx.commit()
 }
 
 /// Determines if we should persist data for the passage or not

@@ -2,6 +2,7 @@ use config::TyperacerConfig;
 use graphs::show_graphs;
 use info::show_info;
 use std::{
+    collections::HashSet,
     fmt,
     io::{stdin, stdout},
 };
@@ -25,6 +26,7 @@ mod game_render;
 pub enum GameMode {
     Default,
     InstantDeath,
+    Training,
 }
 
 impl GameMode {
@@ -32,6 +34,7 @@ impl GameMode {
         match self {
             GameMode::InstantDeath => GameMode::Default,
             GameMode::Default => GameMode::InstantDeath,
+            GameMode::Training => GameMode::Training,
         }
     }
 }
@@ -41,6 +44,7 @@ impl fmt::Display for GameMode {
         match self {
             GameMode::InstantDeath => write!(f, "Instant Death"),
             GameMode::Default => write!(f, "Default"),
+            GameMode::Training => write!(f, "Training"),
         }
     }
 }
@@ -49,6 +53,7 @@ impl fmt::Display for GameMode {
 impl From<GameMode> for i64 {
     fn from(gm: GameMode) -> i64 {
         match gm {
+            GameMode::Training => 2,
             GameMode::InstantDeath => 1,
             GameMode::Default => 0,
         }
@@ -57,6 +62,7 @@ impl From<GameMode> for i64 {
 impl From<i64> for GameMode {
     fn from(i: i64) -> Self {
         match i {
+            2 => GameMode::Training,
             1 => GameMode::InstantDeath,
             _ => GameMode::Default,
         }
@@ -94,6 +100,7 @@ pub fn play_game(
     };
 
     let mut user_input = String::new();
+    let mut mistaken_words: HashSet<String> = HashSet::new();
 
     // Split the passage into vec of words to work on one at a time
     let words: Vec<&str> = split::to_words(&passage_info.passage);
@@ -120,6 +127,7 @@ pub fn play_game(
                 } else {
                     words[current_word_idx]
                 },
+                mistaken_words: &mistaken_words,
             },
             typeracer_version,
         );
@@ -178,6 +186,7 @@ pub fn play_game(
                 } else {
                     user_input.push(c);
                 }
+
                 stats.update_wpm(current_word_idx, &words);
             }
             _ => {}
@@ -210,6 +219,10 @@ pub fn play_game(
             indexer::get_trying_letter_idx(&text_mode, &words, current_word_idx, &user_input);
         if formatted_texts.error && new_char {
             stats.increment_errors(current_letter_idx);
+
+            // Additionally build the set of mistaken words
+            mistaken_words.insert(words[current_word_idx].to_string());
+
             if game_mode == GameMode::InstantDeath {
                 formatted_texts = formatter::get_reformatted_failed_texts(&text_mode, &words);
                 continue;
@@ -232,6 +245,20 @@ pub fn play_game(
 
     if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, game_mode) {
         println!("HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
+    }
+
+    if game_mode == GameMode::Training {
+        if let Err(e) = game_db::roll_to_delete_mistaken_words_typed_correctly(
+            &get_db_path(),
+            &words,
+            &mistaken_words,
+        ) {
+            println!("HELP - TROUBLE DELETING MISTAKEN WORDS DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
+        }
+    }
+
+    if let Err(e) = game_db::store_mistaken_words(&get_db_path(), &mistaken_words) {
+        println!("HELP - TROUBLE STORING MISTAKEN WORDS DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
     }
 
     loop {
@@ -258,6 +285,7 @@ pub fn play_game(
                             } else {
                                 words[current_word_idx]
                             },
+                            mistaken_words: &mistaken_words,
                         },
                         typeracer_version,
                     );
@@ -287,6 +315,7 @@ pub fn play_game(
                             } else {
                                 words[current_word_idx]
                             },
+                            mistaken_words: &mistaken_words,
                         },
                         typeracer_version,
                     );

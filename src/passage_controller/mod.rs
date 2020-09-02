@@ -8,6 +8,8 @@ use std::{
 };
 
 use crate::{actions::Action, config::TyperacerConfig, dirs::setup_dirs};
+use rand::seq::SliceRandom;
+use rusqlite::{params, Connection};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PassageInfo {
@@ -46,6 +48,39 @@ impl<'a> Controller<'a> {
             first_run: true,
             config,
         }
+    }
+
+    pub fn retrieve_mistaken_words_passage(
+        &mut self,
+        conn: &Connection,
+    ) -> Result<PassageInfo, rusqlite::Error> {
+        let mut stmt = conn.prepare("SELECT word from mistaken_words")?;
+
+        let user_results_iter = stmt.query_map(params![], |row| Ok(row.get(0)?))?;
+
+        let words = user_results_iter
+            .map(|result| result.unwrap())
+            .collect::<Vec<String>>();
+
+        if words.is_empty() {
+            return Ok(PassageInfo {
+                passage: "You don't have any mistaken words! Play the default game mode for a while and make some mistakes!".to_owned(),
+                title: "Mistaken Words".to_owned(),
+                passage_path: "TRAINING_MODE_PATH".to_owned()
+            });
+        }
+
+        let words_string = words
+            .choose_multiple(&mut rand::thread_rng(), 25)
+            .cloned()
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        Ok(PassageInfo {
+            passage: words_string,
+            title: "Mistaken Words".to_owned(),
+            passage_path: "TRAINING_MODE_PATH".to_owned(),
+        })
     }
 
     /// Retrieve a passage.

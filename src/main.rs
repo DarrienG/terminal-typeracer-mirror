@@ -17,6 +17,7 @@ pub mod info;
 pub mod stats;
 
 use actions::Action;
+use rusqlite::Connection;
 
 #[cfg(not(debug_assertions))]
 fn debug_enabled_default() -> bool {
@@ -81,6 +82,14 @@ fn main() -> Result<(), Error> {
             .takes_value(false)
             .help("Play with instant death mode. One mistype and you lose!")
         )
+        .arg(
+            Arg::with_name("TRAINING")
+            .short("t")
+            .long("training")
+            .required(false)
+            .takes_value(false)
+            .help("Play in training mode. All the words you typed wrong are back to haunt you!")
+        )
         .get_matches();
 
     let mut passage_controller =
@@ -106,6 +115,8 @@ fn main() -> Result<(), Error> {
 
     let game_mode = if args.is_present("INSTANT_DEATH") {
         game::GameMode::InstantDeath
+    } else if args.is_present("TRAINING") {
+        game::GameMode::Training
     } else {
         game::GameMode::Default
     };
@@ -135,9 +146,27 @@ fn main() -> Result<(), Error> {
     }
 
     let mut action = Action::NextPassage;
+
     while action != actions::Action::Quit {
+        let mistaken_words_passage = match passage_controller.retrieve_mistaken_words_passage(
+            &Connection::open(&db::db_path(&dirs::setup_dirs::get_db_dir())).unwrap(),
+        ) {
+            Ok(p) => p,
+            _ => {
+                return Result::Err(Error::new(
+                    ErrorKind::NotFound,
+                    "Couldn't get mistaken words from database!",
+                ))
+            }
+        };
+
+        let passage_info = match game_mode {
+            game::GameMode::Training => &mistaken_words_passage,
+            _ => passage_controller.retrieve_passage(action),
+        };
+
         action = game::play_game(
-            passage_controller.retrieve_passage(action),
+            passage_info,
             stats,
             debug_enabled,
             game_mode,

@@ -47,7 +47,7 @@ pub struct Stats {
     legacy_wpm: bool,
     start_time: u64,
     time: Time,
-    properly_typed: Vec<bool>,
+    char_properly_typed: Vec<bool>,
     pub combo: usize,
     highest_combo: usize,
 }
@@ -61,7 +61,7 @@ impl Stats {
             legacy_wpm,
             start_time: 0,
             time: Time::new(),
-            properly_typed: Vec::new(),
+            char_properly_typed: Vec::new(),
             combo: 0,
             highest_combo: 0,
         }
@@ -109,14 +109,14 @@ impl Stats {
     }
 
     pub fn get_typing_accuracy(&self) -> f64 {
-        let letter_count = self.properly_typed.len();
+        let letter_count = self.char_properly_typed.len();
         let mut mistakes = 0;
 
         if letter_count == 0 {
             return 0.0;
         }
 
-        for typed_correctly in self.properly_typed.iter() {
+        for typed_correctly in self.char_properly_typed.iter() {
             if !typed_correctly {
                 mistakes += 1;
             }
@@ -126,14 +126,14 @@ impl Stats {
     }
 
     fn update_accuracy(&mut self, error: bool, current_letter: usize) {
-        if self.properly_typed.len() <= current_letter {
-            self.properly_typed.push(error);
+        if self.char_properly_typed.len() <= current_letter {
+            self.char_properly_typed.push(error);
         } else {
             // If the user has made a mistake, it is forever, otherwise we are
             // allowed to update.
             // If we didn't, then accuracy would always be 100% at the end!
-            if self.properly_typed[current_letter] {
-                self.properly_typed[current_letter] = error;
+            if self.char_properly_typed[current_letter] {
+                self.char_properly_typed[current_letter] = error;
             }
         }
     }
@@ -148,7 +148,7 @@ impl Stats {
         self.errors = 0;
         self.start_time = 0;
         self.combo = 0;
-        self.properly_typed = Vec::new();
+        self.char_properly_typed = Vec::new();
     }
 
     /// Create the vector of text elements
@@ -264,7 +264,7 @@ mod tests {
         stats.increment_combo(3);
         stats.increment_combo(4);
 
-        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(correct_vec, stats.char_properly_typed);
         assert_eq!(stats.get_typing_accuracy(), 100.0);
     }
 
@@ -280,7 +280,7 @@ mod tests {
         stats.increment_errors(3);
         stats.increment_errors(4);
 
-        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(correct_vec, stats.char_properly_typed);
         assert_eq!(stats.get_typing_accuracy(), 0.0);
     }
 
@@ -298,7 +298,7 @@ mod tests {
         stats.increment_combo(1);
         stats.increment_combo(2);
 
-        assert_eq!(correct_vec, stats.properly_typed);
+        assert_eq!(correct_vec, stats.char_properly_typed);
         assert_eq!(stats.get_typing_accuracy(), 0.0);
     }
 }
