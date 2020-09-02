@@ -79,6 +79,13 @@ pub fn store_mistaken_words(
     tx.commit()
 }
 
+/// This function is intended to run at the end of a training mode game, to give a chance to
+/// remove some words from the mistaken_words table in the database.
+///
+/// We do this by seeing if words in the typed passage also appear in the mistaken_words set
+/// for that passage (words the user made an error on). If a word was typed incorrectly, it doesn't
+/// get a chance to be removed from the mistaken_words table. Otherwise, we 'roll a dice' to
+/// determine if a correctly typed word should be removed.
 pub fn roll_to_delete_mistaken_words_typed_correctly(
     db_path: &PathBuf,
     words: &[&str],
@@ -93,7 +100,7 @@ pub fn roll_to_delete_mistaken_words_typed_correctly(
         match mistaken_words.get(&word.to_string()) {
             Some(_a) => (),
             _ => {
-                let random_val: f32 = rng.gen(); // in [0,1]
+                let random_val: f32 = rng.gen();
                 if random_val < 0.33 {
                     // 1/3 chance of removing the word from the db
                     tx.execute(

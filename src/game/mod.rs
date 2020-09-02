@@ -22,6 +22,9 @@ pub mod word_processing;
 mod game_db;
 mod game_render;
 
+const TERRIBLE_DB_FAILURE: &str =
+    "HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR:";
+
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum GameMode {
     Default,
@@ -244,7 +247,7 @@ pub fn play_game(
     }
 
     if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, game_mode) {
-        println!("HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
+        println!("{} {}", TERRIBLE_DB_FAILURE, e);
     }
 
     if game_mode == GameMode::Training {
@@ -253,12 +256,12 @@ pub fn play_game(
             &words,
             &mistaken_words,
         ) {
-            println!("HELP - TROUBLE DELETING MISTAKEN WORDS DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
+            println!("{} {}", TERRIBLE_DB_FAILURE, e);
         }
     }
 
     if let Err(e) = game_db::store_mistaken_words(&get_db_path(), &mistaken_words) {
-        println!("HELP - TROUBLE STORING MISTAKEN WORDS DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR: {}", e);
+        println!("{} {}", TERRIBLE_DB_FAILURE, e);
     }
 
     loop {
