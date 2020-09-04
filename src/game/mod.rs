@@ -33,10 +33,14 @@ pub enum GameMode {
 }
 
 impl GameMode {
+    // This is supposed to work like a baby state machine/ringbuffer
+    // All states should transition to a "next" state, and the states
+    // should transition as if they are a ringbuffer
+    // Next should always return a new value and never terminate.
     pub fn next(self) -> Self {
         match self {
-            GameMode::InstantDeath => GameMode::Default,
             GameMode::Default => GameMode::InstantDeath,
+            GameMode::InstantDeath => GameMode::Training,
             GameMode::Training => GameMode::Default,
         }
     }
