@@ -37,7 +37,7 @@ impl GameMode {
         match self {
             GameMode::InstantDeath => GameMode::Default,
             GameMode::Default => GameMode::InstantDeath,
-            GameMode::Training => GameMode::Training,
+            GameMode::Training => GameMode::Default,
         }
     }
 }
