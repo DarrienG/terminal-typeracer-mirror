@@ -55,7 +55,8 @@ pub fn show_graphs<B: Backend>(
         let c = stdin.keys().find_map(Result::ok);
         match c.unwrap() {
             Key::Ctrl('c') => return Ok(()),
-            Key::Up | Key::Down => game_mode = game_mode.next(),
+            Key::Up => game_mode = game_mode.prev(),
+            Key::Down => game_mode = game_mode.next(),
             Key::Left => current_mode = decrement_current_mode(current_mode),
             Key::Right => current_mode = increment_current_mode(current_mode),
             _ => (),

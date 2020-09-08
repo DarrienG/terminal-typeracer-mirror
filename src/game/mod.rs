@@ -37,11 +37,22 @@ impl GameMode {
     // All states should transition to a "next" state, and the states
     // should transition as if they are a ringbuffer
     // Next should always return a new value and never terminate.
+    // note - this and prev should real use ordinal
+    // There is a crate that provides this which we have opted not to use right now,
+    // but if this continues to expand, we should add it in
     pub fn next(self) -> Self {
         match self {
             GameMode::Default => GameMode::InstantDeath,
             GameMode::InstantDeath => GameMode::Training,
             GameMode::Training => GameMode::Default,
+        }
+    }
+
+    pub fn prev(self) -> Self {
+        match self {
+            GameMode::Default => GameMode::Training,
+            GameMode::Training => GameMode::InstantDeath,
+            GameMode::InstantDeath => GameMode::Default,
         }
     }
 }
