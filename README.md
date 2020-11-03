@@ -40,6 +40,17 @@ $ typeracer -r $(echo 'racing using a passage from elsewhere')
 
 Hit ^C at any time to quit.
 
+## Language support
+
+Typeracer natively supports almost all languages. If the language does not blend
+wide and thin character charsets it should work as expected without a hitch.
+
+The primary language we support is English as reflected in the default language
+packs, but would love contributions for other languages.
+
+For more info on which languages we support and how to contribute, please check
+[here](docs/supported-languages.md).
+
 ## Configuration
 
 What good would a typing game be without a config file?

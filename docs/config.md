@@ -12,7 +12,7 @@ Where you can find your config file:
 Linux:
 
 ```
-~/.config/typeracer/config.toml
+$HOME/.config/typeracer/config.toml
 ```
 
 macOS:
