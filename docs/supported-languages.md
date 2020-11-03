@@ -129,6 +129,8 @@ whitelisted = ["aesop/fables"]
 5. Open up typeracer and it will ask if you'd like to sync the new lang packs.
    After this, you're done!
 
+***
+
 [^1]: It is assumed this branch is readonly. If you want new changes in the
 branch, it is recommended to make a new branch, e.g. 1.0.1 and push new changes
 to that.
