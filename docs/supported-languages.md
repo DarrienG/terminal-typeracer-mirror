@@ -8,9 +8,9 @@ few languages.
 
 Language pack support is broken into three tiers.
 
-* Tier 1 support means we have over 150 built in quotes from multiple categories
-  for a "generally fun" experience.
-* Tier 2 support means any lang packs in the official repos with less than 150
+* Tier 1 support refers to: any lang packs in the official repos with more than
+  150 quotes in multiple categories for a "generally fun" experience.
+* Tier 2 support refers to: any lang packs in the official repos with less than 150
   quotes.
 * Tier 3 support are for any language packs outside the official repos.
   * If a tier 3 repo has over 150 built in quotes, it is granted the tier 3+
@@ -19,7 +19,8 @@ Language pack support is broken into three tiers.
 ## Tier 1
 
 * [English](https://gitlab.com/ttyperacer/lang-packs)
-  * This is our primary language pack of over 6500 quotes.
+  * This is our primary language pack of over 6500 quotes. It is used by default
+    in all typeracer installations.
 
 ## Tier 2
 
