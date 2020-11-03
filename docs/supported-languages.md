@@ -8,11 +8,10 @@ few languages.
 
 Language pack support is broken into three tiers.
 
-* Tier 1 support refers to: any lang packs in the official repos with more than
-  150 quotes in multiple categories for a "generally fun" experience.
-* Tier 2 support refers to: any lang packs in the official repos with less than 150
-  quotes.
-* Tier 3 refers to: any language packs outside the official repos.
+* **Tier 1**: any lang packs in the official repos with more than 150 quotes in
+  multiple categories.
+* **Tier 2**: any lang packs in the official repos with less than 150 quotes.
+* **Tier 3**: any lang packs outside the official repos.
   * If a tier 3 repo has over 150 built in quotes, it is granted the tier 3+
     moniker.
 
