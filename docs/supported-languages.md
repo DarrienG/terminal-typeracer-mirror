@@ -3,7 +3,10 @@
 Typeracer natively supports almost all languages. If the language does not blend
 wide and thin character charsets it should work as expected without a hitch.
 
-Language support is broken into three tiers.
+Even though we support almost all languages, we only have language packs for a
+few languages.
+
+Language pack support is broken into three tiers.
 
 * Tier 1 support means we have over 150 built in quotes from multiple categories
   for a "generally fun" experience.
