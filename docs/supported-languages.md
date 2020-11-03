@@ -97,7 +97,7 @@ your OS:
 
 ```
 # Linux
-~/.config/typeracer/config.toml
+$HOME/.config/typeracer/config.toml
 
 # macOS:
 $HOME/Library/Preferences/org.darrienglasser.com.typeracer/config.toml
