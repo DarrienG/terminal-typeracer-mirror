@@ -42,14 +42,15 @@ Hit ^C at any time to quit.
 
 ## Language support
 
-Typeracer natively supports almost all languages. If the language does not blend
-wide and thin character charsets it should work as expected without a hitch.
+Typeracer natively supports reading almost all languages. If the language does
+not blend wide and thin character charsets it should work as expected without a
+hitch.
 
-The primary language we support is English as reflected in the default language
-packs, but would love contributions for other languages.
+The primary language our lang packs support is English, but we would love
+contributions for other languages :)
 
-For more info on which languages we support and how to contribute, please check
-[here](docs/supported-languages.md).
+For more info on which languages we support in our lang packs and how to
+contribute, please check [here](docs/supported-languages.md).
 
 ## Configuration
 
