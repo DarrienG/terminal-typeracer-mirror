@@ -77,7 +77,8 @@ Aesop
 All lines after the first 2 lines will be ignored.
 
 You may make as many files and folders as you like, however it is important no
-files and folders other than the ones above specified are added.
+files other than the ones above specified are added and all folders only have
+valid quotes in them.
 
 Once you've completed that, let's move onto the next step.
 
