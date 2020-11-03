@@ -103,7 +103,7 @@ Add your new repo in a section like so:
 
 ```toml
 extra_repos = [
-  { name = "aesop-fables", url = "https://gitlab.com/your-lang-pack.git", version = "1.0.0" }
+  { name = "aesop", url = "https://gitlab.com/your-lang-pack.git", version = "1.0.0" }
 ]
 ```
 
@@ -112,13 +112,13 @@ packs with `typeracer -s`
 
 ```
 $ typeracer -s
-Enabled packs:	aesop-fables/fables, difficult, easy, medium, very_difficult
-All packs:	aesop-fables/fables, difficult, easy, medium, very_difficult
+Enabled packs:	aesop/fables, difficult, easy, medium, very_difficult
+All packs:	aesop/fables, difficult, easy, medium, very_difficult
 ```
 
 ```toml
 [lang_packs]
-whitelisted = ["aesop-fables/fables"]
+whitelisted = ["aesop/fables"]
 ```
 
 5. Open up typeracer and it will ask if you'd like to sync the new lang packs.
