@@ -61,9 +61,3 @@ Config file is fully documented [here](https://gitlab.com/ttyperacer/terminal-ty
 
 The process isn't too hard, but it's too long to put here, go
 [here](docs/supported-languages.md) for the full instructions.
-
-## Here you'll find information on
-
-* Building Typeracer from source
-* Using the Typeracer config file to customize your Typeracer
-* Information on the lang_pack format if you'd like to use your own packs
