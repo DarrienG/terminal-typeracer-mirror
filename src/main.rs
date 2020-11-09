@@ -1,4 +1,5 @@
 #![cfg_attr(test, allow(dead_code, unused_imports))]
+#![allow(clippy::match_like_matches_macro)]
 use clap::{App, AppSettings, Arg};
 use std::io::{Error, ErrorKind};
 
@@ -33,7 +34,7 @@ fn debug_enabled_default() -> bool {
 const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "2.0.3";
+const VERSION: &str = "2.0.4";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();

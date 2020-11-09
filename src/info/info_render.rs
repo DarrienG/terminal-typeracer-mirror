@@ -33,7 +33,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
 
                 f.render_widget(
                     Paragraph::new(info_data.top_text.iter())
-                        .block(top_block.title("About page"))
+                        .block(top_block.title("About/docs page"))
                         .wrap(true)
                         .alignment(Alignment::Left),
                     root_layout[1],
