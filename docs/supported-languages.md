@@ -111,6 +111,9 @@ extra_repos = [
 ]
 ```
 
+Run `typeracer` once to sync the new language packs. You can quit right
+afterwards.
+
 If you would like _only_ your lang pack to be enabled, first check enabled lang
 packs with `typeracer -s`
 
