@@ -9,15 +9,11 @@ may want to change how it runs.
 
 Where you can find your config file:
 
-Linux:
-
 ```
+# Linux
 $HOME/.config/typeracer/config.toml
-```
 
-macOS:
-
-```
+# macOS:
 $HOME/Library/Preferences/org.darrienglasser.com.typeracer/config.toml
 ```
 

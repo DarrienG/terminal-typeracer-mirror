@@ -1,15 +1,15 @@
 
 lint:
-  image: rust:1.46.0-buster
+  image: rust:1.47.0-buster
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
 style-check:
-  image: rust:1.46.0-buster
+  image: rust:1.47.0-buster
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 test:
-  image: rust:1.46.0-buster
+  image: rust:1.47.0-buster
   script:
     - cargo test
