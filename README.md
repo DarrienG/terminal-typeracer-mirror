@@ -1,6 +1,6 @@
 # Typeracer
 
-[![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
+[![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master) [![coverage report](https://gitlab.com/ttyperacer/terminal-typeracer/badges/master/coverage.svg)](https://gitlab.com/ttyperacer/terminal-typeracer/-/commits/master)
 
 An open source terminal based version of Typeracer written in rust.
 
