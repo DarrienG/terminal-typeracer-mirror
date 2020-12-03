@@ -1,15 +1,53 @@
-
-lint:
+coverage-build:
+  stage: build
   image: rust:1.47.0-buster
+  variables:
+    RUSTC_BOOTSTRAP: 1
+    CARGO_INCREMENTAL: 0
+    RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+    RUSTDOCFLAGS: "-Cpanic=abort"
+  script:
+    - rustup component add llvm-tools-preview
+    - cargo build
+    - cargo test
+  artifacts:
+    paths:
+      - ./target
+      - ./*.profraw
+lint:
+  stage: test
+  image: rust:1.47.0-buster
+  needs: []
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
 style-check:
+  stage: test
   image: rust:1.47.0-buster
+  needs: []
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 test:
+  stage: test
   image: rust:1.47.0-buster
+  needs: []
   script:
     - cargo test
+coverage:
+  stage: deploy
+  image: joshuahassler/rustcoverage:1.0
+  needs:
+    - job: coverage-build
+      artifacts: true
+  script:
+    - curl https://raw.githubusercontent.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py -o lcov_cobertura.py
+    - grcov ./target/debug/ -s . -t lcov --llvm --branch --ignore-not-existing -o ./lcov-raw.info
+    - lcov --remove lcov-raw.info -o lcov.info "*/usr/local/cargo/registry/src/*"
+    - python lcov_cobertura.py lcov.info --output coverage.xml
+    - lcov --list lcov.info
+  artifacts:
+    paths:
+      - lcov.info
+    reports:
+      cobertura: coverage.xml
