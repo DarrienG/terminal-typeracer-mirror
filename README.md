@@ -1,11 +1,9 @@
 # Typeracer
 
-[![pipeline
-status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
-[![coverage
-report](https://gitlab.com/ttyperacer/terminal-typeracer/badges/master/coverage.svg)](https://gitlab.com/ttyperacer/terminal-typeracer/-/commits/master)
-[![Development status](https://img.shields.io/badge/<Dev Status>-<Maintenance
-Mode>-<orange>.svg)](https://shields.io/)
+[![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
+[![coverage report](https://gitlab.com/ttyperacer/terminal-typeracer/badges/master/coverage.svg)](https://gitlab.com/ttyperacer/terminal-typeracer/-/commits/master)
+![Development status](https://img.shields.io/badge/<Dev Status>-<Maintenance Mode>-<orange>.svg)
+![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 
 An open source terminal based version of Typeracer written in rust.
 
