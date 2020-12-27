@@ -2,6 +2,7 @@
 
 [![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
 [![coverage report](https://gitlab.com/ttyperacer/terminal-typeracer/badges/master/coverage.svg)](https://gitlab.com/ttyperacer/terminal-typeracer/-/commits/master)
+
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Development status](https://img.shields.io/badge/Dev%20Status-Maintenance%20Mode-orange.svg)
 
