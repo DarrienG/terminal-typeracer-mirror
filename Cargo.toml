@@ -37,31 +37,31 @@ overflow-checks = true
 [dependencies]
 # For rendering in the terminal
 tui = "0.9.5"
-termion = "1.5.5"
+termion = "1.5.6"
 unicode-width = "0.1.8"
 
 # For splitting across words with full unicode compatibility
-unicode-segmentation = "1.6.0"
+unicode-segmentation = "1.7.1"
 
 # For lang pack and config
-directories-next = "1.0.1"
-toml = "0.5.6"
-serde = { version = "1.0.115", features = ["derive"] }
+directories-next = "2.0.0"
+toml = "0.5.8"
+serde = { version = "1.0.123", features = ["derive"] }
 
 # For downloading lang pack
-git2 = "0.13.10"
+git2 = "0.13.17"
 
 # For picking random files
-rand = "0.7.3"
+rand = "0.8.3"
 
 # Command line optoins
 clap = "2.33.3"
 
 # For zipping lists
-itertools = "0.9.0"
+itertools = "0.10.0"
 
 # For persisting data
-rusqlite = "0.23.1"
+rusqlite = "0.24.2"
 
 # For SQL migration
 refinery = { version = "0.5.0", features = ["rusqlite"] }

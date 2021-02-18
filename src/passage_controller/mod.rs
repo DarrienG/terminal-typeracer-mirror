@@ -395,7 +395,7 @@ impl<'a> Controller<'a> {
         }
 
         if num_files > 0 {
-            let random_file_num = rand::thread_rng().gen_range(0, num_files);
+            let random_file_num = rand::thread_rng().gen_range(0..num_files);
             for (count, path) in quotes.iter().enumerate() {
                 let path = path.path();
                 if count == random_file_num {
