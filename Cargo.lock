@@ -103,6 +103,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
+name = "cfg-if"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
 name = "chrono"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -141,7 +147,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3c7c73a2d1e9fc0886a08b93e98eb643461230d5f1925e4036204d5f2e261a8"
 dependencies = [
  "autocfg",
- "cfg-if",
+ "cfg-if 0.1.10",
  "lazy_static",
 ]
 
@@ -151,7 +157,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21eaa04e945bec7e2dc7383817c566881d9a83d20a07cc949b54585873585a48"
 dependencies = [
- "cfg-if",
+ "cfg-if 0.1.10",
  "dirs-sys-next",
 ]
 
@@ -190,7 +196,7 @@ version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7abc8dd8451921606d809ba32e95b6111925cd2906060d2dcc29c070220503eb"
 dependencies = [
- "cfg-if",
+ "cfg-if 0.1.10",
  "libc",
  "wasi 0.9.0+wasi-snapshot-preview1",
 ]
@@ -322,7 +328,7 @@ version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fabed175da42fed1fa0746b0ea71f412aa9d35e76e95e59b192c64b9dc2bf8b"
 dependencies = [
- "cfg-if",
+ "cfg-if 0.1.10",
 ]
 
 [[package]]
@@ -495,9 +501,9 @@ dependencies = [
 
 [[package]]
 name = "refinery"
-version = "0.3.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "432021bd2eb60a8851757fdd145907be1a96c70961da167a3fb362001f2f397c"
+checksum = "e29bd9c881127d714f4b5b9fdd9ea7651f3dd254922e959a10f6ada620e841da"
 dependencies = [
  "refinery-core",
  "refinery-macros",
@@ -505,12 +511,12 @@ dependencies = [
 
 [[package]]
 name = "refinery-core"
-version = "0.3.1"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9f670a4f4d6450ce53ecf0dd55324e0a3b684c24693e5cd68fdeca2294b875a"
+checksum = "53260bc01535ea10c553ce0fc410609ba2dc0a9f4c9b4503e0af842dd4a6f89d"
 dependencies = [
  "async-trait",
- "cfg-if",
+ "cfg-if 1.0.0",
  "chrono",
  "lazy_static",
  "log",
@@ -520,14 +526,15 @@ dependencies = [
  "siphasher",
  "thiserror",
  "toml",
+ "url",
  "walkdir",
 ]
 
 [[package]]
 name = "refinery-macros"
-version = "0.3.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f397c4dfbcf0b298e8b10e5702d69852829636ee121215c42efe421dd16126e1"
+checksum = "7a79ff62c9b674b62c06a09cc8becf06cbafba9952afa1d8174e7e15f2c4ed43"
 dependencies = [
  "proc-macro2",
  "quote",
