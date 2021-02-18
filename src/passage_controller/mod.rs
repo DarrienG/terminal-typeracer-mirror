@@ -424,9 +424,9 @@ impl<'a> Controller<'a> {
         // The chance that two of these collide is close enough to zero that we can assume they
         // will always be different.
         PassageInfo {
-            passage: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
-            title: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
-            passage_path: format!("{}", rand::thread_rng().gen_range(0, 10_000_000)),
+            passage: format!("{}", rand::thread_rng().gen_range(0..10_000_000)),
+            title: format!("{}", rand::thread_rng().gen_range(0..10_000_000)),
+            passage_path: format!("{}", rand::thread_rng().gen_range(0..10_000_000)),
         }
     }
 }

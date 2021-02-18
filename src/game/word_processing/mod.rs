@@ -93,7 +93,7 @@ fn get_updated_latin_texts<'a>(passage: Vec<Text<'a>>, current_word: &str) -> Ve
 /// more. In Chinese, this means one word == one char, so remove that word.
 /// This approach will not scale with other languages, but we'll cross that
 /// bridge when we come to it.
-fn get_updated_nonlatin_texts<'a>(passage: Vec<Text<'a>>) -> Vec<Text<'a>> {
+fn get_updated_nonlatin_texts(passage: Vec<Text>) -> Vec<Text> {
     passage[1..passage.len()].to_vec()
 }
 
