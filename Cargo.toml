@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "2.0.4"
+version = "2.0.5"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2018"
 # Packaging for crates.io
@@ -64,4 +64,4 @@ itertools = "0.9.0"
 rusqlite = "0.23.1"
 
 # For SQL migration
-refinery = { version = "0.3.0", features = ["rusqlite"] }
+refinery = { version = "=0.3.0", features = ["rusqlite"] }

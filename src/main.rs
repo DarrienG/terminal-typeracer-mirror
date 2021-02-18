@@ -34,7 +34,7 @@ fn debug_enabled_default() -> bool {
 const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "2.0.4";
+const VERSION: &str = "2.0.5";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
