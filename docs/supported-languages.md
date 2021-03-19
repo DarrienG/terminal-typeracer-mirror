@@ -100,7 +100,7 @@ your OS:
 $HOME/.config/typeracer/config.toml
 
 # macOS:
-$HOME/Library/Preferences/org.darrienglasser.com.typeracer/config.toml
+$HOME/Library/Application Support/org.darrienglasser.com.typeracer/config.toml
 ```
 
 Add your new repo in a section like so:
