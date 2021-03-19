@@ -14,7 +14,7 @@ Where you can find your config file:
 $HOME/.config/typeracer/config.toml
 
 # macOS:
-$HOME/Library/Preferences/org.darrienglasser.com.typeracer/config.toml
+$HOME/Library/Application Support/org.darrienglasser.com.typeracer/config.toml
 ```
 
 Windows is only supported through WSL. See the Linux section.
