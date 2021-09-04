@@ -4,7 +4,7 @@ use tui::{
     style::{Color, Modifier, Style},
     symbols,
     terminal::Terminal,
-    text::Text,
+    text::Span,
     widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph},
 };
 
@@ -79,12 +79,13 @@ pub fn render<B: Backend>(
                 .marker(symbols::Marker::Braille)
                 .style(Style::default().fg(Color::Yellow))
                 .graph_type(GraphType::Line)
-                .data(&filtered_results)];
+                .data(&filtered_results)]
+            .to_vec();
 
             let y_axis_data = styles::y_axis_data(active_mode, ordered_user_results);
 
             f.render_widget(
-                Chart::default()
+                Chart::new(datasets)
                     .block(chart_block)
                     .x_axis(
                         Axis::default()
@@ -98,36 +99,38 @@ pub fn render<B: Backend>(
                                 -ordered_user_results.first().unwrap().days_back_played,
                                 ordered_user_results.last().unwrap().days_back_played,
                             ])
-                            .labels(&[
-                                day_prettifier::num_to_day(days_played_for),
-                                day_prettifier::num_to_day(data_increment * 3.0),
-                                day_prettifier::num_to_day(data_increment * 2.0),
-                                day_prettifier::num_to_day(data_increment * 1.0),
-                                day_prettifier::num_to_day(0.0),
+                            .labels(vec![
+                                Span::raw(day_prettifier::num_to_day(days_played_for)),
+                                Span::raw(day_prettifier::num_to_day(data_increment * 3.0)),
+                                Span::raw(day_prettifier::num_to_day(data_increment * 2.0)),
+                                Span::raw(day_prettifier::num_to_day(data_increment * 1.0)),
+                                Span::raw(day_prettifier::num_to_day(0.0)),
                             ]),
                     )
                     .y_axis(
                         Axis::default()
-                            .title(&styles::graph_title(active_mode))
+                            .title(Span::raw(&styles::graph_title(active_mode)))
                             .style(
                                 Style::default()
                                     .fg(Color::Gray)
                                     .add_modifier(Modifier::ITALIC),
                             )
                             .bounds(y_axis_data.bounds)
-                            .labels(&y_axis_data.labels),
-                    )
-                    .datasets(&datasets),
+                            .labels(
+                                y_axis_data
+                                    .labels
+                                    .iter()
+                                    .map(|label| Span::raw(label))
+                                    .collect::<Vec<Span>>(),
+                            ),
+                    ),
                 main_layout[1],
             );
 
             f.render_widget(
-                Paragraph::new(
-                    &mut [Text::raw(
-                        "^C to go back  ⇕ cycle game mode  ⇔ switch graph",
-                    )]
-                    .iter(),
-                )
+                Paragraph::new(Span::raw(
+                    "^C to go back  ⇕ cycle game mode  ⇔ switch graph",
+                ))
                 .alignment(Alignment::Center)
                 .block(Block::default().borders(Borders::NONE)),
                 main_layout[2],
