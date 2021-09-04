@@ -2,7 +2,7 @@ use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
     terminal::Terminal,
-    text::Text,
+    text::Span,
     widgets::{Block, Borders, Paragraph, Wrap},
 };
 
@@ -20,7 +20,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
                 .split(root_layout[0]);
             let passage_block = Block::default().borders(Borders::ALL);
             f.render_widget(
-                Paragraph::new([Text::raw(step_instruction)].iter())
+                Paragraph::new(Span::raw(step_instruction))
                     .block(passage_block.title("Installing quote packs"))
                     .wrap(Wrap { trim: true })
                     .alignment(Alignment::Left),
