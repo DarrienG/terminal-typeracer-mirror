@@ -46,10 +46,10 @@ unicode-segmentation = "1.8.0"
 # For lang pack and config
 directories-next = "2.0.0"
 toml = "0.5.8"
-serde = { version = "1.0.123", features = ["derive"] }
+serde = { version = "1.0.130", features = ["derive"] }
 
 # For downloading lang pack
-git2 = "0.13.17"
+git2 = "0.13.21"
 
 # For picking random files
 rand = "0.8.4"
@@ -58,7 +58,7 @@ rand = "0.8.4"
 clap = "2.33.3"
 
 # For zipping lists
-itertools = "0.10.0"
+itertools = "0.10.1"
 
 # For persisting data
 rusqlite = "0.25.3"
