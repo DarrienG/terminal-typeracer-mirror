@@ -5,7 +5,7 @@ use tui::{
     symbols,
     terminal::Terminal,
     text::Span,
-    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph},
+    widgets::{Axis, Block, BorderType, Borders, Chart, Dataset, GraphType, Paragraph},
 };
 
 use crate::game::GameMode;
@@ -58,6 +58,7 @@ pub fn render<B: Backend>(
 
             let chart_block = Block::default()
                 .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
                 .border_style(styles::borders(game_mode));
 
             let filtered_results: Vec<(f64, f64)> = (*ordered_user_results)

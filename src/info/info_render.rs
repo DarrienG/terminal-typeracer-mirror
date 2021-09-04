@@ -4,7 +4,7 @@ use tui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     terminal::Terminal,
     text::Spans,
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Block, BorderType, Borders, Paragraph, Wrap},
 };
 
 use crate::info;
@@ -30,7 +30,9 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 .margin(get_margin(term_size))
                 .split(f.size());
             {
-                let top_block = Block::default().borders(Borders::ALL);
+                let top_block = Block::default()
+                    .borders(Borders::ALL)
+                    .border_type(BorderType::Rounded);
 
                 f.render_widget(
                     Paragraph::new(Spans::from(info_data.top_text.clone()))

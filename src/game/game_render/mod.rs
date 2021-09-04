@@ -5,7 +5,7 @@ use tui::{
     style::{Modifier, Style},
     terminal::Terminal,
     text::{Span, Spans},
-    widgets::{Block, Borders, Paragraph, Row, Table, Wrap},
+    widgets::{Block, BorderType, Borders, Paragraph, Row, Table, Wrap},
 };
 
 use crate::{
@@ -109,7 +109,8 @@ pub fn render<B: Backend>(
                     if game_state.debug_enabled {
                         let debug_block = Block::default()
                             .borders(Borders::ALL)
-                            .border_style(get_border_style(&game_state, &[]));
+                            .border_style(get_border_style(&game_state, &[]))
+                            .border_type(BorderType::Rounded);
                         f.render_widget(
                             Paragraph::new(Span::raw(game_state.get_debug_output()))
                                 .block(debug_block.title("DEBUG ENABLED"))
@@ -120,6 +121,7 @@ pub fn render<B: Backend>(
                     }
                     let passage_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_type(BorderType::Rounded)
                         .border_style(get_border_style(&game_state, &[]));
 
                     f.render_widget(
@@ -132,6 +134,7 @@ pub fn render<B: Backend>(
 
                     let typing_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_type(BorderType::Rounded)
                         .border_style(get_border_style(&game_state, &[Modifier::BOLD]));
 
                     let style = if game_state.texts.error {
@@ -160,6 +163,7 @@ pub fn render<B: Backend>(
 
                     let stats_block = Block::default()
                         .borders(Borders::ALL)
+                        .border_type(BorderType::Rounded)
                         .border_style(get_border_style(&game_state, &[]));
 
                     let stats_text = game_state.stats.text();
