@@ -3,6 +3,7 @@ use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     terminal::Terminal,
+    text::Spans,
     widgets::{Block, Borders, Paragraph, Wrap},
 };
 
@@ -22,7 +23,7 @@ fn get_margin(rect: Rect) -> u16 {
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
     let term_size = terminal.size().unwrap();
     terminal
-        .draw(|mut f| {
+        .draw(|f| {
             let root_layout = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(get_info_bounds(term_size).as_ref())
@@ -32,7 +33,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 let top_block = Block::default().borders(Borders::ALL);
 
                 f.render_widget(
-                    Paragraph::new(info_data.top_text.iter())
+                    Paragraph::new(Spans::from(info_data.top_text.clone()))
                         .block(top_block.title("About/docs page"))
                         .wrap(Wrap { trim: true })
                         .alignment(Alignment::Left),
@@ -43,7 +44,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                     let bottom_block = Block::default().borders(Borders::NONE);
 
                     f.render_widget(
-                        Paragraph::new(info_data.bottom_text.iter())
+                        Paragraph::new(Spans::from(info_data.bottom_text.clone()))
                             .block(bottom_block)
                             .wrap(Wrap { trim: true })
                             .alignment(Alignment::Center),
@@ -52,5 +53,5 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 }
             }
         })
-        .expect("Failed to draw terminal widgets.")
+        .expect("Failed to draw terminal widgets.");
 }

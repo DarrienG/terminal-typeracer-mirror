@@ -9,23 +9,23 @@ use tui::{
     backend::Backend,
     style::{Color, Style},
     terminal::Terminal,
-    text::Text,
+    text::Span,
 };
 
 mod info_render;
 
 pub struct InfoData<'a> {
-    pub top_text: &'a Vec<Text<'a>>,
-    pub bottom_text: &'a Vec<Text<'a>>,
+    pub top_text: &'a Vec<Span<'a>>,
+    pub bottom_text: &'a Vec<Span<'a>>,
 }
 
 static TYPERACER_MAGIC: [&str; 10] = ["t", "t", "y", "p", "e", "r", "a", "c", "e", "r"];
 static TYPING_DELAY: [u64; 10] = [144, 80, 144, 144, 144, 100, 105, 95, 80, 100];
 
 pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str) {
-    let mut top_text: Vec<Text> = vec![];
+    let mut top_text: Vec<Span> = vec![];
     for (type_text, delay) in izip!(TYPERACER_MAGIC.iter(), TYPING_DELAY.iter()) {
-        top_text.push(Text::styled(
+        top_text.push(Span::styled(
             (**type_text).to_string(),
             Style::default().fg(Color::Green),
         ));
@@ -39,36 +39,36 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
         thread::sleep(time::Duration::from_millis(*delay));
     }
 
-    top_text.push(Text::raw(format!(" - version {}\n", typeracer_version)));
-    top_text.push(Text::raw("A terminal typeracing game\n"));
-    top_text.push(Text::raw(
+    top_text.push(Span::raw(format!(" - version {}\n", typeracer_version)));
+    top_text.push(Span::raw("A terminal typeracing game\n"));
+    top_text.push(Span::raw(
         "Type through passages to see what the fastest times are you can get!\n\n",
     ));
-    top_text.push(Text::raw(
+    top_text.push(Span::raw(
         "repo: https://gitlab.com/ttyperacer/terminal-typeracer\n",
     ));
-    top_text.push(Text::raw(
+    top_text.push(Span::raw(
         "main lang packs: https://gitlab.com/ttyperacer/lang-packs\n",
     ));
-    top_text.push(Text::raw(format!(
+    top_text.push(Span::raw(format!(
         "docs: https://gitlab.com/ttyperacer/terminal-typeracer/tree/v{}/docs\n\n",
         typeracer_version
     )));
-    top_text.push(Text::raw(format!(
+    top_text.push(Span::raw(format!(
         "current release notes: https://gitlab.com/ttyperacer/terminal-typeracer/-/tags/v{}\n",
         typeracer_version
     )));
-    top_text.push(Text::raw(
+    top_text.push(Span::raw(
         "all releases: https://gitlab.com/ttyperacer/terminal-typeracer/-/releases",
     ));
     let info_data = InfoData {
         top_text: &top_text,
         bottom_text: &vec![
-            Text::styled(
+            Span::styled(
                 "\n\nOriginal author: Darrien Glasser\nInspired by Vrinda\n\n",
                 Style::default().fg(Color::Gray),
             ),
-            Text::raw("^C to return"),
+            Span::raw("^C to return"),
         ],
     };
 
