@@ -4,7 +4,8 @@ use tui::{
     style::{Color, Modifier, Style},
     symbols,
     terminal::Terminal,
-    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph, Text},
+    text::Text,
+    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph},
 };
 
 use crate::game::GameMode;

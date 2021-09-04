@@ -1,6 +1,6 @@
 use tui::{
     style::{Color, Style},
-    widgets::Text,
+    text::Text,
 };
 
 use crate::game::indexer;

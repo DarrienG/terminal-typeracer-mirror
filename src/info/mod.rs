@@ -9,7 +9,7 @@ use tui::{
     backend::Backend,
     style::{Color, Style},
     terminal::Terminal,
-    widgets::Text,
+    text::Text,
 };
 
 mod info_render;

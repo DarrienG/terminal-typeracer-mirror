@@ -3,7 +3,8 @@ use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::Style,
     terminal::Terminal,
-    widgets::{Block, Borders, Paragraph, Text},
+    text::Text,
+    widgets::{Block, Borders, Paragraph},
 };
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {

@@ -1,4 +1,4 @@
-use tui::widgets::Text;
+use tui::text::Text;
 
 use crate::game::split;
 

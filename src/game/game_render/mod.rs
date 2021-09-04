@@ -4,7 +4,8 @@ use tui::{
     style::Color,
     style::{Modifier, Style},
     terminal::Terminal,
-    widgets::{Block, Borders, Paragraph, Row, Table, Text},
+    text::Text,
+    widgets::{Block, Borders, Paragraph, Row, Table},
 };
 
 use crate::{

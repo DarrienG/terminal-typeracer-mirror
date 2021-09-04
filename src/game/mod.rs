@@ -7,7 +7,7 @@ use std::{
     io::{stdin, stdout},
 };
 use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
-use tui::{backend::TermionBackend, widgets::Text, Terminal};
+use tui::{backend::TermionBackend, text::Text, Terminal};
 
 use crate::{
     actions::Action, config, dirs::setup_dirs::get_db_path, graphs, info,
