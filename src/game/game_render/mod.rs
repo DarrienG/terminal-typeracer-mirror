@@ -5,7 +5,7 @@ use tui::{
     style::{Modifier, Style},
     terminal::Terminal,
     text::Text,
-    widgets::{Block, Borders, Paragraph, Row, Table},
+    widgets::{Block, Borders, Paragraph, Row, Table, Wrap},
 };
 
 use crate::{
@@ -113,7 +113,7 @@ pub fn render<B: Backend>(
                         f.render_widget(
                             Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
                                 .block(debug_block.title("DEBUG ENABLED"))
-                                .wrap(true)
+                                .wrap(Wrap {trim: true})
                                 .alignment(Alignment::Left),
                             chunks[1],
                         );
@@ -125,7 +125,7 @@ pub fn render<B: Backend>(
                     f.render_widget(
                         Paragraph::new(game_state.texts.passage.iter())
                             .block(passage_block.title(&game_state.title))
-                            .wrap(true)
+                            .wrap(Wrap{trim: true})
                             .alignment(Alignment::Left),
                         chunks[2],
                     );
@@ -145,7 +145,7 @@ pub fn render<B: Backend>(
                     f.render_widget(
                         Paragraph::new(game_state.texts.input.iter())
                             .block(typing_block.title("Type out passage here"))
-                            .wrap(true)
+                            .wrap(Wrap {trim: true})
                             .alignment(Alignment::Left)
                             .style(style),
                         chunks[3],

@@ -3,7 +3,7 @@ use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     terminal::Terminal,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Paragraph, Wrap},
 };
 
 use crate::info;
@@ -34,7 +34,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                 f.render_widget(
                     Paragraph::new(info_data.top_text.iter())
                         .block(top_block.title("About/docs page"))
-                        .wrap(true)
+                        .wrap(Wrap { trim: true })
                         .alignment(Alignment::Left),
                     root_layout[1],
                 );
@@ -45,7 +45,7 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                     f.render_widget(
                         Paragraph::new(info_data.bottom_text.iter())
                             .block(bottom_block)
-                            .wrap(true)
+                            .wrap(Wrap { trim: true })
                             .alignment(Alignment::Center),
                         root_layout[3],
                     );
