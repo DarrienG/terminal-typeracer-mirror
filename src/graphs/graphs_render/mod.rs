@@ -30,7 +30,7 @@ pub fn render<B: Backend>(
     let data_increment = days_played_for / 4.0;
 
     terminal
-        .draw(|mut f| {
+        .draw(|f| {
             let padding_layout = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(

@@ -76,7 +76,7 @@ pub fn render<B: Backend>(
 ) {
     let term_size = terminal.size().expect("Unable to get terminal size");
     terminal
-        .draw(|mut f| {
+        .draw(|f| {
             // Because there is no way to specify vertical but not horizontal margins
             let padding_layout = Layout::default()
                 .direction(Direction::Horizontal)
@@ -123,7 +123,7 @@ pub fn render<B: Backend>(
                         .border_style(get_border_style(&game_state, &[]));
 
                     f.render_widget(
-                        Paragraph::new(Spans::from(game_state.texts.passage))
+                        Paragraph::new(Spans::from(game_state.texts.passage.clone()))
                             .block(passage_block.title(Spans::from(game_state.title)))
                             .wrap(Wrap{trim: true})
                             .alignment(Alignment::Left),
@@ -143,7 +143,7 @@ pub fn render<B: Backend>(
                     };
 
                     f.render_widget(
-                        Paragraph::new(Spans::from(game_state.texts.input))
+                        Paragraph::new(Spans::from(game_state.texts.input.clone()))
                             .block(typing_block.title("Type out passage here"))
                             .wrap(Wrap {trim: true})
                             .alignment(Alignment::Left)

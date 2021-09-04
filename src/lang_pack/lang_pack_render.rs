@@ -8,7 +8,7 @@ use tui::{
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
     terminal
-        .draw(|mut f| {
+        .draw(|f| {
             let root_layout = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([Constraint::Percentage(100)].as_ref())
