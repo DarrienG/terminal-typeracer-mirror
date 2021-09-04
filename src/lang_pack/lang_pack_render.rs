@@ -1,10 +1,9 @@
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
-    style::Style,
     terminal::Terminal,
     text::Text,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Paragraph, Wrap},
 };
 
 pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
@@ -19,13 +18,11 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, step_instruction: &str) {
                 .margin(5)
                 .constraints([Constraint::Percentage(100)].as_ref())
                 .split(root_layout[0]);
-            let passage_block = Block::default()
-                .borders(Borders::ALL)
-                .title_style(Style::default());
+            let passage_block = Block::default().borders(Borders::ALL);
             f.render_widget(
                 Paragraph::new([Text::raw(step_instruction)].iter())
                     .block(passage_block.title("Installing quote packs"))
-                    .wrap(true)
+                    .wrap(Wrap { trim: true })
                     .alignment(Alignment::Left),
                 chunks[0],
             );
