@@ -58,8 +58,7 @@ pub fn render<B: Backend>(
 
             let chart_block = Block::default()
                 .borders(Borders::ALL)
-                .border_style(styles::borders(game_mode))
-                .title_style(Style::default());
+                .border_style(styles::borders(game_mode));
 
             let filtered_results: Vec<(f64, f64)> = (*ordered_user_results)
                 .iter()
@@ -90,8 +89,11 @@ pub fn render<B: Backend>(
                     .x_axis(
                         Axis::default()
                             .title("Progress since last play")
-                            .style(Style::default().fg(Color::Gray))
-                            .labels_style(Style::default().modifier(Modifier::ITALIC))
+                            .style(
+                                Style::default()
+                                    .fg(Color::Gray)
+                                    .add_modifier(Modifier::ITALIC),
+                            )
                             .bounds([
                                 -ordered_user_results.first().unwrap().days_back_played,
                                 ordered_user_results.last().unwrap().days_back_played,
@@ -107,8 +109,11 @@ pub fn render<B: Backend>(
                     .y_axis(
                         Axis::default()
                             .title(&styles::graph_title(active_mode))
-                            .style(Style::default().fg(Color::Gray))
-                            .labels_style(Style::default().modifier(Modifier::ITALIC))
+                            .style(
+                                Style::default()
+                                    .fg(Color::Gray)
+                                    .add_modifier(Modifier::ITALIC),
+                            )
                             .bounds(y_axis_data.bounds)
                             .labels(&y_axis_data.labels),
                     )
