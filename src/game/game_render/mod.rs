@@ -61,11 +61,11 @@ fn get_stats_bounds(rect: Rect) -> [Constraint; 3] {
     styles::get_stats_bounds(rect.height)
 }
 
-fn get_border_style(game_state: &GameState) -> Style {
+fn get_border_style(game_state: &GameState, modifiers: &[Modifier]) -> Style {
     if game_state.game_mode == GameMode::InstantDeath {
-        styles::instant_death_border_style(game_state)
+        styles::instant_death_border_style(game_state, modifiers)
     } else {
-        styles::regular_border_style(game_state)
+        styles::regular_border_style(game_state, modifiers)
     }
 }
 
@@ -109,8 +109,7 @@ pub fn render<B: Backend>(
                     if game_state.debug_enabled {
                         let debug_block = Block::default()
                             .borders(Borders::ALL)
-                            .border_style(get_border_style(&game_state))
-                            .title_style(Style::default());
+                            .border_style(get_border_style(&game_state, &[]));
                         f.render_widget(
                             Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
                                 .block(debug_block.title("DEBUG ENABLED"))
@@ -121,8 +120,7 @@ pub fn render<B: Backend>(
                     }
                     let passage_block = Block::default()
                         .borders(Borders::ALL)
-                        .border_style(get_border_style(&game_state))
-                        .title_style(Style::default());
+                        .border_style(get_border_style(&game_state, &[]));
 
                     f.render_widget(
                         Paragraph::new(game_state.texts.passage.iter())
@@ -134,8 +132,7 @@ pub fn render<B: Backend>(
 
                     let typing_block = Block::default()
                         .borders(Borders::ALL)
-                        .border_style(get_border_style(&game_state))
-                        .title_style(Style::default().modifier(Modifier::BOLD));
+                        .border_style(get_border_style(&game_state, &[Modifier::BOLD]));
 
                     let style = if game_state.texts.error {
                         Style::default().bg(Color::Red).fg(Color::White)
@@ -163,8 +160,7 @@ pub fn render<B: Backend>(
 
                     let stats_block = Block::default()
                         .borders(Borders::ALL)
-                        .border_style(get_border_style(&game_state))
-                        .title_style(Style::default());
+                        .border_style(get_border_style(&game_state, &[]));
 
                     let stats_text = game_state.stats.text();
                     let headers = stats_text
@@ -198,8 +194,7 @@ pub fn render<B: Backend>(
                     .split(base_layout[1]);
 
                 let shortcut_block = Block::default()
-                    .borders(Borders::NONE)
-                    .title_style(Style::default());
+                    .borders(Borders::NONE);
                 f.render_widget(
                 Paragraph::new(
                     [

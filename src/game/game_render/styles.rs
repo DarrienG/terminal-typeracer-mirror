@@ -1,6 +1,6 @@
 use tui::{
     layout::Constraint,
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
 };
 
 use crate::game::game_render::GameState;
@@ -61,29 +61,44 @@ pub fn get_stats_bounds(height: u16) -> [Constraint; 3] {
     }
 }
 
-pub fn instant_death_border_style(game_state: &GameState) -> Style {
-    if game_state.config.display_settings.simple_borders
+pub fn instant_death_border_style(game_state: &GameState, modifiers: &[Modifier]) -> Style {
+    let mut styling = if game_state.config.display_settings.simple_borders
         && game_state.game_mode != GameMode::InstantDeath
     {
-        return Style::default().fg(Color::Red);
-    }
+        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(
+            if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
+                Color::Magenta
+            } else {
+                Color::Red
+            },
+        )
+    };
+    modifiers
+        .iter()
+        .for_each(|modifier| styling = styling.add_modifier(modifier.clone()));
 
-    Style::default().fg(
-        if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
-            Color::Magenta
-        } else {
-            Color::Red
-        },
-    )
+    return styling;
 }
 
-pub fn regular_border_style(game_state: &GameState) -> Style {
-    if game_state.config.display_settings.simple_borders
+pub fn regular_border_style(game_state: &GameState, modifiers: &[Modifier]) -> Style {
+    let mut styling = if game_state.config.display_settings.simple_borders
         && game_state.game_mode != GameMode::InstantDeath
     {
-        return Style::default().fg(Color::Reset);
-    }
+        Style::default().fg(Color::Reset)
+    } else {
+        spicy_colors_style(game_state)
+    };
 
+    modifiers
+        .iter()
+        .for_each(|modifier| styling = styling.add_modifier(modifier.clone()));
+
+    return styling;
+}
+
+fn spicy_colors_style(game_state: &GameState) -> Style {
     Style::default().fg(if game_state.stats.errors == 0 {
         if game_state.stats.combo >= game_state.config.combo_config.combo_trigger {
             Color::Cyan
