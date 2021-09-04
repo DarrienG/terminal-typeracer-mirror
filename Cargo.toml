@@ -52,7 +52,7 @@ serde = { version = "1.0.123", features = ["derive"] }
 git2 = "0.13.17"
 
 # For picking random files
-rand = "0.8.3"
+rand = "0.8.4"
 
 # Command line optoins
 clap = "2.33.3"
