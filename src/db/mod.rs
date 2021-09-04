@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Result, NO_PARAMS};
+use rusqlite::{Connection, Result};
 
 use std::{
     fs::read_dir,
@@ -32,7 +32,7 @@ pub fn check_stats_db() -> bool {
 pub fn check_for_migration(path: &PathBuf) -> bool {
     let conn = Connection::open(path).expect("Unreachable DB");
     let db_version: Result<i64, rusqlite::Error> =
-        conn.query_row("PRAGMA user_version", NO_PARAMS, |row| row.get(0));
+        conn.query_row("PRAGMA user_version", [], |row| row.get(0));
     if let Ok(version) = db_version {
         version == DB_VERSION
     } else {
@@ -44,7 +44,7 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
     // If our user_version is 0 then we have to do work to migrate to migration
     // package
     let mut conn = Connection::open(path)?;
-    let db_version: i64 = conn.query_row("PRAGMA user_version", NO_PARAMS, |row| row.get(0))?;
+    let db_version: i64 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     // We also have to check if the original table exists before commiting
     // to migrating to the migration package. Work around since sqlite is
     // garbage.
@@ -58,7 +58,7 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
         AND
             type = 'table'",
     )?;
-    let table_exists = stmt.exists(NO_PARAMS)?;
+    let table_exists = stmt.exists([])?;
     drop(stmt);
 
     // If both conditions are true, then we have to deal with migrating
@@ -66,7 +66,7 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
     if db_version == 0 && table_exists {
         conn.execute(
             "ALTER TABLE passage_stats RENAME TO ancient_passage_stats",
-            NO_PARAMS,
+            [],
         )?;
     }
     if let Err(a) = embedded::migrations::runner().run(&mut conn) {
@@ -96,9 +96,9 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
                 instant_death,
                 when_played_secs
             FROM ancient_passage_stats",
-            NO_PARAMS,
+            [],
         )?;
-        conn.execute("DROP TABLE ancient_passage_stats", NO_PARAMS)?;
+        conn.execute("DROP TABLE ancient_passage_stats", [])?;
     }
     Ok(())
 }

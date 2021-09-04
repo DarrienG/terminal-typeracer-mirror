@@ -61,7 +61,7 @@ clap = "2.33.3"
 itertools = "0.10.0"
 
 # For persisting data
-rusqlite = "0.24.2"
+rusqlite = "0.25.3"
 
 # For SQL migration
-refinery = { version = "0.5.0", features = ["rusqlite"] }
+refinery = { version = "0.6.0", features = ["rusqlite"] }
