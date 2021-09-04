@@ -1,6 +1,6 @@
 use tui::{
     style::{Color, Style},
-    text::Text,
+    text::Span,
 };
 
 use crate::game::indexer;
@@ -8,8 +8,8 @@ use crate::game::word_processing::GameMode;
 
 #[derive(Debug, Clone)]
 pub struct FormattedTexts<'a> {
-    pub passage: Vec<Text<'a>>,
-    pub input: Vec<Text<'a>>,
+    pub passage: Vec<Span<'a>>,
+    pub input: Vec<Span<'a>>,
     pub error: bool,
     pub complete: bool,
 }
@@ -42,7 +42,7 @@ pub fn get_formatted_texts<'a>(
     current_word_idx: usize,
     last_input_char: char,
     new_char: bool,
-    mut formatted_passage: Vec<Text<'a>>,
+    mut formatted_passage: Vec<Span<'a>>,
 ) -> FormattedTexts<'a> {
     let user_has_err = !indexer::check_like_word(words[current_word_idx], user_input);
     let current_word_idx =
@@ -76,7 +76,7 @@ pub fn get_formatted_texts_line_mode<'a>(
     user_input: &str,
     last_input_char: char,
     new_char: bool,
-    mut formatted_passage: Vec<Text<'a>>,
+    mut formatted_passage: Vec<Span<'a>>,
 ) -> FormattedTexts<'a> {
     let (formatted_passage_word, formatted_input) = get_formatted_words(
         game_mode,
@@ -111,14 +111,14 @@ fn get_formatted_words<'a>(
     input: &str,
     last_input_char: char,
     new_char: bool,
-) -> (Vec<Text<'a>>, Vec<Text<'a>>) {
+) -> (Vec<Span<'a>>, Vec<Span<'a>>) {
     let indexable_word: Vec<char> = word.chars().collect();
     let indexable_input: Vec<char> = input.chars().collect();
     let idx_word_count = indexable_word.len();
     let idx_input_count = indexable_input.len();
 
-    let mut formatted_word: Vec<Text> = Vec::new();
-    let mut formatted_input: Vec<Text> = Vec::new();
+    let mut formatted_word: Vec<Span> = Vec::new();
+    let mut formatted_input: Vec<Span> = Vec::new();
     let mut word_dex = 0;
 
     let err = !indexer::check_like_word(word, input);
@@ -126,19 +126,19 @@ fn get_formatted_words<'a>(
     // Make all of the user's input white on red
     for input in indexable_input.iter() {
         if err {
-            formatted_input.push(Text::styled(
+            formatted_input.push(Span::styled(
                 input.to_string(),
                 Style::default().bg(Color::Red).fg(Color::White),
             ));
         } else {
-            formatted_input.push(Text::styled(
+            formatted_input.push(Span::styled(
                 input.to_string(),
                 Style::default().fg(Color::Green),
             ));
         }
     }
 
-    formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
+    formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
 
     while word_dex < idx_word_count
         && (word_dex < idx_input_count || *game_mode == GameMode::NonLatin)
@@ -155,7 +155,7 @@ fn get_formatted_words<'a>(
             break;
         }
 
-        formatted_word.push(Text::styled(
+        formatted_word.push(Span::styled(
             indexable_word[word_dex].to_string(),
             Style::default().fg(Color::Green),
         ));
@@ -167,12 +167,12 @@ fn get_formatted_words<'a>(
     for word in indexable_word.iter().skip(word_dex).take(idx_word_count) {
         if first {
             if err {
-                formatted_word.push(Text::styled(
+                formatted_word.push(Span::styled(
                     word.to_string(),
                     Style::default().bg(Color::Red).fg(Color::White),
                 ));
             } else {
-                formatted_word.push(Text::styled(
+                formatted_word.push(Span::styled(
                     word.to_string(),
                     Style::default().bg(Color::Blue).fg(Color::White),
                 ));
@@ -180,7 +180,7 @@ fn get_formatted_words<'a>(
             first = false;
             continue;
         }
-        formatted_word.push(Text::raw(word.to_string()));
+        formatted_word.push(Span::raw(word.to_string()));
     }
 
     (formatted_word, formatted_input)
@@ -224,7 +224,7 @@ fn get_fully_reformatted_texts<'a>(
     let reformatted_complete_texts = (*words)
         .iter()
         .map(|word| {
-            Text::styled(
+            Span::styled(
                 format!("{}{}", word, maybe_add_space(game_mode)),
                 Style::default().fg(color),
             )
@@ -232,7 +232,7 @@ fn get_fully_reformatted_texts<'a>(
         .collect();
     FormattedTexts {
         passage: reformatted_complete_texts,
-        input: vec![Text::styled(
+        input: vec![Span::styled(
             end_string,
             Style::default().bg(color).fg(Color::White),
         )],
@@ -258,15 +258,15 @@ mod tests {
         let test_word = "terminal-typeracer";
         let (formatted_word, formatted_input) =
             get_formatted_words(&GameMode::Latin, test_word, test_word, 'r', true);
-        let properly_formatted_word: Vec<Text> = test_word
+        let properly_formatted_word: Vec<Span> = test_word
             .chars()
-            .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
+            .map(|it| Span::styled(it.to_string(), Style::default().fg(Color::Green)))
             .collect();
-        let mut properly_formatted_input: Vec<Text> = test_word
+        let mut properly_formatted_input: Vec<Span> = test_word
             .chars()
-            .map(|it| Text::styled(it.to_string(), Style::default().fg(Color::Green)))
+            .map(|it| Span::styled(it.to_string(), Style::default().fg(Color::Green)))
             .collect();
-        properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
+        properly_formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
         assert_eq!(formatted_word, properly_formatted_word);
         assert_eq!(formatted_input, properly_formatted_input);
     }
@@ -278,31 +278,31 @@ mod tests {
 
         // There has to be a better way to do this
         let properly_formatted_word = vec![
-            Text::styled("t", Style::default().fg(Color::Green)),
-            Text::styled("e", Style::default().fg(Color::Green)),
-            Text::styled("r", Style::default().fg(Color::Green)),
-            Text::styled("m", Style::default().fg(Color::Green)),
-            Text::styled("i", Style::default().fg(Color::Green)),
-            Text::styled("n", Style::default().fg(Color::White).bg(Color::Red)),
-            Text::raw("a"),
-            Text::raw("l"),
-            Text::raw("-"),
-            Text::raw("t"),
-            Text::raw("y"),
-            Text::raw("p"),
-            Text::raw("e"),
+            Span::styled("t", Style::default().fg(Color::Green)),
+            Span::styled("e", Style::default().fg(Color::Green)),
+            Span::styled("r", Style::default().fg(Color::Green)),
+            Span::styled("m", Style::default().fg(Color::Green)),
+            Span::styled("i", Style::default().fg(Color::Green)),
+            Span::styled("n", Style::default().fg(Color::White).bg(Color::Red)),
+            Span::raw("a"),
+            Span::raw("l"),
+            Span::raw("-"),
+            Span::raw("t"),
+            Span::raw("y"),
+            Span::raw("p"),
+            Span::raw("e"),
         ];
 
-        let mut properly_formatted_input: Vec<Text> = test_input
+        let mut properly_formatted_input: Vec<Span> = test_input
             .chars()
             .map(|it| {
-                Text::styled(
+                Span::styled(
                     it.to_string(),
                     Style::default().fg(Color::White).bg(Color::Red),
                 )
             })
             .collect();
-        properly_formatted_input.push(Text::styled(" ", Style::default().bg(Color::Blue)));
+        properly_formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
 
         let (formatted_word, formatted_input) =
             get_formatted_words(&GameMode::Latin, test_word, test_input, 'e', true);
@@ -319,48 +319,48 @@ mod tests {
         let words = vec!["the", "quick", "brown", "fox"];
         let user_input = "bro";
         let current_word_idx = 2;
-        let input_formatted_passage: Vec<Text> = vec![
-            Text::styled("t", Style::default().fg(Color::Green)),
-            Text::styled("h", Style::default().fg(Color::Green)),
-            Text::styled("e", Style::default().fg(Color::Green)),
-            Text::styled(" ", Style::default().fg(Color::Green)),
-            Text::styled("q", Style::default().fg(Color::Green)),
-            Text::styled("u", Style::default().fg(Color::Green)),
-            Text::styled("i", Style::default().fg(Color::Green)),
-            Text::styled("c", Style::default().fg(Color::Green)),
-            Text::styled("k", Style::default().fg(Color::Green)),
-            Text::styled(" ", Style::default().fg(Color::Green)),
-            Text::raw("b"),
-            Text::raw("r"),
-            Text::raw("o"),
-            Text::raw("w"),
-            Text::raw("n"),
-            Text::raw(" "),
-            Text::raw("f"),
-            Text::raw("o"),
-            Text::raw("x"),
+        let input_formatted_passage: Vec<Span> = vec![
+            Span::styled("t", Style::default().fg(Color::Green)),
+            Span::styled("h", Style::default().fg(Color::Green)),
+            Span::styled("e", Style::default().fg(Color::Green)),
+            Span::styled(" ", Style::default().fg(Color::Green)),
+            Span::styled("q", Style::default().fg(Color::Green)),
+            Span::styled("u", Style::default().fg(Color::Green)),
+            Span::styled("i", Style::default().fg(Color::Green)),
+            Span::styled("c", Style::default().fg(Color::Green)),
+            Span::styled("k", Style::default().fg(Color::Green)),
+            Span::styled(" ", Style::default().fg(Color::Green)),
+            Span::raw("b"),
+            Span::raw("r"),
+            Span::raw("o"),
+            Span::raw("w"),
+            Span::raw("n"),
+            Span::raw(" "),
+            Span::raw("f"),
+            Span::raw("o"),
+            Span::raw("x"),
         ];
 
-        let expected_formatted_passage: Vec<Text> = vec![
-            Text::styled("t", Style::default().fg(Color::Green)),
-            Text::styled("h", Style::default().fg(Color::Green)),
-            Text::styled("e", Style::default().fg(Color::Green)),
-            Text::styled(" ", Style::default().fg(Color::Green)),
-            Text::styled("q", Style::default().fg(Color::Green)),
-            Text::styled("u", Style::default().fg(Color::Green)),
-            Text::styled("i", Style::default().fg(Color::Green)),
-            Text::styled("c", Style::default().fg(Color::Green)),
-            Text::styled("k", Style::default().fg(Color::Green)),
-            Text::styled(" ", Style::default().fg(Color::Green)),
-            Text::styled("b", Style::default().fg(Color::Green)),
-            Text::styled("r", Style::default().fg(Color::Green)),
-            Text::styled("o", Style::default().fg(Color::Green)),
-            Text::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
-            Text::raw("n"),
-            Text::raw(" "),
-            Text::raw("f"),
-            Text::raw("o"),
-            Text::raw("x"),
+        let expected_formatted_passage: Vec<Span> = vec![
+            Span::styled("t", Style::default().fg(Color::Green)),
+            Span::styled("h", Style::default().fg(Color::Green)),
+            Span::styled("e", Style::default().fg(Color::Green)),
+            Span::styled(" ", Style::default().fg(Color::Green)),
+            Span::styled("q", Style::default().fg(Color::Green)),
+            Span::styled("u", Style::default().fg(Color::Green)),
+            Span::styled("i", Style::default().fg(Color::Green)),
+            Span::styled("c", Style::default().fg(Color::Green)),
+            Span::styled("k", Style::default().fg(Color::Green)),
+            Span::styled(" ", Style::default().fg(Color::Green)),
+            Span::styled("b", Style::default().fg(Color::Green)),
+            Span::styled("r", Style::default().fg(Color::Green)),
+            Span::styled("o", Style::default().fg(Color::Green)),
+            Span::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
+            Span::raw("n"),
+            Span::raw(" "),
+            Span::raw("f"),
+            Span::raw("o"),
+            Span::raw("x"),
         ];
 
         let formatted_texts = get_formatted_texts(
@@ -385,28 +385,28 @@ mod tests {
         let words = vec!["the", "quick", "brown", "fox"];
         let user_input = "bro";
         let current_word_idx = 2;
-        let input_formatted_passage: Vec<Text> = vec![
-            Text::raw("b"),
-            Text::raw("r"),
-            Text::raw("o"),
-            Text::raw("w"),
-            Text::raw("n"),
-            Text::raw(" "),
-            Text::raw("f"),
-            Text::raw("o"),
-            Text::raw("x"),
+        let input_formatted_passage: Vec<Span> = vec![
+            Span::raw("b"),
+            Span::raw("r"),
+            Span::raw("o"),
+            Span::raw("w"),
+            Span::raw("n"),
+            Span::raw(" "),
+            Span::raw("f"),
+            Span::raw("o"),
+            Span::raw("x"),
         ];
 
-        let expected_formatted_passage: Vec<Text> = vec![
-            Text::styled("b", Style::default().fg(Color::Green)),
-            Text::styled("r", Style::default().fg(Color::Green)),
-            Text::styled("o", Style::default().fg(Color::Green)),
-            Text::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
-            Text::raw("n"),
-            Text::raw(" "),
-            Text::raw("f"),
-            Text::raw("o"),
-            Text::raw("x"),
+        let expected_formatted_passage: Vec<Span> = vec![
+            Span::styled("b", Style::default().fg(Color::Green)),
+            Span::styled("r", Style::default().fg(Color::Green)),
+            Span::styled("o", Style::default().fg(Color::Green)),
+            Span::styled("w", Style::default().fg(Color::White).bg(Color::Blue)),
+            Span::raw("n"),
+            Span::raw(" "),
+            Span::raw("f"),
+            Span::raw("o"),
+            Span::raw("x"),
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(
@@ -428,13 +428,13 @@ mod tests {
         let user_input = "";
         let current_word_idx = 1;
 
-        let input_formatted_passage: Vec<Text> =
-            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+        let input_formatted_passage: Vec<Span> =
+            vec![Span::raw("好"), Span::raw("你"), Span::raw("好")];
 
-        let expected_formatted_passage: Vec<Text> = vec![
-            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
-            Text::raw("你"),
-            Text::raw("好"),
+        let expected_formatted_passage: Vec<Span> = vec![
+            Span::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Span::raw("你"),
+            Span::raw("好"),
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(
@@ -456,13 +456,13 @@ mod tests {
         let user_input = "";
         let current_word_idx = 1;
 
-        let input_formatted_passage: Vec<Text> =
-            vec![Text::raw("好"), Text::raw("你"), Text::raw("好")];
+        let input_formatted_passage: Vec<Span> =
+            vec![Span::raw("好"), Span::raw("你"), Span::raw("好")];
 
-        let expected_formatted_passage: Vec<Text> = vec![
-            Text::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
-            Text::raw("你"),
-            Text::raw("好"),
+        let expected_formatted_passage: Vec<Span> = vec![
+            Span::styled("好", Style::default().fg(Color::White).bg(Color::Blue)),
+            Span::raw("你"),
+            Span::raw("好"),
         ];
 
         let formatted_texts = get_formatted_texts_line_mode(

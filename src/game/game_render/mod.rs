@@ -4,7 +4,7 @@ use tui::{
     style::Color,
     style::{Modifier, Style},
     terminal::Terminal,
-    text::Text,
+    text::{Spans, Text},
     widgets::{Block, Borders, Paragraph, Row, Table, Wrap},
 };
 
@@ -111,7 +111,7 @@ pub fn render<B: Backend>(
                             .borders(Borders::ALL)
                             .border_style(get_border_style(&game_state, &[]));
                         f.render_widget(
-                            Paragraph::new(vec![Text::raw(game_state.get_debug_output())].iter())
+                            Paragraph::new(Text::raw(game_state.get_debug_output()))
                                 .block(debug_block.title("DEBUG ENABLED"))
                                 .wrap(Wrap {trim: true})
                                 .alignment(Alignment::Left),
@@ -123,8 +123,8 @@ pub fn render<B: Backend>(
                         .border_style(get_border_style(&game_state, &[]));
 
                     f.render_widget(
-                        Paragraph::new(game_state.texts.passage.iter())
-                            .block(passage_block.title(&game_state.title))
+                        Paragraph::new(Spans::from(game_state.texts.passage))
+                            .block(passage_block.title(Spans::from(game_state.title)))
                             .wrap(Wrap{trim: true})
                             .alignment(Alignment::Left),
                         chunks[2],
@@ -143,7 +143,7 @@ pub fn render<B: Backend>(
                     };
 
                     f.render_widget(
-                        Paragraph::new(game_state.texts.input.iter())
+                        Paragraph::new(Spans::from(game_state.texts.input))
                             .block(typing_block.title("Type out passage here"))
                             .wrap(Wrap {trim: true})
                             .alignment(Alignment::Left)
