@@ -4,7 +4,7 @@ use tui::{
     style::Color,
     style::{Modifier, Style},
     terminal::Terminal,
-    text::{Spans, Text},
+    text::{Span, Spans},
     widgets::{Block, Borders, Paragraph, Row, Table, Wrap},
 };
 
@@ -111,7 +111,7 @@ pub fn render<B: Backend>(
                             .borders(Borders::ALL)
                             .border_style(get_border_style(&game_state, &[]));
                         f.render_widget(
-                            Paragraph::new(Text::raw(game_state.get_debug_output()))
+                            Paragraph::new(Span::raw(game_state.get_debug_output()))
                                 .block(debug_block.title("DEBUG ENABLED"))
                                 .wrap(Wrap {trim: true})
                                 .alignment(Alignment::Left),
@@ -165,18 +165,18 @@ pub fn render<B: Backend>(
                     let stats_text = game_state.stats.text();
                     let headers = stats_text
                         .get(0)
-                        .expect("Stats produced no text elements")
-                        .iter();
+                        .expect("Stats produced no text elements");
                     let rows = stats_text
                         .iter()
                         .skip(1)
-                        .map(|name_value_vec| Row::Data(name_value_vec.iter()));
+                        .map(|name_value_vec| Row::new(name_value_vec.clone()));
                     // set to be the width of the longest name in the stats
                     let stat_column_width = 5;
                     // set to be an arbitrary value, 5 digits should be plenty to show the values for now
                     let value_column_width = 5;
                     f.render_widget(
-                        Table::new(headers, rows)
+                        Table::new( rows)
+                            .header(Row::new(headers.clone()))
                             .block(stats_block.title("Stats"))
                             .widths(&[
                                 Constraint::Length(stat_column_width),
@@ -197,16 +197,16 @@ pub fn render<B: Backend>(
                     .borders(Borders::NONE);
                 f.render_widget(
                 Paragraph::new(
-                    [
-                        Text::raw(
+                    Spans::from(
+                    vec![
+                        Span::raw(
                             "^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]\n^G[raphs]  ^A[bout/docs]\n",
                         ),
-                        Text::styled(
+                        Span::styled(
                             format!("Build: {}", typeracer_version),
                             Style::default().fg(Color::Gray),
                         ),
-                    ]
-                    .iter(),
+                    ])
                 )
                 .block(shortcut_block)
                 .alignment(Alignment::Center), chunks[0]);
