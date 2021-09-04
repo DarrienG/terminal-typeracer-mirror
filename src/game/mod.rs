@@ -7,7 +7,7 @@ use std::{
     io::{stdin, stdout},
 };
 use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
-use tui::{backend::TermionBackend, text::Text, Terminal};
+use tui::{backend::TermionBackend, text::Span, Terminal};
 
 use crate::{
     actions::Action, config, dirs::setup_dirs::get_db_path, graphs, info,
@@ -110,7 +110,7 @@ pub fn play_game(
         passage: passage_info
             .passage
             .chars()
-            .map(|it| Text::raw(it.to_string()))
+            .map(|it| Span::raw(it.to_string()))
             .collect(),
         input: vec![],
         error: false,

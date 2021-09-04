@@ -1,4 +1,4 @@
-use tui::text::Text;
+use tui::text::Span;
 
 use crate::game::split;
 
@@ -50,9 +50,9 @@ pub fn word_completed(game_mode: &GameMode, c: char, current_word: &str, user_in
 /// Update texts in line mode for Latin and NonLatin texts.
 pub fn get_updated_texts<'a>(
     game_mode: &GameMode,
-    passage: Vec<Text<'a>>,
+    passage: Vec<Span<'a>>,
     current_word: &str,
-) -> Vec<Text<'a>> {
+) -> Vec<Span<'a>> {
     if *game_mode == GameMode::Latin {
         get_updated_latin_texts(passage, current_word)
     } else {
@@ -85,7 +85,7 @@ fn decide_game_nonlatin(words: &[&str], current_word_idx: usize, user_input: &st
 
 /// For Latin texts, we want to get the length of the word + a space. We truncate
 /// everything up to that point leaving the user with whatever is left.
-fn get_updated_latin_texts<'a>(passage: Vec<Text<'a>>, current_word: &str) -> Vec<Text<'a>> {
+fn get_updated_latin_texts<'a>(passage: Vec<Span<'a>>, current_word: &str) -> Vec<Span<'a>> {
     passage[current_word.len() + 1..passage.len()].to_vec()
 }
 
@@ -93,7 +93,7 @@ fn get_updated_latin_texts<'a>(passage: Vec<Text<'a>>, current_word: &str) -> Ve
 /// more. In Chinese, this means one word == one char, so remove that word.
 /// This approach will not scale with other languages, but we'll cross that
 /// bridge when we come to it.
-fn get_updated_nonlatin_texts(passage: Vec<Text>) -> Vec<Text> {
+fn get_updated_nonlatin_texts(passage: Vec<Span>) -> Vec<Span> {
     passage[1..passage.len()].to_vec()
 }
 
@@ -291,21 +291,21 @@ mod tests {
 
     #[test]
     fn get_updated_texts_latin() {
-        let formatted_passage: Vec<Text> = vec![
-            Text::raw("b"),
-            Text::raw("r"),
-            Text::raw("o"),
-            Text::raw("w"),
-            Text::raw("n"),
-            Text::raw(" "),
-            Text::raw("f"),
-            Text::raw("o"),
-            Text::raw("x"),
+        let formatted_passage: Vec<Span> = vec![
+            Span::raw("b"),
+            Span::raw("r"),
+            Span::raw("o"),
+            Span::raw("w"),
+            Span::raw("n"),
+            Span::raw(" "),
+            Span::raw("f"),
+            Span::raw("o"),
+            Span::raw("x"),
         ];
         let current_word = "brown";
 
-        let expected_formatted_passage: Vec<Text> =
-            vec![Text::raw("f"), Text::raw("o"), Text::raw("x")];
+        let expected_formatted_passage: Vec<Span> =
+            vec![Span::raw("f"), Span::raw("o"), Span::raw("x")];
 
         assert!(
             get_updated_texts(&GameMode::Latin, formatted_passage, &current_word)
@@ -315,24 +315,24 @@ mod tests {
 
     #[test]
     fn get_updated_texts_nonlatin() {
-        let formatted_passage: Vec<Text> = vec![
-            Text::raw("亂"),
-            Text::raw("數"),
-            Text::raw("假"),
-            Text::raw("文"),
-            Text::raw("產"),
-            Text::raw("生"),
-            Text::raw("器"),
+        let formatted_passage: Vec<Span> = vec![
+            Span::raw("亂"),
+            Span::raw("數"),
+            Span::raw("假"),
+            Span::raw("文"),
+            Span::raw("產"),
+            Span::raw("生"),
+            Span::raw("器"),
         ];
         let current_word = "亂";
 
-        let expected_formatted_passage: Vec<Text> = vec![
-            Text::raw("數"),
-            Text::raw("假"),
-            Text::raw("文"),
-            Text::raw("產"),
-            Text::raw("生"),
-            Text::raw("器"),
+        let expected_formatted_passage: Vec<Span> = vec![
+            Span::raw("數"),
+            Span::raw("假"),
+            Span::raw("文"),
+            Span::raw("產"),
+            Span::raw("生"),
+            Span::raw("器"),
         ];
 
         assert!(
