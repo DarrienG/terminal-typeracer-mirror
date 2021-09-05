@@ -25,30 +25,25 @@ The binary you'll get is called `typeracer` and runnable immediately!
 
 ## Cross compile
 
-**NOTE: This is currently broken, but are planning on having it working again in
-the future.**
+There is full cross compile support, but only if you are on macOS! This is
+because I only use macOS at home. If you would like to be able to compile to
+macOS from Linux, I'm happy to take PRs :)
 
-If you're trying to cross compile to macOS from Linux you'll need:
+There are two dependencies:
+- docker
+- openssl (the x86 and ARM versions)
 
-```
-clang
-g++
-gcc
-git
-zlib1g-dev
-libmpc-dev
-libmpfr-dev
-libgmp-dev
-```
 
-and to add the apple target via rustup:
-
-```bash
-$ rustup target add x86_64-apple-darwin
-```
-
-You can then build just the macOS target with
+To build run:
 
 ```
-$ make mac
+./build-all.sh
 ```
+
+If you're on an M1 Mac, it will build binaries for all common architectures at
+once! This may take a minute or two.
+
+The script makes an assumption about the location of openssl - that it is
+installed in the default homebrew location.
+
+If on your machine it's somewhere else, you should make a change to the script!
