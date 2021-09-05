@@ -20,8 +20,10 @@ pub struct InfoData<'a> {
     pub initial_empty: bool,
 }
 
-static TYPERACER_MAGIC: [&str; 10] = ["t", "t", "y", "p", "e", "r", "a", "c", "e", "r"];
-static TYPING_DELAY: [u64; 10] = [144, 80, 144, 144, 144, 100, 105, 95, 80, 100];
+const MAGIC_AMT: usize = 10;
+
+static TYPERACER_MAGIC: [&str; MAGIC_AMT] = ["t", "t", "y", "p", "e", "r", "a", "c", "e", "r"];
+static TYPING_DELAY: [u64; MAGIC_AMT] = [144, 80, 144, 144, 144, 100, 105, 95, 80, 100];
 
 pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str) {
     let version_string = &mut format!(" - version {}\n", typeracer_version);
