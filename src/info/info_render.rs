@@ -3,7 +3,6 @@ use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     terminal::Terminal,
-    text::Spans,
     widgets::{Block, BorderType, Borders, Paragraph, Wrap},
 };
 
@@ -35,18 +34,18 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                     .border_type(BorderType::Rounded);
 
                 f.render_widget(
-                    Paragraph::new(Spans::from(info_data.top_text.clone()))
+                    Paragraph::new(info_data.top_text.clone())
                         .block(top_block.title("About/docs page"))
                         .wrap(Wrap { trim: true })
                         .alignment(Alignment::Left),
                     root_layout[1],
                 );
 
-                if !info_data.bottom_text.is_empty() {
+                if !info_data.initial_empty {
                     let bottom_block = Block::default().borders(Borders::NONE);
 
                     f.render_widget(
-                        Paragraph::new(Spans::from(info_data.bottom_text.clone()))
+                        Paragraph::new(info_data.bottom_text.clone())
                             .block(bottom_block)
                             .wrap(Wrap { trim: true })
                             .alignment(Alignment::Center),

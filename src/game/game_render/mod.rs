@@ -4,7 +4,7 @@ use tui::{
     style::Color,
     style::{Modifier, Style},
     terminal::Terminal,
-    text::{Span, Spans},
+    text::{Spans, Text},
     widgets::{Block, BorderType, Borders, Paragraph, Row, Table, Wrap},
 };
 
@@ -112,7 +112,7 @@ pub fn render<B: Backend>(
                             .border_style(get_border_style(&game_state, &[]))
                             .border_type(BorderType::Rounded);
                         f.render_widget(
-                            Paragraph::new(Span::raw(game_state.get_debug_output()))
+                            Paragraph::new(Text::raw(game_state.get_debug_output()))
                                 .block(debug_block.title("DEBUG ENABLED"))
                                 .wrap(Wrap {trim: true})
                                 .alignment(Alignment::Left),
@@ -199,18 +199,18 @@ pub fn render<B: Backend>(
 
                 let shortcut_block = Block::default()
                     .borders(Borders::NONE);
-                f.render_widget(
-                Paragraph::new(
-                    Spans::from(
-                    vec![
-                        Span::raw(
-                            "^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]\n^G[raphs]  ^A[bout/docs]\n",
-                        ),
-                        Span::styled(
+
+                let mut continuation_text = Text::from("^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]\n^G[raphs]  ^A[bout/docs]\n");
+                continuation_text.extend(
+                        Text::styled(
                             format!("Build: {}", typeracer_version),
                             Style::default().fg(Color::Gray),
                         ),
-                    ])
+                );
+
+                f.render_widget(
+                Paragraph::new(
+                    continuation_text
                 )
                 .block(shortcut_block)
                 .alignment(Alignment::Center), chunks[0]);
