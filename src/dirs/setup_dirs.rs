@@ -63,7 +63,7 @@ fn append_if_present(path: &Path, addon_path: Option<&str>) -> PathBuf {
     }
 }
 
-fn extra_packs(extra_pack_dir: &PathBuf) -> Vec<PathBuf> {
+fn extra_packs(extra_pack_dir: &Path) -> Vec<PathBuf> {
     read_dir(extra_pack_dir)
         .unwrap()
         .map(|entry| entry.expect("Failed to evaluate path when reading files"))

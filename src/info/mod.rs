@@ -37,7 +37,7 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
     let mut ttyperacer = "".to_owned();
     let mut top_text = Text::default();
     for (type_text, delay) in izip!(magic.iter(), delay.iter()) {
-        ttyperacer.push_str(&type_text);
+        ttyperacer.push_str(type_text);
         top_text = Text::styled((&ttyperacer).to_string(), Style::default().fg(Color::Green));
 
         let tmp_text = Text::default();

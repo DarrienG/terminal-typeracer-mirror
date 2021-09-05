@@ -77,9 +77,9 @@ pub fn instant_death_border_style(game_state: &GameState, modifiers: &[Modifier]
     };
     modifiers
         .iter()
-        .for_each(|modifier| styling = styling.add_modifier(modifier.clone()));
+        .for_each(|modifier| styling = styling.add_modifier(*modifier));
 
-    return styling;
+    styling
 }
 
 pub fn regular_border_style(game_state: &GameState, modifiers: &[Modifier]) -> Style {
@@ -93,9 +93,9 @@ pub fn regular_border_style(game_state: &GameState, modifiers: &[Modifier]) -> S
 
     modifiers
         .iter()
-        .for_each(|modifier| styling = styling.add_modifier(modifier.clone()));
+        .for_each(|modifier| styling = styling.add_modifier(*modifier));
 
-    return styling;
+    styling
 }
 
 fn spicy_colors_style(game_state: &GameState) -> Style {

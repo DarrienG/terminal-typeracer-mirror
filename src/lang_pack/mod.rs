@@ -17,7 +17,7 @@ mod lang_pack_render;
 
 fn download_and_checkout(
     url: &str,
-    repo_path: &PathBuf,
+    repo_path: &Path,
     data_pack_version: &str,
 ) -> Result<(), GitError> {
     let repo = if Path::new(repo_path).exists() {
@@ -43,7 +43,7 @@ fn download_and_checkout(
     Ok(())
 }
 
-fn check_proper_version(lang_pack_version: &str, data_dir: &PathBuf) -> bool {
+fn check_proper_version(lang_pack_version: &str, data_dir: &Path) -> bool {
     // Somehow the file doesn't exist, so we should just get the right version
     let version_file = data_dir.join("version");
     if !version_file.exists() {
@@ -78,7 +78,7 @@ fn check_main_lang_pack(lang_pack_version: &str) -> bool {
 }
 
 /// Get extra directories as map of {simple simple name, actual path on computer}
-fn extra_repos_as_map(extra_dir_location: &PathBuf) -> HashMap<String, PathBuf> {
+fn extra_repos_as_map(extra_dir_location: &Path) -> HashMap<String, PathBuf> {
     extra_dir_location
         .read_dir()
         .expect("Directory disappeared when we tried to read it.")
@@ -184,7 +184,7 @@ pub fn retrieve_lang_pack(
                     Ok(()) => {
                         step_instruction.push_str(&format!(
                             "Main lang pack downloaded and ready to go!\n{}",
-                            get_extra_repos_string(&typeracer_config)
+                            get_extra_repos_string(typeracer_config)
                         ));
                     }
                     Err(e) => {

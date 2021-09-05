@@ -66,7 +66,7 @@ pub fn render<B: Backend>(
                 .map(|result| {
                     (
                         -result.days_back_played,
-                        dataset::relevant_data(&result, &active_mode),
+                        dataset::relevant_data(result, active_mode),
                     )
                 })
                 .collect::<Vec<(f64, f64)>>();
@@ -75,7 +75,7 @@ pub fn render<B: Backend>(
                 .name(format!(
                     "{}: {} over time",
                     game_mode,
-                    styles::graph_title(&active_mode)
+                    styles::graph_title(active_mode)
                 ))
                 .marker(symbols::Marker::Braille)
                 .style(Style::default().fg(Color::Yellow))
@@ -121,7 +121,7 @@ pub fn render<B: Backend>(
                                 y_axis_data
                                     .labels
                                     .iter()
-                                    .map(|label| Span::raw(label))
+                                    .map(Span::raw)
                                     .collect::<Vec<Span>>(),
                             ),
                     ),

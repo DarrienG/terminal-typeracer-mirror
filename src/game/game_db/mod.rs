@@ -7,12 +7,12 @@ use rand::Rng;
 use std::collections::HashSet;
 use std::{
     convert::TryFrom,
-    path::PathBuf,
+    path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 pub fn store_stats(
-    db_path: &PathBuf,
+    db_path: &Path,
     game_stats: &Stats,
     passage_info: &PassageInfo,
     game_mode: game::GameMode,
@@ -63,7 +63,7 @@ pub fn store_stats(
 }
 
 pub fn store_mistaken_words(
-    db_path: &PathBuf,
+    db_path: &Path,
     mistaken_words: &HashSet<String>,
 ) -> Result<(), rusqlite::Error> {
     let mut conn = Connection::open(db_path)?;
@@ -87,7 +87,7 @@ pub fn store_mistaken_words(
 /// get a chance to be removed from the mistaken_words table. Otherwise, we 'roll a dice' to
 /// determine if a correctly typed word should be removed.
 pub fn roll_to_delete_mistaken_words_typed_correctly(
-    db_path: &PathBuf,
+    db_path: &Path,
     words: &[&str],
     mistaken_words: &HashSet<String>,
 ) -> Result<(), rusqlite::Error> {

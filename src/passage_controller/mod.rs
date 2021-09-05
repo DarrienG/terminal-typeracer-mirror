@@ -56,7 +56,7 @@ impl<'a> Controller<'a> {
     ) -> Result<PassageInfo, rusqlite::Error> {
         let mut stmt = conn.prepare("SELECT word from mistaken_words")?;
 
-        let user_results_iter = stmt.query_map(params![], |row| Ok(row.get(0)?))?;
+        let user_results_iter = stmt.query_map(params![], |row| row.get(0))?;
 
         let words = user_results_iter
             .map(|result| result.unwrap())
@@ -336,8 +336,7 @@ impl<'a> Controller<'a> {
             DirType::ExtraDirs(d) => d
                 .iter()
                 .map(|dir| self.dir_and_parent(dir.path()))
-                .filter(|maybe_dir| maybe_dir.is_some())
-                .map(|dir| dir.unwrap())
+                .flatten()
                 .collect::<Vec<String>>(),
         }
     }

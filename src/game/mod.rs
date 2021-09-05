@@ -225,7 +225,7 @@ pub fn play_game(
         } else {
             formatter::get_formatted_texts_line_mode(
                 &text_mode,
-                &words[current_word_idx],
+                words[current_word_idx],
                 &user_input.to_string(),
                 last_input_char,
                 new_char,
@@ -261,7 +261,7 @@ pub fn play_game(
         }
     }
 
-    if let Err(e) = game_db::store_stats(&get_db_path(), &stats, passage_info, game_mode) {
+    if let Err(e) = game_db::store_stats(&get_db_path(), stats, passage_info, game_mode) {
         println!("{} {}", TERRIBLE_DB_FAILURE, e);
     }
 
@@ -293,7 +293,7 @@ pub fn play_game(
                             stats,
                             title: &passage_info.title,
                             game_mode,
-                            config: &typeracer_config,
+                            config: typeracer_config,
                             debug_enabled,
                             complete: formatted_texts.complete,
                             word_idx: current_word_idx,
@@ -323,7 +323,7 @@ pub fn play_game(
                             stats,
                             title: &passage_info.title,
                             game_mode,
-                            config: &typeracer_config,
+                            config: typeracer_config,
                             debug_enabled,
                             complete: formatted_texts.complete,
                             word_idx: current_word_idx,

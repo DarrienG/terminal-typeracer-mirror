@@ -1,5 +1,5 @@
 use rusqlite::{Connection, Result};
-use std::{io::stdin, path::PathBuf};
+use std::{io::stdin, path::Path};
 use termion::{event::Key, input::TermRead};
 use tui::{backend::Backend, terminal::Terminal};
 
@@ -36,7 +36,7 @@ const MODES: [Mode; 3] = [Mode::Wpm, Mode::Accuracy, Mode::Combo];
 
 pub fn show_graphs<B: Backend>(
     terminal: &mut Terminal<B>,
-    db_path: &PathBuf,
+    db_path: &Path,
     game_mode_from_game: GameMode,
 ) -> Result<(), rusqlite::Error> {
     let conn = Connection::open(db_path)?;

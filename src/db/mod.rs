@@ -29,7 +29,7 @@ pub fn check_stats_db() -> bool {
 ///
 /// returns false if we DO need to perform some update, specifically if the DB schema version
 /// doesn't match the version in the binary we're running.
-pub fn check_for_migration(path: &PathBuf) -> bool {
+pub fn check_for_migration(path: &Path) -> bool {
     let conn = Connection::open(path).expect("Unreachable DB");
     let db_version: Result<i64, rusqlite::Error> =
         conn.query_row("PRAGMA user_version", [], |row| row.get(0));
@@ -40,7 +40,7 @@ pub fn check_for_migration(path: &PathBuf) -> bool {
     }
 }
 
-pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
+pub fn do_migration(path: &Path) -> Result<(), rusqlite::Error> {
     // If our user_version is 0 then we have to do work to migrate to migration
     // package
     let mut conn = Connection::open(path)?;
@@ -104,7 +104,7 @@ pub fn do_migration(path: &PathBuf) -> Result<(), rusqlite::Error> {
 }
 
 /// Database does not exist, so let's make it
-pub fn create_database(path: &PathBuf) -> Result<(), rusqlite::Error> {
+pub fn create_database(path: &Path) -> Result<(), rusqlite::Error> {
     println!("CREATING DB");
     let mut conn = Connection::open(path)?;
     if embedded::migrations::runner().run(&mut conn).is_err() {
@@ -113,6 +113,6 @@ pub fn create_database(path: &PathBuf) -> Result<(), rusqlite::Error> {
     Ok(())
 }
 
-pub fn db_path(base_path: &PathBuf) -> PathBuf {
+pub fn db_path(base_path: &Path) -> PathBuf {
     base_path.join("stats.db")
 }
