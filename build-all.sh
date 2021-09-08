@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 set -eou pipefail
 
 CONTAINER_NAME="$(uuidgen)"
@@ -7,7 +9,10 @@ IMAGE_NAME="typeracer-linux-build"
 
 BINARY="typeracer"
 
-docker build -t "$IMAGE_NAME" .
+# create our context or if we've already created it, just move on
+docker buildx create --platform linux/amd64 --name typeracerx86 || true
+docker buildx use typeracerx86
+docker buildx build -t "$IMAGE_NAME" .
 docker run --rm -d --name "$CONTAINER_NAME" "$IMAGE_NAME"
 
 LINUX_X86_FOLDER="target/aarch64-unknown-linux-gnu"
