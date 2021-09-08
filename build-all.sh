@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -ex
-
 set -eou pipefail
 
 CONTAINER_NAME="$(uuidgen)"
