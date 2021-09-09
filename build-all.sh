@@ -7,14 +7,15 @@ IMAGE_NAME="typeracer-linux-build"
 
 BINARY="typeracer"
 
-docker build -t "$IMAGE_NAME" .
-docker run --rm -d --name "$CONTAINER_NAME" "$IMAGE_NAME"
+# create our context or if we've already created it, just move on
+docker build --platform linux/amd64 -t "$IMAGE_NAME" .
+docker run --platform linux/amd64 --rm -d --name "$CONTAINER_NAME" "$IMAGE_NAME"
 
-LINUX_X86_FOLDER="target/aarch64-unknown-linux-gnu"
+LINUX_X86_FOLDER="target/x86_64-unknown-linux-gnu"
 mkdir -p "$LINUX_X86_FOLDER"
 LINUX_X86_TARGET="$LINUX_X86_FOLDER/$BINARY"
 
-docker cp $CONTAINER_NAME:/project/typeracer ./target/aarch64-unknown-linux-gnu/
+docker cp $CONTAINER_NAME:/project/typeracer "$LINUX_X86_FOLDER"
 docker kill --signal SIGKILL "$CONTAINER_NAME"
 
 cargo build --release --target aarch64-apple-darwin
