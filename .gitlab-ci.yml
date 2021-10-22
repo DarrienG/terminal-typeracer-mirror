@@ -16,21 +16,21 @@ coverage-build:
       - ./*.profraw
 lint:
   stage: test
-  image: rust:1.50.0-buster
+  image: rust:1.56.0-buster
   needs: []
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
 style-check:
   stage: test
-  image: rust:1.50.0-buster
+  image: rust:1.56.0-buster
   needs: []
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 test:
   stage: test
-  image: rust:1.50.0-buster
+  image: rust:1.56.0-buster
   needs: []
   script:
     - cargo test

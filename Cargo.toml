@@ -2,7 +2,7 @@
 name = "typeracer"
 version = "2.0.8"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
-edition = "2018"
+edition = "2021"
 # Packaging for crates.io
 # We don't want assets included and the like
 include = [
