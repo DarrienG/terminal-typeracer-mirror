@@ -107,7 +107,12 @@ mod tests {
         let expected_days = vec![2.0, 1.0, 0.0];
 
         for (result, expected) in izip!(user_results.iter(), expected_days.iter()) {
-            assert_eq!(result.days_back_played, *expected);
+            assert_eq_float(result.days_back_played, *expected);
         }
+    }
+
+    fn assert_eq_float(v1: f64, v2: f64) {
+        let error_margin = f64::EPSILON;
+        assert!((v1 - v2).abs() < error_margin);
     }
 }

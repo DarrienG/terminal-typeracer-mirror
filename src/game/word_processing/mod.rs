@@ -225,8 +225,8 @@ mod tests {
         assert!(word_completed(
             &GameMode::Latin,
             c,
-            &current_word,
-            &user_input
+            current_word,
+            user_input
         ));
 
         // do not trigger until user hits space
@@ -234,8 +234,8 @@ mod tests {
         assert!(!word_completed(
             &GameMode::Latin,
             c,
-            &current_word,
-            &user_input,
+            current_word,
+            user_input,
         ));
 
         c = ' ';
@@ -243,8 +243,8 @@ mod tests {
         assert!(!word_completed(
             &GameMode::Latin,
             c,
-            &current_word,
-            &user_input,
+            current_word,
+            user_input,
         ));
 
         // This will be correct if the user hits space next, but not yet.
@@ -253,8 +253,8 @@ mod tests {
         assert!(!word_completed(
             &GameMode::Latin,
             c,
-            &current_word,
-            &user_input,
+            current_word,
+            user_input,
         ));
     }
 
@@ -267,16 +267,16 @@ mod tests {
         assert!(word_completed(
             &GameMode::NonLatin,
             c,
-            &current_word,
-            &user_input
+            current_word,
+            user_input
         ));
 
         user_input = "你";
         assert!(!word_completed(
             &GameMode::NonLatin,
             c,
-            &current_word,
-            &user_input
+            current_word,
+            user_input
         ));
 
         c = '你';
@@ -284,8 +284,8 @@ mod tests {
         assert!(!word_completed(
             &GameMode::NonLatin,
             c,
-            &current_word,
-            &user_input
+            current_word,
+            user_input
         ));
     }
 
@@ -308,7 +308,7 @@ mod tests {
             vec![Span::raw("f"), Span::raw("o"), Span::raw("x")];
 
         assert!(
-            get_updated_texts(&GameMode::Latin, formatted_passage, &current_word)
+            get_updated_texts(&GameMode::Latin, formatted_passage, current_word)
                 == expected_formatted_passage
         );
     }
@@ -336,7 +336,7 @@ mod tests {
         ];
 
         assert!(
-            get_updated_texts(&GameMode::NonLatin, formatted_passage, &current_word)
+            get_updated_texts(&GameMode::NonLatin, formatted_passage, current_word)
                 == expected_formatted_passage
         );
     }
