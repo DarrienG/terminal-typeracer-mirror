@@ -265,7 +265,7 @@ mod tests {
         stats.increment_combo(4);
 
         assert_eq!(correct_vec, stats.char_properly_typed);
-        assert_eq!(stats.get_typing_accuracy(), 100.0);
+        assert_eq_float(stats.get_typing_accuracy(), 100.0);
     }
 
     #[test]
@@ -281,7 +281,7 @@ mod tests {
         stats.increment_errors(4);
 
         assert_eq!(correct_vec, stats.char_properly_typed);
-        assert_eq!(stats.get_typing_accuracy(), 0.0);
+        assert_eq_float(stats.get_typing_accuracy(), 0.0);
     }
 
     #[test]
@@ -299,6 +299,11 @@ mod tests {
         stats.increment_combo(2);
 
         assert_eq!(correct_vec, stats.char_properly_typed);
-        assert_eq!(stats.get_typing_accuracy(), 0.0);
+        assert_eq_float(stats.get_typing_accuracy(), 0.0);
+    }
+
+    fn assert_eq_float(v1: f64, v2: f64) {
+        let error_margin = f64::EPSILON;
+        assert!((v1 - v2).abs() < error_margin);
     }
 }

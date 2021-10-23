@@ -411,7 +411,7 @@ mod tests {
 
         let formatted_texts = get_formatted_texts_line_mode(
             &GameMode::Latin,
-            &words[current_word_idx],
+            words[current_word_idx],
             user_input,
             'x',
             true,
@@ -439,7 +439,7 @@ mod tests {
 
         let formatted_texts = get_formatted_texts_line_mode(
             &GameMode::NonLatin,
-            &words[current_word_idx],
+            words[current_word_idx],
             user_input,
             '你',
             true,
@@ -467,7 +467,7 @@ mod tests {
 
         let formatted_texts = get_formatted_texts_line_mode(
             &GameMode::NonLatin,
-            &words[current_word_idx],
+            words[current_word_idx],
             user_input,
             '你',
             true,
