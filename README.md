@@ -17,22 +17,21 @@ where you're making errors and give you a set of words per minute.
 
 ## Installing
 
-We're on crates.io! Grab the latest version with:
-
-```bash
-$ cargo install typeracer
-```
-
-Or if you prefer, binaries are included with each release.
+[Prebuilt binaries here](https://gitlab.com/ttyperacer/terminal-typeracer/-/releases)
 
 Binaries are statically linked and available for a few platforms (currently
-x86_64 Linux and macOS). To use them, download and execute like any regular
-binary.
+x86_64 Linux and macOS ARM+x86). To use them, download and execute like any 
+regular binary.
 
 Windows is not supported if you are not running Windows Subsystem for Linux. If
 you would like to run on Windows, install WSL and use the Linux binaries.
 
-[Releases here](https://gitlab.com/DarrienG/terminal-typeracer/tags)
+
+We're also on crates.io! You can also grab the latest version with:
+
+```bash
+$ cargo install typeracer
+```
 
 ## Running
 
