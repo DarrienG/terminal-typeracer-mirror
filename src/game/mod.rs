@@ -179,7 +179,7 @@ pub fn play_game(
             Key::Ctrl('w') => {
                 user_input = word_processing::get_all_input_minus_last_word(&user_input)
             }
-            Key::Backspace => {
+            Key::Backspace | Key::Ctrl('h') => {
                 user_input.pop();
             }
             Key::Char(c) => {
