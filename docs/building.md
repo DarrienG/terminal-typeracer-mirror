@@ -4,8 +4,8 @@ It's a rust project with two external dependencies: git and sqlite
 
 You may need openssl installed as well.
 
-Rust version required is 1.42.0 or higher. Apparently rust changed the
-Cargo.lock format with 1.42.0 and this breaks builds with older version of rust.
+Rust version required is 1.58.1 or higher. Apparently rust changed the
+Cargo.lock format with 1.58.1 and this breaks builds with older version of rust.
 So I guess latest is greatest.
 
 ```bash
