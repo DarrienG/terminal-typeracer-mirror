@@ -164,6 +164,7 @@ pub fn play_game(
 
         let stdin = stdin();
         let c = stdin.keys().find_map(Result::ok);
+        let mut allowed_to_increment_combo = false;
 
         match c.unwrap() {
             Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
@@ -175,6 +176,9 @@ pub fn play_game(
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
+            Key::Ctrl('w') => {
+                user_input = word_processing::get_all_input_minus_last_word(&user_input)
+            }
             Key::Backspace => {
                 user_input.pop();
             }
@@ -206,6 +210,7 @@ pub fn play_game(
                 }
 
                 stats.update_wpm(current_word_idx, &words);
+                allowed_to_increment_combo = true;
             }
             _ => {}
         }
@@ -245,7 +250,9 @@ pub fn play_game(
                 formatted_texts = formatter::get_reformatted_failed_texts(&text_mode, &words);
                 continue;
             }
-        } else {
+        } else if allowed_to_increment_combo {
+            // there's no error, but we should only increment the combo if the customer didn't hit a control character
+            // allowed_to_increment_combo will only be set to true if a "regular" non-control character is pressed
             stats.increment_combo(current_letter_idx);
         }
 

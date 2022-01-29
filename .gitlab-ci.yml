@@ -1,6 +1,6 @@
 coverage-build:
   stage: build
-  image: rust:1.56.0-buster
+  image: rust:1.58.1-buster
   variables:
     RUSTC_BOOTSTRAP: 1
     CARGO_INCREMENTAL: 0

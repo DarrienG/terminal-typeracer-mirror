@@ -200,7 +200,7 @@ pub fn render<B: Backend>(
                 let shortcut_block = Block::default()
                     .borders(Borders::NONE);
 
-                let mut continuation_text = Text::from("^C exit  ^U clear word  ^R[estart]  ^N[ext]  ^P[revious]\n^G[raphs]  ^A[bout/docs]\n");
+                let mut continuation_text = Text::from("^C exit  ^U clear line ^W clear word \n^R[estart]  ^N[ext]  ^P[revious] ^G[raphs]  ^A[bout/docs]\n");
                 continuation_text.extend(
                         Text::styled(
                             format!("Build: {}", typeracer_version),

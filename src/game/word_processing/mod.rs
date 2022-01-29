@@ -8,6 +8,18 @@ pub enum GameMode {
     NonLatin,
 }
 
+/// This is effectively functionality for C-w. It removes the last word in a passage.
+/// If there is a trailing space, it will remove that AND the word.
+/// The goal is to mimic readline C-w as much as possible.
+pub fn get_all_input_minus_last_word(input: &str) -> String {
+    let words = split::to_words(input);
+    if words.len() == 0 {
+        input.to_owned()
+    } else {
+        split::join_to_passage(&words[..words.len() - 1])
+    }
+}
+
 /// Decide if game should end - i.e. the user has completed the passage.
 /// The game has split functionality based on whether the passage is latin or nonlatin.
 /// This is not determined by parsing, but by the `GameMode` passed in.
@@ -339,5 +351,35 @@ mod tests {
             get_updated_texts(&GameMode::NonLatin, formatted_passage, current_word)
                 == expected_formatted_passage
         );
+    }
+
+    #[test]
+    fn removes_last_word_latin() {
+        // note trailing space AND word should be removed
+        let input = "this is a test ";
+        let expected = "this is a";
+
+        assert_eq!(get_all_input_minus_last_word(input), expected);
+
+        // empty case
+        let input = "";
+        let expected = "";
+
+        assert_eq!(get_all_input_minus_last_word(input), expected);
+
+        let input = "él zorro marrón rápido salta sobre el perro";
+        let expected = "él zorro marrón rápido salta sobre el";
+        assert_eq!(get_all_input_minus_last_word(input), expected);
+    }
+
+    #[test]
+    fn removes_last_word_nonlatin() {
+        let input = "你好";
+        let expected = "你";
+        assert_eq!(get_all_input_minus_last_word(input), expected);
+
+        let input = "速い茶色のキツネ";
+        let expected = "速い茶色のキツ";
+        assert_eq!(get_all_input_minus_last_word(input), expected);
     }
 }
