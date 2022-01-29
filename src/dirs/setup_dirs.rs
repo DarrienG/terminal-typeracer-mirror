@@ -48,8 +48,6 @@ pub fn get_db_path() -> PathBuf {
 /// We don't want to actually make any files during tests, so let's just mock out
 /// making the path and return a canned one for tests.
 pub fn get_quote_dirs() -> LangPackFolders {
-    
-
     LangPackFolders {
         main_pack_dir: PathBuf::new().join("/home/darrien/.local/share/typeracer/lang-packs"),
         ..Default::default()
