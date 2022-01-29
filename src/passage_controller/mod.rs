@@ -353,7 +353,7 @@ impl<'a> Controller<'a> {
             Some(format!(
                 "{}{}{}",
                 split_dirs[split_dirs.len() - 2],
-                path::MAIN_SEPARATOR.to_string(),
+                path::MAIN_SEPARATOR,
                 split_dirs[split_dirs.len() - 1]
             ))
         }

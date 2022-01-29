@@ -13,7 +13,7 @@ pub enum GameMode {
 /// The goal is to mimic readline C-w as much as possible.
 pub fn get_all_input_minus_last_word(input: &str) -> String {
     let words = split::to_words(input);
-    if words.len() == 0 {
+    if words.is_empty() {
         input.to_owned()
     } else {
         split::join_to_passage(&words[..words.len() - 1])

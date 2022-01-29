@@ -1,7 +1,6 @@
 # Typeracer
 
 [![pipeline status](https://gitlab.com/DarrienG/terminal-typeracer/badges/master/pipeline.svg)](https://gitlab.com/DarrienG/terminal-typeracer/commits/master)
-[![coverage report](https://gitlab.com/ttyperacer/terminal-typeracer/badges/master/coverage.svg)](https://gitlab.com/ttyperacer/terminal-typeracer/-/commits/master)
 
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Development status](https://img.shields.io/badge/Dev%20Status-Maintenance%20Mode-orange.svg)
@@ -20,7 +19,7 @@ where you're making errors and give you a set of words per minute.
 [Prebuilt binaries here](https://gitlab.com/ttyperacer/terminal-typeracer/-/releases)
 
 Binaries are statically linked and available for a few platforms (currently
-x86_64 Linux and macOS ARM+x86). To use them, download and execute like any 
+x86_64 Linux and macOS ARM+x86). To use them, download and execute like any
 regular binary.
 
 Windows is not supported if you are not running Windows Subsystem for Linux. If
