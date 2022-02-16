@@ -49,7 +49,7 @@ toml = "0.5.8"
 serde = { version = "1.0.130", features = ["derive"] }
 
 # For downloading lang pack
-git2 = "0.13.21"
+git2 = { version = "0.13.21", default-features = false, features = ["https"] }
 
 # For picking random files
 rand = "0.8.4"
