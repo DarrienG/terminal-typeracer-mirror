@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "2.0.9"
+version = "2.0.10"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2021"
 # Packaging for crates.io
