@@ -2,27 +2,17 @@
 
 set -eou pipefail
 
-CONTAINER_NAME="$(uuidgen)"
-IMAGE_NAME="typeracer-linux-build"
+# Zig is our cross compiler. Yeah it's weird.
+pip3 install ziglang
+cargo install cargo-zigbuild
 
-BINARY="typeracer"
-
-# create our context or if we've already created it, just move on
-docker build --platform linux/amd64 -t "$IMAGE_NAME" .
-docker run --platform linux/amd64 --rm -d --name "$CONTAINER_NAME" "$IMAGE_NAME"
-
-LINUX_X86_FOLDER="target/x86_64-unknown-linux-gnu"
-mkdir -p "$LINUX_X86_FOLDER"
-LINUX_X86_TARGET="$LINUX_X86_FOLDER/$BINARY"
-
-docker cp $CONTAINER_NAME:/project/typeracer "$LINUX_X86_FOLDER"
-docker kill --signal SIGKILL "$CONTAINER_NAME"
+LINUX_X86_TARGET="target/x86_64-unknown-linux-gnu/release/typeracer"
+cargo zigbuild --release --target x86_64-unknown-linux-gnu.2.28
+LINUX_ARM_TARGET="target/aarch64-unknown-linux-gnu/release/typeracer"
+cargo zigbuild --release --target aarch64-unknown-linux-gnu.2.28
 
 cargo build --release --target aarch64-apple-darwin
-
-# openssl must be installed with rosetta brew
-# brew install openssl
-X86_64_APPLE_DARWIN_OPENSSL_DIR="/usr/local/opt/openssl" cargo build --target x86_64-apple-darwin --release
+cargo build --release --target x86_64-apple-darwin
 
 UNIVERSAL_FOLDER="target/universal-apple-darwin"
 
@@ -39,4 +29,4 @@ echo -e "All done!"
 echo -e "Binaries can be found in the following locations:"
 echo -e "MACOS_UNIVERSAL:\n\t- $MACOS_UNIVERSAL_TARGET"
 echo -e "LINUX_X86:\n\t- $LINUX_X86_TARGET"
-echo -e "Consider running cargo clean to clean up alternative architectures and docker rmi to remove old docker images"
+echo -e "LINUX_ARM:\n\t- $LINUX_ARM_TARGET"
