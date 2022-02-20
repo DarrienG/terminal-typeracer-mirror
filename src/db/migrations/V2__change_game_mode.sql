@@ -12,7 +12,7 @@ CREATE TABLE passage_stats(
    highest_combo INTEGER,
    game_mode INTEGER,
    when_played_secs INTEGER,
-   FOREIGN KEY(passage) REFERENCES passage(passage),
+   FOREIGN KEY(passage) REFERENCES passages(passage),
    FOREIGN KEY(game_mode) REFERENCES game_mode(id)
 );
 INSERT INTO passage_stats(
