@@ -25,14 +25,13 @@ The binary you'll get is called `typeracer` and runnable immediately!
 
 ## Cross compile
 
-There is full cross compile support, but only if you are on macOS! This is
-because I only use macOS at home. If you would like to be able to compile to
-macOS from Linux, I'm happy to take PRs :)
+There are three dependencies:
+- Python/pip
+- Cargo
+- Zig
 
-There are two dependencies:
-- docker
-- openssl (the x86 and ARM versions)
 
+Zig will be installed along the way if you don't have it.
 
 To build run:
 
@@ -40,10 +39,4 @@ To build run:
 ./build-all.sh
 ```
 
-If you're on an M1 Mac, it will build binaries for all common architectures at
-once! This may take a minute or two.
-
-The script makes an assumption about the location of openssl - that it is
-installed in the default homebrew location.
-
-If on your machine it's somewhere else, you should make a change to the script!
+This will take a little time!

@@ -1,6 +1,6 @@
 [package]
 name = "typeracer"
-version = "2.0.10"
+version = "2.0.11"
 authors = ["DarrienG <darrienglasser@outlook.com>"]
 edition = "2021"
 # Packaging for crates.io
@@ -49,7 +49,7 @@ toml = "0.5.8"
 serde = { version = "1.0.130", features = ["derive"] }
 
 # For downloading lang pack
-git2 = { version = "0.13.21", default-features = false, features = ["https"] }
+git2 = { version = "0.13.25", default_features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
 
 # For picking random files
 rand = "0.8.4"
@@ -61,7 +61,7 @@ clap = "2.33.3"
 itertools = "0.10.1"
 
 # For persisting data
-rusqlite = "0.25.3"
+rusqlite = { version = "0.26.3", features = ["bundled"] }
 
 # For SQL migration
-refinery = { version = "0.6.0", features = ["rusqlite"] }
+refinery = { version = "0.8.4", features = ["rusqlite"] }
