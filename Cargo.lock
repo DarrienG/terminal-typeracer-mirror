@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "typeracer"
-version = "2.0.10"
+version = "2.0.11"
 dependencies = [
  "clap",
  "directories-next",
