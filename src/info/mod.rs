@@ -77,7 +77,7 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
 
     let mut bottom_text: Text = Text::styled(
         "\n\nOriginal author: Darrien Glasser\nInspired by Vrinda\n\n",
-        Style::default().fg(Color::Gray),
+        Style::default().fg(Color::LightBlue),
     );
     bottom_text.extend(Text::raw("^C to return"));
 

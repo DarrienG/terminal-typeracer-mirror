@@ -2,3 +2,4 @@
 **/*.rs.bk
 osxcross
 .DS_Store
+.idea

@@ -9,7 +9,7 @@ use std::{
     io::{stdin, stdout, BufRead, BufReader, Error},
 };
 use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
-use tui::{backend::TermionBackend, Terminal};
+use tui::{backend::TermionBackend, text::Text, Terminal};
 
 use crate::{config::TyperacerConfig, dirs::setup_dirs};
 
@@ -144,7 +144,7 @@ pub fn retrieve_lang_pack(
     let mut terminal = Terminal::new(backend)?;
 
     let mut step_instruction =
-        "Found updated lang packs! Update to the latest versions? (y/n)\n".to_string();
+        vec!["Found updated lang packs! Update to the latest versions? (y/n)\n".to_string()];
     let mut step_count = 0;
     let mut stale_repo_paths: HashSet<PathBuf> = Default::default();
 
@@ -152,14 +152,20 @@ pub fn retrieve_lang_pack(
 
     loop {
         let stdin = stdin();
-        lang_pack_render::render(&mut terminal, &step_instruction);
+        let mut final_text = Text::default();
+        step_instruction
+            .iter()
+            .map(|instruction| Text::raw(instruction.to_owned()))
+            .for_each(|instruction| final_text.extend(instruction));
+
+        lang_pack_render::render(&mut terminal, final_text);
         match step_count {
             0 => {
                 for c in stdin.keys() {
                     match c.unwrap() {
                         Key::Char('y') | Key::Char('Y') => {
                             step_count += 1;
-                            step_instruction.push_str(&format!(
+                            step_instruction.push(format!(
                                 "Making data dir at: {}\n",
                                 setup_dirs::create_data_dir(None).to_str().unwrap()
                             ));
@@ -172,7 +178,7 @@ pub fn retrieve_lang_pack(
             }
             1 => {
                 step_count += 1;
-                step_instruction.push_str("Downloading and setting up lang packs (this may take a while with slow internet)...\n");
+                step_instruction.push("Downloading and setting up lang packs (this may take a while with slow internet)...\n".to_owned());
             }
             2 => {
                 step_count += 1;
@@ -182,14 +188,14 @@ pub fn retrieve_lang_pack(
                     data_pack_version,
                 ) {
                     Ok(()) => {
-                        step_instruction.push_str(&format!(
+                        step_instruction.push(format!(
                             "Main lang pack downloaded and ready to go!\n{}",
                             get_extra_repos_string(typeracer_config)
                         ));
                     }
                     Err(e) => {
                         step_count = 5;
-                        step_instruction.push_str(&format!(
+                        step_instruction.push(format!(
                             "Trouble downloading main repo at: {} error: {} please try again\n",
                             typeracer_config.repo, e
                         ));
@@ -205,12 +211,12 @@ pub fn retrieve_lang_pack(
                         &repo.version,
                     ) {
                         Ok(()) => {
-                            step_instruction.push_str(&format!(
+                            step_instruction.push(format!(
                                 "Downloaded and installed user repo: {} as {}\n",
                                 repo.url, repo.name
                             ));
                         }
-                        Err(e) => step_instruction.push_str(&format!(
+                        Err(e) => step_instruction.push(format!(
                             "Trouble downloading extra repo: {}, error: {}. Please try again.\n",
                             repo.url, e
                         )),
@@ -218,7 +224,7 @@ pub fn retrieve_lang_pack(
                 }
                 stale_repo_paths = repos_to_clean(typeracer_config);
                 if !stale_repo_paths.is_empty() {
-                    step_instruction.push_str(&format!(
+                    step_instruction.push(format!(
                         "Found unreferenced repos:\n{}\nWould you like to delete them? (y/n)\n",
                         stale_repo_paths
                             .iter()
@@ -234,13 +240,14 @@ pub fn retrieve_lang_pack(
                 for c in stdin.keys() {
                     match c.unwrap() {
                         Key::Char('y') | Key::Char('Y') => {
-                            step_instruction.push_str(&get_cleaned_repos_string(
-                                clean_extra_repos(&stale_repo_paths),
-                            ));
+                            step_instruction.push(get_cleaned_repos_string(clean_extra_repos(
+                                &stale_repo_paths,
+                            )));
                             break;
                         }
                         Key::Char('n') | Key::Char('N') => {
-                            step_instruction.push_str("Requested not to delete old repos.\n");
+                            step_instruction
+                                .push("Requested not to delete old repos.\n".to_owned());
                             break;
                         }
                         _ => (),
@@ -249,7 +256,7 @@ pub fn retrieve_lang_pack(
             }
             5 => {
                 step_count += 1;
-                step_instruction.push_str("Press any key to continue or ^C to exit.\n");
+                step_instruction.push("Press any key to continue or ^C to exit.\n".to_owned());
             }
             _ => {
                 let c = stdin.keys().find_map(Result::ok);

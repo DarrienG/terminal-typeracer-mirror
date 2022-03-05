@@ -41,17 +41,15 @@ pub fn render<B: Backend>(terminal: &mut Terminal<B>, info_data: &InfoData) {
                     root_layout[1],
                 );
 
-                if !info_data.initial_empty {
-                    let bottom_block = Block::default().borders(Borders::NONE);
+                let bottom_block = Block::default().borders(Borders::NONE);
 
-                    f.render_widget(
-                        Paragraph::new(info_data.bottom_text.clone())
-                            .block(bottom_block)
-                            .wrap(Wrap { trim: true })
-                            .alignment(Alignment::Center),
-                        root_layout[3],
-                    );
-                }
+                f.render_widget(
+                    Paragraph::new(info_data.bottom_text.clone())
+                        .block(bottom_block)
+                        .wrap(Wrap { trim: true })
+                        .alignment(Alignment::Center),
+                    root_layout[3],
+                );
             }
         })
         .expect("Failed to draw terminal widgets.");
