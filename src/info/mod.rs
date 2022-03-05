@@ -17,7 +17,6 @@ mod info_render;
 pub struct InfoData<'a> {
     pub top_text: &'a Text<'a>,
     pub bottom_text: &'a Text<'a>,
-    pub initial_empty: bool,
 }
 
 const MAGIC_AMT: usize = 10;
@@ -47,7 +46,6 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
             &InfoData {
                 top_text: &top_text,
                 bottom_text: &tmp_text,
-                initial_empty: true,
             },
         );
         thread::sleep(time::Duration::from_millis(*delay));
@@ -84,7 +82,6 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
     let info_data = InfoData {
         top_text: &top_text,
         bottom_text: &bottom_text,
-        initial_empty: true,
     };
 
     render(terminal, &info_data);
