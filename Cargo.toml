@@ -24,6 +24,7 @@ debug-assertions = false
 panic = 'abort'
 incremental = false
 overflow-checks = false
+strip = "symbols"
 
 [profile.dev]
 opt-level = 0
