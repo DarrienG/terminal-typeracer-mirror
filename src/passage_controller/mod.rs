@@ -334,7 +334,8 @@ impl<'a> Controller<'a> {
                 })
                 .collect::<Vec<String>>(),
             DirType::ExtraDirs(d) => d
-                .iter().filter_map(|dir| self.dir_and_parent(dir.path()))
+                .iter()
+                .filter_map(|dir| self.dir_and_parent(dir.path()))
                 .collect::<Vec<String>>(),
         }
     }
