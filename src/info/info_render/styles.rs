@@ -10,19 +10,19 @@ const LARGE_LAYOUT: [Constraint; 4] = [
 const LARGE_MARGIN: u16 = 5;
 
 const MEDIUM_LAYOUT: [Constraint; 4] = [
-    Constraint::Percentage(15),
-    Constraint::Percentage(45),
-    Constraint::Percentage(10),
-    Constraint::Percentage(30),
+    Constraint::Percentage(2),
+    Constraint::Percentage(68),
+    Constraint::Percentage(5),
+    Constraint::Percentage(25),
 ];
 
 const MEDIUM_MARGIN: u16 = 3;
 
 const SMALL_LAYOUT: [Constraint; 4] = [
     Constraint::Percentage(0),
-    Constraint::Percentage(50),
-    Constraint::Percentage(10),
-    Constraint::Percentage(40),
+    Constraint::Percentage(70),
+    Constraint::Percentage(5),
+    Constraint::Percentage(25),
 ];
 
 const SMALL_MARGIN: u16 = 1;
