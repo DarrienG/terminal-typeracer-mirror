@@ -4,9 +4,9 @@ It's a rust project with two external dependencies: git and sqlite
 
 You may need openssl installed as well.
 
-Rust version required is 1.58.1 or higher. Apparently rust changed the
-Cargo.lock format with 1.58.1 and this breaks builds with older version of rust.
-So I guess latest is greatest.
+Rust version required is 1.59.0 or higher. We're using the new auto symbol
+stripping in cargo. Older releases of rust are not supported, but you may be
+able to compile with an older version anyway.
 
 ```bash
 $ cargo build --release

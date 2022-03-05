@@ -1,20 +1,20 @@
 lint:
   stage: test
-  image: rust:1.58.1-buster
+  image: rust:1.59.0-buster
   needs: []
   script:
     - rustup component add clippy
     - cargo clippy --all -- -D warnings
 style-check:
   stage: test
-  image: rust:1.58.1-buster
+  image: rust:1.59.0-buster
   needs: []
   script:
     - rustup component add rustfmt
     - cargo fmt -- --check
 test:
   stage: test
-  image: rust:1.58.1-buster
+  image: rust:1.59.0-buster
   needs: []
   script:
     - cargo test
