@@ -4,9 +4,11 @@ use info::show_info;
 use std::{
     collections::HashSet,
     fmt,
-    io::{stdin, stdout},
+    io::stdout,
+    sync::mpsc::{channel, Sender},
+    time::Duration,
 };
-use termion::{event::Key, input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
+use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, text::Span, Terminal};
 
 use crate::{
@@ -21,6 +23,7 @@ pub mod word_processing;
 
 mod game_db;
 mod game_render;
+mod input;
 
 const TERRIBLE_DB_FAILURE: &str =
     "HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR:";
@@ -126,6 +129,11 @@ pub fn play_game(
 
     let mut current_word_idx = 0;
 
+    let (input_sender, input_receiver) = channel::<Key>();
+    let (quit_sender, quit_receiver) = channel::<bool>();
+    input::capture(input_sender, quit_receiver);
+    let mut got_first_input = false;
+
     loop {
         game_render::render(
             &mut terminal,
@@ -162,16 +170,23 @@ pub fn play_game(
         // set up properly for formatting.
         let mut last_input_char = ' ';
 
-        let stdin = stdin();
-        let c = stdin.keys().find_map(Result::ok);
         let mut allowed_to_increment_combo = false;
 
-        match c.unwrap() {
+        let recv_result = input_receiver.recv_timeout(Duration::from_millis(500));
+        if recv_result.is_err() {
+            if got_first_input {
+                stats.update_wpm(current_word_idx, &words);
+            }
+            // just didn't get anything, let's keep going
+            continue;
+        }
+
+        match recv_result.unwrap() {
             Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
-            Key::Ctrl('c') => return Action::Quit,
-            Key::Ctrl('n') => return Action::NextPassage,
-            Key::Ctrl('p') => return Action::PreviousPassage,
-            Key::Ctrl('r') => return Action::RestartPassage,
+            Key::Ctrl('c') => return perform_action(Action::Quit, &quit_sender),
+            Key::Ctrl('n') => return perform_action(Action::NextPassage, &quit_sender),
+            Key::Ctrl('p') => return perform_action(Action::PreviousPassage, &quit_sender),
+            Key::Ctrl('r') => return perform_action(Action::RestartPassage, &quit_sender),
             Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), game_mode)
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
@@ -183,6 +198,7 @@ pub fn play_game(
                 user_input.pop();
             }
             Key::Char(c) => {
+                got_first_input = true;
                 new_char = true;
                 last_input_char = c;
                 stats.update_start_time();
@@ -287,66 +303,75 @@ pub fn play_game(
     }
 
     loop {
-        let stdin = stdin();
-        for c in stdin.keys() {
-            match c.unwrap() {
-                Key::Ctrl('a') => {
-                    show_info(&mut terminal, typeracer_version);
-                    game_render::render(
-                        &mut terminal,
-                        game_render::GameState {
-                            texts: &formatted_texts,
-                            user_input: &user_input,
-                            stats,
-                            title: &passage_info.title,
-                            game_mode,
-                            config: typeracer_config,
-                            debug_enabled,
-                            complete: formatted_texts.complete,
-                            word_idx: current_word_idx,
-                            passage_path: &passage_info.passage_path,
-                            current_word: if current_word_idx == words.len() {
-                                "DONE"
-                            } else {
-                                words[current_word_idx]
-                            },
-                            mistaken_words: &mistaken_words,
+        let recv_result = input_receiver.recv_timeout(Duration::from_millis(500));
+        if recv_result.is_err() {
+            // just didn't get anything, let's keep going
+            continue;
+        }
+        match recv_result.unwrap() {
+            Key::Ctrl('a') => {
+                show_info(&mut terminal, typeracer_version);
+                game_render::render(
+                    &mut terminal,
+                    game_render::GameState {
+                        texts: &formatted_texts,
+                        user_input: &user_input,
+                        stats,
+                        title: &passage_info.title,
+                        game_mode,
+                        config: typeracer_config,
+                        debug_enabled,
+                        complete: formatted_texts.complete,
+                        word_idx: current_word_idx,
+                        passage_path: &passage_info.passage_path,
+                        current_word: if current_word_idx == words.len() {
+                            "DONE"
+                        } else {
+                            words[current_word_idx]
                         },
-                        typeracer_version,
-                    );
-                }
-                Key::Ctrl('c') => return Action::Quit,
-                Key::Ctrl('n') => return Action::NextPassage,
-                Key::Ctrl('p') => return Action::PreviousPassage,
-                Key::Ctrl('r') => return Action::RestartPassage,
-                Key::Ctrl('g') => {
-                    show_graphs(&mut terminal, &get_db_path(), game_mode)
-                        .expect("Unable to get data for graph");
-                    game_render::render(
-                        &mut terminal,
-                        game_render::GameState {
-                            texts: &formatted_texts,
-                            user_input: &user_input,
-                            stats,
-                            title: &passage_info.title,
-                            game_mode,
-                            config: typeracer_config,
-                            debug_enabled,
-                            complete: formatted_texts.complete,
-                            word_idx: current_word_idx,
-                            passage_path: &passage_info.passage_path,
-                            current_word: if current_word_idx == words.len() {
-                                "DONE"
-                            } else {
-                                words[current_word_idx]
-                            },
-                            mistaken_words: &mistaken_words,
-                        },
-                        typeracer_version,
-                    );
-                }
-                _ => (),
+                        mistaken_words: &mistaken_words,
+                    },
+                    typeracer_version,
+                );
             }
+            Key::Ctrl('c') => return perform_action(Action::Quit, &quit_sender),
+            Key::Ctrl('n') => return perform_action(Action::NextPassage, &quit_sender),
+            Key::Ctrl('p') => return perform_action(Action::PreviousPassage, &quit_sender),
+            Key::Ctrl('r') => return perform_action(Action::RestartPassage, &quit_sender),
+            Key::Ctrl('g') => {
+                show_graphs(&mut terminal, &get_db_path(), game_mode)
+                    .expect("Unable to get data for graph");
+                game_render::render(
+                    &mut terminal,
+                    game_render::GameState {
+                        texts: &formatted_texts,
+                        user_input: &user_input,
+                        stats,
+                        title: &passage_info.title,
+                        game_mode,
+                        config: typeracer_config,
+                        debug_enabled,
+                        complete: formatted_texts.complete,
+                        word_idx: current_word_idx,
+                        passage_path: &passage_info.passage_path,
+                        current_word: if current_word_idx == words.len() {
+                            "DONE"
+                        } else {
+                            words[current_word_idx]
+                        },
+                        mistaken_words: &mistaken_words,
+                    },
+                    typeracer_version,
+                );
+            }
+            _ => (),
         }
     }
+}
+
+fn perform_action(action: Action, sender: &Sender<bool>) -> Action {
+    sender
+        .send(true)
+        .expect("Receiver thread died unexpectedly. Please restart typeracer");
+    action
 }
