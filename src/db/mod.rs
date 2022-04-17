@@ -105,7 +105,6 @@ pub fn do_migration(path: &Path) -> Result<(), rusqlite::Error> {
 
 /// Database does not exist, so let's make it
 pub fn create_database(path: &Path) -> Result<(), rusqlite::Error> {
-    println!("CREATING DB");
     let mut conn = Connection::open(path)?;
     if embedded::migrations::runner().run(&mut conn).is_err() {
         return Err(rusqlite::Error::InvalidPath(path.to_path_buf()));
