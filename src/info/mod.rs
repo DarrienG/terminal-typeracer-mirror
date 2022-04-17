@@ -87,9 +87,9 @@ pub fn show_info<B: Backend>(
         bottom_text: &bottom_text,
     };
 
-    render(terminal, &info_data);
     loop {
-        let recv_result = input_receiver.recv_timeout(Duration::from_secs(500));
+        render(terminal, &info_data);
+        let recv_result = input_receiver.recv_timeout(Duration::from_millis(500));
         if recv_result.is_err() {
             // just didn't get anything, let's keep going
             continue;
