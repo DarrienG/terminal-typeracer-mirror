@@ -1,13 +1,8 @@
 use config::TyperacerConfig;
+use crossbeam_channel::Receiver;
 use graphs::show_graphs;
 use info::show_info;
-use std::{
-    collections::HashSet,
-    fmt,
-    io::stdout,
-    sync::mpsc::{channel, Sender},
-    time::Duration,
-};
+use std::{collections::HashSet, fmt, io::stdout, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, text::Span, Terminal};
 
@@ -23,7 +18,6 @@ pub mod word_processing;
 
 mod game_db;
 mod game_render;
-mod input;
 
 const TERRIBLE_DB_FAILURE: &str =
     "HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR:";
@@ -95,6 +89,7 @@ impl From<i64> for GameMode {
 // TODO: Provide get_backend method in game_render
 pub fn play_game(
     passage_info: &PassageInfo,
+    input_receiver: &Receiver<Key>,
     stats: &mut stats::Stats,
     debug_enabled: bool,
     game_mode: GameMode,
@@ -129,9 +124,6 @@ pub fn play_game(
 
     let mut current_word_idx = 0;
 
-    let (input_sender, input_receiver) = channel::<Key>();
-    let (quit_sender, quit_receiver) = channel::<bool>();
-    input::capture(input_sender, quit_receiver);
     let mut got_first_input = false;
 
     loop {
@@ -183,10 +175,10 @@ pub fn play_game(
 
         match recv_result.unwrap() {
             Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
-            Key::Ctrl('c') => return perform_action(Action::Quit, &quit_sender),
-            Key::Ctrl('n') => return perform_action(Action::NextPassage, &quit_sender),
-            Key::Ctrl('p') => return perform_action(Action::PreviousPassage, &quit_sender),
-            Key::Ctrl('r') => return perform_action(Action::RestartPassage, &quit_sender),
+            Key::Ctrl('c') => return Action::Quit,
+            Key::Ctrl('n') => return Action::NextPassage,
+            Key::Ctrl('p') => return Action::PreviousPassage,
+            Key::Ctrl('r') => return Action::RestartPassage,
             Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), game_mode)
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
@@ -334,10 +326,10 @@ pub fn play_game(
                     typeracer_version,
                 );
             }
-            Key::Ctrl('c') => return perform_action(Action::Quit, &quit_sender),
-            Key::Ctrl('n') => return perform_action(Action::NextPassage, &quit_sender),
-            Key::Ctrl('p') => return perform_action(Action::PreviousPassage, &quit_sender),
-            Key::Ctrl('r') => return perform_action(Action::RestartPassage, &quit_sender),
+            Key::Ctrl('c') => return Action::Quit,
+            Key::Ctrl('n') => return Action::NextPassage,
+            Key::Ctrl('p') => return Action::PreviousPassage,
+            Key::Ctrl('r') => return Action::RestartPassage,
             Key::Ctrl('g') => {
                 show_graphs(&mut terminal, &get_db_path(), game_mode)
                     .expect("Unable to get data for graph");
@@ -367,11 +359,4 @@ pub fn play_game(
             _ => (),
         }
     }
-}
-
-fn perform_action(action: Action, sender: &Sender<bool>) -> Action {
-    sender
-        .send(true)
-        .expect("Receiver thread died unexpectedly. Please restart typeracer");
-    action
 }

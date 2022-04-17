@@ -1,9 +1,11 @@
 #![cfg_attr(test, allow(dead_code, unused_imports))]
 #![allow(clippy::match_like_matches_macro)]
 use clap::{App, AppSettings, Arg};
+use crossbeam_channel::unbounded;
 use std::io::{Error, ErrorKind};
 
 mod game;
+mod input;
 mod lang_pack;
 mod passage_controller;
 mod dirs {
@@ -19,6 +21,7 @@ pub mod stats;
 
 use actions::Action;
 use rusqlite::Connection;
+use termion::event::Key;
 
 #[cfg(not(debug_assertions))]
 fn debug_enabled_default() -> bool {
@@ -146,6 +149,10 @@ fn main() -> Result<(), Error> {
         }
     }
 
+    // setup input
+    let (input_sender, input_receiver) = unbounded::<Key>();
+    input::capture(input_sender);
+
     let mut action = Action::NextPassage;
 
     while action != actions::Action::Quit {
@@ -168,6 +175,7 @@ fn main() -> Result<(), Error> {
 
         action = game::play_game(
             passage_info,
+            &input_receiver,
             stats,
             debug_enabled,
             game_mode,

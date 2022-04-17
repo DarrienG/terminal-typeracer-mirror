@@ -1,15 +1,12 @@
-use std::{
-    io::stdin,
-    sync::mpsc::{Receiver, Sender},
-    thread,
-};
+use crossbeam_channel::Sender;
+use std::{io::stdin, thread};
 use termion::{event::Key, input::TermRead};
 
-pub fn capture(sender: Sender<Key>, receiver: Receiver<bool>) {
-    thread::spawn(|| capture_internal(sender, receiver));
+pub fn capture(sender: Sender<Key>) {
+    thread::spawn(|| capture_internal(sender));
 }
 
-fn capture_internal(sender: Sender<Key>, receiver: Receiver<bool>) {
+fn capture_internal(sender: Sender<Key>) {
     let stdin = &mut stdin();
     loop {
         match sender.send(stdin.keys().find_map(Result::ok).unwrap()) {
