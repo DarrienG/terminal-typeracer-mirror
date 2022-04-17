@@ -295,6 +295,28 @@ pub fn play_game(
     }
 
     loop {
+        game_render::render(
+            &mut terminal,
+            game_render::GameState {
+                texts: &formatted_texts,
+                user_input: &user_input,
+                stats,
+                title: &passage_info.title,
+                game_mode,
+                config: typeracer_config,
+                debug_enabled,
+                complete: formatted_texts.complete,
+                word_idx: current_word_idx,
+                passage_path: &passage_info.passage_path,
+                current_word: if current_word_idx == words.len() {
+                    "DONE"
+                } else {
+                    words[current_word_idx]
+                },
+                mistaken_words: &mistaken_words,
+            },
+            typeracer_version,
+        );
         let recv_result = input_receiver.recv_timeout(Duration::from_millis(500));
         if recv_result.is_err() {
             // just didn't get anything, let's keep going
@@ -303,28 +325,6 @@ pub fn play_game(
         match recv_result.unwrap() {
             Key::Ctrl('a') => {
                 show_info(&mut terminal, input_receiver, typeracer_version);
-                game_render::render(
-                    &mut terminal,
-                    game_render::GameState {
-                        texts: &formatted_texts,
-                        user_input: &user_input,
-                        stats,
-                        title: &passage_info.title,
-                        game_mode,
-                        config: typeracer_config,
-                        debug_enabled,
-                        complete: formatted_texts.complete,
-                        word_idx: current_word_idx,
-                        passage_path: &passage_info.passage_path,
-                        current_word: if current_word_idx == words.len() {
-                            "DONE"
-                        } else {
-                            words[current_word_idx]
-                        },
-                        mistaken_words: &mistaken_words,
-                    },
-                    typeracer_version,
-                );
             }
             Key::Ctrl('c') => return Action::Quit,
             Key::Ctrl('n') => return Action::NextPassage,
@@ -333,28 +333,6 @@ pub fn play_game(
             Key::Ctrl('g') => {
                 show_graphs(&mut terminal, input_receiver, &get_db_path(), game_mode)
                     .expect("Unable to get data for graph");
-                game_render::render(
-                    &mut terminal,
-                    game_render::GameState {
-                        texts: &formatted_texts,
-                        user_input: &user_input,
-                        stats,
-                        title: &passage_info.title,
-                        game_mode,
-                        config: typeracer_config,
-                        debug_enabled,
-                        complete: formatted_texts.complete,
-                        word_idx: current_word_idx,
-                        passage_path: &passage_info.passage_path,
-                        current_word: if current_word_idx == words.len() {
-                            "DONE"
-                        } else {
-                            words[current_word_idx]
-                        },
-                        mistaken_words: &mistaken_words,
-                    },
-                    typeracer_version,
-                );
             }
             _ => (),
         }
