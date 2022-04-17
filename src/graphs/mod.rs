@@ -1,5 +1,6 @@
 use crossbeam_channel::Receiver;
 use rusqlite::{Connection, Result};
+use std::collections::HashMap;
 use std::path::Path;
 use std::time::Duration;
 use termion::event::Key;
@@ -47,15 +48,24 @@ pub fn show_graphs<B: Backend>(
     let mut game_mode = game_mode_from_game;
     let mut current_mode = 0;
 
+    let mut results_map = HashMap::new();
+    for mode in GameMode::values() {
+        results_map.insert(
+            mode,
+            user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(&conn, mode)?),
+        );
+    }
     loop {
-        let user_results = user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
-            &conn, game_mode,
-        )?);
+        graphs_render::render(
+            terminal,
+            &results_map[&game_mode],
+            game_mode,
+            &MODES[current_mode],
+        );
 
-        graphs_render::render(terminal, &user_results, game_mode, &MODES[current_mode]);
-
-        // async, but only in name. We don't care to do any extra renders while waiting on user input
-        let recv_result = input_receiver.recv_timeout(Duration::from_secs(180));
+        // slow re-render. Graphs are a little more intensive to render so we should only do it every so often.
+        // With that said we want to support terminal re-size
+        let recv_result = input_receiver.recv_timeout(Duration::from_secs(1));
         if recv_result.is_err() {
             continue;
         }

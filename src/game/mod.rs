@@ -22,7 +22,7 @@ mod game_render;
 const TERRIBLE_DB_FAILURE: &str =
     "HELP - TROUBLE STORING DATA IN THE DB, CONTACT THE MAINTAINER AND SHOW THEM THIS ERROR:";
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug, Eq, Hash)]
 pub enum GameMode {
     Default,
     InstantDeath,
@@ -30,6 +30,13 @@ pub enum GameMode {
 }
 
 impl GameMode {
+    pub fn values() -> Vec<GameMode> {
+        vec![
+            GameMode::Default,
+            GameMode::InstantDeath,
+            GameMode::Training,
+        ]
+    }
     // This is supposed to work like a baby state machine/ringbuffer
     // All states should transition to a "next" state, and the states
     // should transition as if they are a ringbuffer
