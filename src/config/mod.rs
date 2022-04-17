@@ -179,8 +179,8 @@ mod tests {
         // empty config file
         let config = get_config();
         assert!(config.lang_packs.is_none());
-        assert!(config.repo == "https://gitlab.com/ttyperacer/lang-packs.git");
-        assert!(config.repo_version == "1.0.0");
-        assert!(config.history_size == 50);
+        assert_eq!(config.repo, "https://gitlab.com/ttyperacer/lang-packs.git");
+        assert_eq!(config.repo_version, "1.0.0");
+        assert_eq!(config.history_size, 50);
     }
 }

@@ -1,6 +1,8 @@
+use crossbeam_channel::Receiver;
 use rusqlite::{Connection, Result};
-use std::{io::stdin, path::Path};
-use termion::{event::Key, input::TermRead};
+use std::path::Path;
+use std::time::Duration;
+use termion::event::Key;
 use tui::{backend::Backend, terminal::Terminal};
 
 use crate::game::GameMode;
@@ -36,6 +38,7 @@ const MODES: [Mode; 3] = [Mode::Wpm, Mode::Accuracy, Mode::Combo];
 
 pub fn show_graphs<B: Backend>(
     terminal: &mut Terminal<B>,
+    input_receiver: &Receiver<Key>,
     db_path: &Path,
     game_mode_from_game: GameMode,
 ) -> Result<(), rusqlite::Error> {
@@ -45,15 +48,19 @@ pub fn show_graphs<B: Backend>(
     let mut current_mode = 0;
 
     loop {
-        let stdin = stdin();
         let user_results = user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
             &conn, game_mode,
         )?);
 
         graphs_render::render(terminal, &user_results, game_mode, &MODES[current_mode]);
 
-        let c = stdin.keys().find_map(Result::ok);
-        match c.unwrap() {
+        // async, but only in name. We don't care to do any extra renders while waiting on user input
+        let recv_result = input_receiver.recv_timeout(Duration::from_secs(180));
+        if recv_result.is_err() {
+            continue;
+        }
+
+        match recv_result.unwrap() {
             Key::Ctrl('c') => return Ok(()),
             Key::Up => game_mode = game_mode.prev(),
             Key::Down => game_mode = game_mode.next(),

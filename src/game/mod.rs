@@ -174,12 +174,12 @@ pub fn play_game(
         }
 
         match recv_result.unwrap() {
-            Key::Ctrl('a') => show_info(&mut terminal, typeracer_version),
+            Key::Ctrl('a') => show_info(&mut terminal, input_receiver, typeracer_version),
             Key::Ctrl('c') => return Action::Quit,
             Key::Ctrl('n') => return Action::NextPassage,
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
-            Key::Ctrl('g') => show_graphs(&mut terminal, &get_db_path(), game_mode)
+            Key::Ctrl('g') => show_graphs(&mut terminal, input_receiver, &get_db_path(), game_mode)
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
@@ -302,7 +302,7 @@ pub fn play_game(
         }
         match recv_result.unwrap() {
             Key::Ctrl('a') => {
-                show_info(&mut terminal, typeracer_version);
+                show_info(&mut terminal, input_receiver, typeracer_version);
                 game_render::render(
                     &mut terminal,
                     game_render::GameState {
@@ -331,7 +331,7 @@ pub fn play_game(
             Key::Ctrl('p') => return Action::PreviousPassage,
             Key::Ctrl('r') => return Action::RestartPassage,
             Key::Ctrl('g') => {
-                show_graphs(&mut terminal, &get_db_path(), game_mode)
+                show_graphs(&mut terminal, input_receiver, &get_db_path(), game_mode)
                     .expect("Unable to get data for graph");
                 game_render::render(
                     &mut terminal,

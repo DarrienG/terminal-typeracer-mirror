@@ -1,10 +1,9 @@
+use crossbeam_channel::Receiver;
 use info_render::render;
 use itertools::izip;
-use std::{
-    io::stdin,
-    {thread, time},
-};
-use termion::{event::Key, input::TermRead};
+use std::time::Duration;
+use std::{thread, time};
+use termion::event::Key;
 use tui::{
     backend::Backend,
     style::{Color, Style},
@@ -24,7 +23,11 @@ const MAGIC_AMT: usize = 10;
 static TYPERACER_MAGIC: [&str; MAGIC_AMT] = ["t", "t", "y", "p", "e", "r", "a", "c", "e", "r"];
 static TYPING_DELAY: [u64; MAGIC_AMT] = [144, 80, 144, 144, 144, 100, 105, 95, 80, 100];
 
-pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str) {
+pub fn show_info<B: Backend>(
+    terminal: &mut Terminal<B>,
+    input_receiver: &Receiver<Key>,
+    typeracer_version: &str,
+) {
     let version_string = &mut format!(" - version {}\n", typeracer_version);
 
     let mut magic = TYPERACER_MAGIC.to_vec();
@@ -86,11 +89,14 @@ pub fn show_info<B: Backend>(terminal: &mut Terminal<B>, typeracer_version: &str
 
     render(terminal, &info_data);
     loop {
-        let stdin = stdin();
-        for c in stdin.keys() {
-            if c.unwrap() == Key::Ctrl('c') {
-                return;
-            }
+        let recv_result = input_receiver.recv_timeout(Duration::from_secs(500));
+        if recv_result.is_err() {
+            // just didn't get anything, let's keep going
+            continue;
+        }
+
+        if recv_result.unwrap() == Key::Ctrl('c') {
+            return;
         }
     }
 }
