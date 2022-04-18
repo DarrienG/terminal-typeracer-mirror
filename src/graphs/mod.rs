@@ -49,19 +49,20 @@ pub fn show_graphs<B: Backend>(
     let mut current_mode = 0;
 
     let mut results_map = HashMap::new();
-    for mode in GameMode::values() {
-        results_map.insert(
-            mode,
-            user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(&conn, mode)?),
-        );
-    }
     loop {
-        graphs_render::render(
-            terminal,
-            &results_map[&game_mode],
-            game_mode,
-            &MODES[current_mode],
-        );
+        let results = match results_map.get(&game_mode) {
+            Some(results) => results,
+            None => {
+                results_map.insert(
+                    game_mode,
+                    user_result_mapper::as_user_results(&graphs_db::aggregrate_graph_data(
+                        &conn, game_mode,
+                    )?),
+                );
+                &results_map[&game_mode]
+            }
+        };
+        graphs_render::render(terminal, results, game_mode, &MODES[current_mode]);
 
         // slow re-render. Graphs are a little more intensive to render so we should only do it every so often.
         // With that said we want to support terminal re-size
