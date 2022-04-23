@@ -69,3 +69,6 @@ rusqlite = { version = "0.26.3", features = ["bundled"] }
 
 # For SQL migration
 refinery = { version = "0.8.4", features = ["rusqlite"] }
+
+# Provide a "pretty" way to get debug information for debug builds
+git-version = "0.3.5"

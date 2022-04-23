@@ -4,6 +4,9 @@ use clap::{App, AppSettings, Arg};
 use crossbeam_channel::unbounded;
 use std::io::{Error, ErrorKind};
 
+#[cfg(debug_assertions)]
+use git_version::git_version;
+
 mod game;
 mod input;
 mod lang_pack;
@@ -34,7 +37,7 @@ fn debug_enabled_default() -> bool {
 }
 
 #[cfg(debug_assertions)]
-const VERSION: &str = "DEBUG";
+const VERSION: &str = git_version!();
 
 #[cfg(not(debug_assertions))]
 const VERSION: &str = "2.0.13";
