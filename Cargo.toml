@@ -37,32 +37,32 @@ overflow-checks = true
 
 [dependencies]
 # For rendering in the terminal
-tui = "0.16.0"
+tui = { version = "0.17", default-features = false, features = ["termion"] }
 termion = "1.5.6"
-unicode-width = "0.1.8"
+unicode-width = "0.1.9"
 
 # For capturing input async and sending to callers
 crossbeam-channel = "0.5.4"
 
 # For splitting across words with full unicode compatibility
-unicode-segmentation = "1.8.0"
+unicode-segmentation = "1.9.0"
 
 # For lang pack and config
 directories-next = "2.0.0"
-toml = "0.5.8"
-serde = { version = "1.0.130", features = ["derive"] }
+toml = "0.5.9"
+serde = { version = "1.0.136", features = ["derive"] }
 
 # For downloading lang pack
-git2 = { version = "0.13.25", default_features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
+git2 = { version = "0.14.2", default_features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
 
 # For picking random files
-rand = "0.8.4"
+rand = "0.8.5"
 
 # Command line optoins
-clap = "2.33.3"
+clap = "3.1.12"
 
 # For zipping lists
-itertools = "0.10.1"
+itertools = "0.10.3"
 
 # For persisting data
 rusqlite = { version = "0.26.3", features = ["bundled"] }

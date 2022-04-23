@@ -1,6 +1,6 @@
 #![cfg_attr(test, allow(dead_code, unused_imports))]
 #![allow(clippy::match_like_matches_macro)]
-use clap::{App, AppSettings, Arg};
+use clap::{Arg, Command};
 use crossbeam_channel::unbounded;
 use std::io::{Error, ErrorKind};
 
@@ -44,54 +44,54 @@ const VERSION: &str = "2.0.13";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
-    let args = App::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
+    let args = Command::new("Terminal typing game. Type through passages to see what the fastest times are you can get!")
         .version(&*format!("Typeracer version: {}, lang pack version: {}", VERSION, typeracer_config.repo_version))
         .author("Darrien Glasser <me@darrien.dev>")
-        .setting(AppSettings::TrailingVarArg)
+        .trailing_var_arg(true)
         .arg(
-            Arg::with_name("READ_TEXT")
-            .short("r")
+            Arg::new("READ_TEXT")
+            .short('r')
             .long("read-text")
-            .multiple(true)
+            .multiple_values(true)
             .required(false)
             .takes_value(true)
             .help("Read passage as an arg rather than from local set of passages.")
         )
         .arg(
-            Arg::with_name("LEGACY_WPM")
-            .short("l")
+            Arg::new("LEGACY_WPM")
+            .short('l')
             .long("legacy-wpm")
             .required(false)
             .takes_value(false)
             .help("Derive words per minute as actual words/minute instead of letters/5 over minute")
         )
         .arg(
-            Arg::with_name("DEBUG_MODE")
-            .short("d")
+            Arg::new("DEBUG_MODE")
+            .short('d')
             .long("debug-mode")
             .required(false)
             .takes_value(false)
             .help("Run with debug info")
         )
         .arg(
-            Arg::with_name("SHOW_PACKS")
-            .short("s")
+            Arg::new("SHOW_PACKS")
+            .short('s')
             .long("show-packs")
             .required(false)
             .takes_value(false)
             .help("Show all currently available language packs")
         )
         .arg(
-            Arg::with_name("INSTANT_DEATH")
-            .short("i")
+            Arg::new("INSTANT_DEATH")
+            .short('i')
             .long("instant-death")
             .required(false)
             .takes_value(false)
             .help("Play with instant death mode. One mistype and you lose!")
         )
         .arg(
-            Arg::with_name("TRAINING")
-            .short("t")
+            Arg::new("TRAINING")
+            .short('t')
             .long("training")
             .required(false)
             .takes_value(false)
