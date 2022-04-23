@@ -47,7 +47,7 @@ pub fn show_info<B: Backend>(
         ttyperacer.push_str(type_text);
         top_text = Text::styled(
             (&ttyperacer).to_string(),
-            Style::default().fg(if dirty_commit(&version_string) {
+            Style::default().fg(if dirty_commit(version_string) {
                 Color::Red
             } else {
                 Color::Green
@@ -117,10 +117,5 @@ pub fn show_info<B: Backend>(
 // We find this out by either seeing if it is a debug build (e.g. the git version shows up twice)
 // or if we see modified in the version (e.g. built on a dirty git commit).
 fn dirty_commit(version_string: &str) -> bool {
-    version_string.contains("modified")
-        || version_string
-            .split(git_version!())
-            .collect::<Vec<&str>>()
-            .len()
-            > 2
+    version_string.contains("modified") || version_string.split(git_version!()).count() > 2
 }
