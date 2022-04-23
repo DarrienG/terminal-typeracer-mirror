@@ -1,4 +1,5 @@
 use crossbeam_channel::Receiver;
+use git_version::git_version;
 use info_render::render;
 use itertools::izip;
 use std::time::Duration;
@@ -28,7 +29,11 @@ pub fn show_info<B: Backend>(
     input_receiver: &Receiver<Key>,
     typeracer_version: &str,
 ) {
-    let version_string = &mut format!(" - version {}\n", typeracer_version);
+    let version_string = &mut format!(
+        " - version {} - BUILD {}\n",
+        typeracer_version,
+        git_version!()
+    );
 
     let mut magic = TYPERACER_MAGIC.to_vec();
     magic.push(version_string);
@@ -40,7 +45,14 @@ pub fn show_info<B: Backend>(
     let mut top_text = Text::default();
     for (type_text, delay) in izip!(magic.iter(), delay.iter()) {
         ttyperacer.push_str(type_text);
-        top_text = Text::styled((&ttyperacer).to_string(), Style::default().fg(Color::Green));
+        top_text = Text::styled(
+            (&ttyperacer).to_string(),
+            Style::default().fg(if dirty_commit(&version_string) {
+                Color::Red
+            } else {
+                Color::Green
+            }),
+        );
 
         let tmp_text = Text::default();
 
@@ -99,4 +111,16 @@ pub fn show_info<B: Backend>(
             return;
         }
     }
+}
+
+// A not "true" release build.
+// We find this out by either seeing if it is a debug build (e.g. the git version shows up twice)
+// or if we see modified in the version (e.g. built on a dirty git commit).
+fn dirty_commit(version_string: &str) -> bool {
+    version_string.contains("modified")
+        || version_string
+            .split(git_version!())
+            .collect::<Vec<&str>>()
+            .len()
+            > 2
 }
