@@ -1,4 +1,5 @@
 use crossbeam_channel::Receiver;
+#[cfg(feature = "git-versioning")]
 use git_version::git_version;
 use info_render::render;
 use itertools::izip;
@@ -29,14 +30,10 @@ pub fn show_info<B: Backend>(
     input_receiver: &Receiver<Key>,
     typeracer_version: &str,
 ) {
-    let version_string = &mut format!(
-        " - version {} - BUILD {}\n",
-        typeracer_version,
-        git_version!()
-    );
+    let version_string = get_version_string(typeracer_version);
 
     let mut magic = TYPERACER_MAGIC.to_vec();
-    magic.push(version_string);
+    magic.push(&version_string);
 
     let mut delay = TYPING_DELAY.to_vec();
     delay.push(0);
@@ -47,7 +44,7 @@ pub fn show_info<B: Backend>(
         ttyperacer.push_str(type_text);
         top_text = Text::styled(
             (&ttyperacer).to_string(),
-            Style::default().fg(if dirty_commit(version_string) {
+            Style::default().fg(if dirty_commit(&version_string) {
                 Color::Red
             } else {
                 Color::Green
@@ -116,6 +113,22 @@ pub fn show_info<B: Backend>(
 // A not "true" release build.
 // We find this out by either seeing if it is a debug build (e.g. the git version shows up twice)
 // or if we see modified in the version (e.g. built on a dirty git commit).
+#[cfg(feature = "git-versioning")]
 fn dirty_commit(version_string: &str) -> bool {
     version_string.contains("modified") || version_string.split(git_version!()).count() > 2
+}
+
+#[cfg(not(feature = "git-versioning"))]
+fn dirty_commit(_unused: &str) -> bool {
+    false
+}
+
+#[cfg(feature = "git-versioning")]
+fn get_version_string(raw_version: &str) -> String {
+    format!(" - version {} - BUILD {}\n", raw_version, git_version!())
+}
+
+#[cfg(not(feature = "git-versioning"))]
+fn get_version_string(raw_version: &str) -> String {
+    raw_version.to_owned()
 }

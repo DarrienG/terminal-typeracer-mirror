@@ -5,6 +5,7 @@ use crossbeam_channel::unbounded;
 use std::io::{Error, ErrorKind};
 
 #[cfg(debug_assertions)]
+#[cfg(feature = "git-versioning")]
 use git_version::git_version;
 
 mod game;
@@ -37,7 +38,12 @@ fn debug_enabled_default() -> bool {
 }
 
 #[cfg(debug_assertions)]
+#[cfg(feature = "git-versioning")]
 const VERSION: &str = git_version!();
+
+#[cfg(debug_assertions)]
+#[cfg(not(feature = "git-versioning"))]
+const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
 const VERSION: &str = "2.1.0";
