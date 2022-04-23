@@ -46,7 +46,7 @@ const VERSION: &str = git_version!();
 const VERSION: &str = "DEBUG";
 
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "2.1.0";
+const VERSION: &str = "2.1.1";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
