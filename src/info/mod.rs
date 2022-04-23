@@ -130,5 +130,5 @@ fn get_version_string(raw_version: &str) -> String {
 
 #[cfg(not(feature = "git-versioning"))]
 fn get_version_string(raw_version: &str) -> String {
-    raw_version.to_owned()
+    format!(" - version {}\n", raw_version)
 }
