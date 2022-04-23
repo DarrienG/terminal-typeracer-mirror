@@ -49,6 +49,8 @@ pub fn show_graphs<B: Backend>(
     let mut current_mode = 0;
 
     let mut results_map = HashMap::new();
+    let mut terminal_size = (0, 0);
+    let mut should_re_render = true;
     loop {
         let results = match results_map.get(&game_mode) {
             Some(results) => results,
@@ -62,7 +64,19 @@ pub fn show_graphs<B: Backend>(
                 &results_map[&game_mode]
             }
         };
-        graphs_render::render(terminal, results, game_mode, &MODES[current_mode]);
+
+        // terminal size is updated so we should re-render
+        let updated_terminal_size = terminal_length_width();
+        if terminal_size != updated_terminal_size {
+            should_re_render = true;
+            terminal_size = updated_terminal_size;
+        }
+
+        // rendering graphs is a little extra expensive, let's not re-render if we don't have to
+        if should_re_render {
+            graphs_render::render(terminal, results, game_mode, &MODES[current_mode]);
+            should_re_render = false;
+        }
 
         // slow re-render. Graphs are a little more intensive to render so we should only do it every so often.
         // With that said we want to support terminal re-size
@@ -71,7 +85,13 @@ pub fn show_graphs<B: Backend>(
             continue;
         }
 
-        match recv_result.unwrap() {
+        let key = recv_result.unwrap();
+        // the user entered something of importance, let's re-render
+        match key {
+            Key::Up | Key::Down | Key::Left | Key::Right => should_re_render = true,
+            _ => (),
+        }
+        match key {
             Key::Ctrl('c') => return Ok(()),
             Key::Up => game_mode = game_mode.prev(),
             Key::Down => game_mode = game_mode.next(),
@@ -92,4 +112,8 @@ fn decrement_current_mode(current_mode: usize) -> usize {
     } else {
         current_mode - 1
     }
+}
+
+fn terminal_length_width() -> (u16, u16) {
+    termion::terminal_size().expect("Unable to get terminal size")
 }
