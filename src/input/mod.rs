@@ -7,9 +7,9 @@ pub fn capture(sender: Sender<Key>) {
 }
 
 fn capture_internal(sender: Sender<Key>) {
-    let stdin = &mut stdin();
+    let mut keys = stdin().keys();
     loop {
-        match sender.send(stdin.keys().find_map(Result::ok).unwrap()) {
+        match sender.send(keys.find_map(Result::ok).unwrap()) {
             Ok(_) => (), // continue just fine
             Err(_) => return, // sender thread has died, either we have quit the game or the thread has died
                               // either way we need to exit
