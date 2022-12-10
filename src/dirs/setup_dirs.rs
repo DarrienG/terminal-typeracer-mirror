@@ -18,7 +18,7 @@ pub fn create_data_dir(addon_path: Option<&str>) -> PathBuf {
     let safe_dir = base_dir.data_dir();
     let full_dir = &append_if_present(safe_dir, addon_path);
 
-    fs::create_dir_all(&full_dir).expect("Failed to create data dir");
+    fs::create_dir_all(full_dir).expect("Failed to create data dir");
     full_dir.to_path_buf()
 }
 

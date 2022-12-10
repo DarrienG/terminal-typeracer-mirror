@@ -76,11 +76,7 @@ pub fn get_maybe_decremented_idx(
 }
 
 fn maybe_account_for_space(game_mode: &GameMode) -> usize {
-    if *game_mode == GameMode::Latin {
-        1
-    } else {
-        0
-    }
+    usize::from(*game_mode == GameMode::Latin)
 }
 
 #[cfg(test)]

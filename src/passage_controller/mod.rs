@@ -11,7 +11,7 @@ use crate::{actions::Action, config::TyperacerConfig, dirs::setup_dirs};
 use rand::seq::SliceRandom;
 use rusqlite::{params, Connection};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PassageInfo {
     pub passage: String,
     pub title: String,

@@ -2,7 +2,7 @@ use tui::text::Span;
 
 use crate::game::split;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum GameMode {
     Latin,
     NonLatin,

@@ -43,7 +43,7 @@ pub fn show_info<B: Backend>(
     for (type_text, delay) in izip!(magic.iter(), delay.iter()) {
         ttyperacer.push_str(type_text);
         top_text = Text::styled(
-            (&ttyperacer).to_string(),
+            ttyperacer.to_string(),
             Style::default().fg(if dirty_commit(&version_string) {
                 Color::Red
             } else {
