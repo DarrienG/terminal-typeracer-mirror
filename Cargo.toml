@@ -42,36 +42,36 @@ git-versioning = ["dep:git-version"]
 # For rendering in the terminal
 tui = { version = "0.17", default-features = false, features = ["termion"] }
 termion = "1.5.6"
-unicode-width = "0.1.9"
+unicode-width = "0.1.10"
 
 # For capturing input async and sending to callers
-crossbeam-channel = "0.5.4"
+crossbeam-channel = "0.5.6"
 
 # For splitting across words with full unicode compatibility
-unicode-segmentation = "1.9.0"
+unicode-segmentation = "1.10.0"
 
 # For lang pack and config
 directories-next = "2.0.0"
 toml = "0.5.9"
-serde = { version = "1.0.136", features = ["derive"] }
+serde = { version = "1.0.149", features = ["derive"] }
 
 # For downloading lang pack
-git2 = { version = "0.14.2", default_features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
+git2 = { version = "0.15.0", default-features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
 
 # For picking random files
 rand = "0.8.5"
 
 # Command line optoins
-clap = "3.1.12"
+clap = "3.2.23"
 
 # For zipping lists
-itertools = "0.10.3"
+itertools = "0.10.5"
 
 # For persisting data
-rusqlite = { version = "0.26.3", features = ["bundled"] }
+rusqlite = { version = "0.28.0", features = ["bundled"] }
 
 # For SQL migration
-refinery = { version = "0.8.4", features = ["rusqlite"] }
+refinery = { version = "0.8.7", features = ["rusqlite"] }
 
 # Provide a "pretty" way to get debug information for debug builds
 git-version = { version = "0.3.5", optional = true }
