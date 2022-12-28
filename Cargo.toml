@@ -35,9 +35,6 @@ panic = 'unwind'
 incremental = true
 overflow-checks = true
 
-[features]
-git-versioning = ["dep:git-version"]
-
 [dependencies]
 # For rendering in the terminal
 tui = { version = "0.17", default-features = false, features = ["termion"] }
@@ -73,5 +70,3 @@ rusqlite = { version = "0.28.0", features = ["bundled"] }
 # For SQL migration
 refinery = { version = "0.8.7", features = ["rusqlite"] }
 
-# Provide a "pretty" way to get debug information for debug builds
-git-version = { version = "0.3.5", optional = true }

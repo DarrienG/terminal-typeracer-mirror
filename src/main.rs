@@ -37,16 +37,11 @@ fn debug_enabled_default() -> bool {
     true
 }
 
-#[cfg(debug_assertions)]
-#[cfg(feature = "git-versioning")]
-const VERSION: &str = git_version!();
-
-#[cfg(debug_assertions)]
-#[cfg(not(feature = "git-versioning"))]
-const VERSION: &str = "DEBUG";
-
 #[cfg(not(debug_assertions))]
-const VERSION: &str = "2.1.2";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[cfg(debug_assertions)]
+const VERSION: &str = "DEBUG";
 
 fn main() -> Result<(), Error> {
     let typeracer_config = config::get_config();
