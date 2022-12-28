@@ -161,7 +161,7 @@ fn main() -> Result<(), Error> {
 
     while action != actions::Action::Quit {
         let mistaken_words_passage = match passage_controller.retrieve_mistaken_words_passage(
-            &Connection::open(&db::db_path(&dirs::setup_dirs::get_db_dir())).unwrap(),
+            &Connection::open(db::db_path(&dirs::setup_dirs::get_db_dir())).unwrap(),
         ) {
             Ok(p) => p,
             _ => {
