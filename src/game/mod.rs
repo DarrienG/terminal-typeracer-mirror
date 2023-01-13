@@ -190,7 +190,8 @@ pub fn play_game(
                 .expect("Unable to get data for graph"),
             // Get some basic readline bindings
             Key::Ctrl('u') => user_input.clear(),
-            Key::Ctrl('w') => {
+            // \x08 is ascii backspace. See: https://www.asciitable.com/
+            Key::Ctrl('w') | Key::Alt('\x08') => {
                 user_input = word_processing::get_all_input_minus_last_word(&user_input)
             }
             Key::Backspace | Key::Ctrl('h') => {
