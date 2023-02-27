@@ -272,7 +272,7 @@ mod tests {
             .chars()
             .map(|it| Span::styled(it.to_string(), Style::default().fg(Color::Green)))
             .collect();
-        properly_formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
+        properly_formatted_input.push(Span::raw("█"));
         assert_eq!(formatted_word, properly_formatted_word);
         assert_eq!(formatted_input, properly_formatted_input);
     }
@@ -308,7 +308,7 @@ mod tests {
                 )
             })
             .collect();
-        properly_formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
+        properly_formatted_input.push(Span::raw("█"));
 
         let (formatted_word, formatted_input) =
             get_formatted_words(&GameMode::Latin, test_word, test_input, 'e', true);
