@@ -4,7 +4,7 @@ use tui::{
     style::Color,
     style::{Modifier, Style},
     terminal::Terminal,
-    text::{Spans, Text},
+    text::{Span, Spans, Text},
     widgets::{Block, BorderType, Borders, Paragraph, Row, Table, Wrap},
 };
 
@@ -48,6 +48,15 @@ impl<'a> GameState<'a> {
             self.current_word,
             self.mistaken_words
         )
+    }
+
+    fn get_display_ready_user_input(&self) -> Vec<Span<'a>> {
+        let mut raw_input = self.texts.clone();
+        if raw_input.error || raw_input.input.len() > 0 {
+            raw_input.input = raw_input.input.as_slice()[..raw_input.input.len() - 1].to_vec();
+        }
+        raw_input.input.push(Span::raw("█"));
+        return raw_input.input;
     }
 }
 
@@ -146,7 +155,7 @@ pub fn render<B: Backend>(
                     };
 
                     f.render_widget(
-                        Paragraph::new(Spans::from(game_state.texts.input.clone()))
+                        Paragraph::new(Spans::from(game_state.get_display_ready_user_input()))
                             .block(typing_block.title("Type out passage here"))
                             .wrap(Wrap {trim: true})
                             .alignment(Alignment::Left)

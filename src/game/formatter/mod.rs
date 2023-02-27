@@ -100,7 +100,7 @@ pub fn get_formatted_texts_line_mode<'a>(
 ///
 /// All similar characters up until the first different character are highlighted with green.
 ///
-/// On an erroroneous character:
+/// On an erroneous character:
 /// - The first error character in the passage's word is highlighted with red and the rest unformatted.
 /// - The entirety of the user's input is colored red.
 ///
