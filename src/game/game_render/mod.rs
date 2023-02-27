@@ -52,11 +52,11 @@ impl<'a> GameState<'a> {
 
     fn get_display_ready_user_input(&self) -> Vec<Span<'a>> {
         let mut raw_input = self.texts.clone();
-        if raw_input.error || raw_input.input.len() > 0 {
+        if raw_input.error || !raw_input.input.is_empty() {
             raw_input.input = raw_input.input.as_slice()[..raw_input.input.len() - 1].to_vec();
         }
         raw_input.input.push(Span::raw("█"));
-        return raw_input.input;
+        raw_input.input
     }
 }
 
