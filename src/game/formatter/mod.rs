@@ -1,3 +1,4 @@
+use tui::style::Modifier;
 use tui::{
     style::{Color, Style},
     text::Span,
@@ -124,21 +125,26 @@ fn get_formatted_words<'a>(
     let err = !indexer::check_like_word(word, input);
 
     // Make all of the user's input white on red
-    for input in indexable_input.iter() {
-        if err {
-            formatted_input.push(Span::styled(
-                input.to_string(),
-                Style::default().bg(Color::Red).fg(Color::White),
-            ));
+    for raw_input in indexable_input.iter() {
+        let style = if err {
+            Style::default().bg(Color::Red).fg(Color::White)
         } else {
-            formatted_input.push(Span::styled(
-                input.to_string(),
-                Style::default().fg(Color::Green),
-            ));
-        }
+            Style::default().fg(Color::Green)
+        };
+
+        let input = if *raw_input == ' ' {
+            style
+                .add_modifier(Modifier::ITALIC)
+                .add_modifier(Modifier::DIM);
+            '.'
+        } else {
+            *raw_input
+        };
+
+        formatted_input.push(Span::styled(input.to_string(), style));
     }
 
-    formatted_input.push(Span::styled(" ", Style::default().bg(Color::Blue)));
+    formatted_input.push(Span::raw("█"));
 
     while word_dex < idx_word_count
         && (word_dex < idx_input_count || *game_mode == GameMode::NonLatin)
