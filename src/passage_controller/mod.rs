@@ -301,7 +301,7 @@ impl<'a> Controller<'a> {
                 .to_str()
                 .unwrap()
                 .to_string();
-            if str_entry != "version" && str_entry != ".git" {
+            if str_entry != ".git" && entry.file_type().unwrap().is_dir() {
                 true_quote_dirs.push(entry);
             }
         }
@@ -309,12 +309,9 @@ impl<'a> Controller<'a> {
     }
 
     fn get_files_from_dir(&self, path: DirEntry) -> Vec<DirEntry> {
-        if !path.file_type().unwrap().is_dir() {
-            return vec![];
-        }
         let path = path.path();
         read_dir(&path)
-            .unwrap_or_else(|_| panic!("Couldn't read directory {}", path.display()))
+            .unwrap_or_else(|err| panic!("Couldn't read directory {}: {}", path.display(), err))
             .map(|entry| entry.expect("Failed to evaluate path when reading files"))
             .collect()
     }
