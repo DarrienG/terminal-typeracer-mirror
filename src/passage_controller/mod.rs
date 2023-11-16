@@ -301,7 +301,14 @@ impl<'a> Controller<'a> {
                 .to_str()
                 .unwrap()
                 .to_string();
-            if str_entry != ".git" && entry.file_type().unwrap().is_dir() {
+            if str_entry == ".git" {
+                continue;
+            }
+            let mut file_type = entry.file_type().unwrap();
+            if file_type.is_symlink() {
+                file_type = entry.path().metadata().unwrap().file_type();
+            }
+            if file_type.is_dir() {
                 true_quote_dirs.push(entry);
             }
         }
