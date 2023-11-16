@@ -309,8 +309,12 @@ impl<'a> Controller<'a> {
     }
 
     fn get_files_from_dir(&self, path: DirEntry) -> Vec<DirEntry> {
-        read_dir(path.path())
-            .unwrap()
+        if !path.file_type().unwrap().is_dir() {
+            return vec![];
+        }
+        let path = path.path();
+        read_dir(&path)
+            .unwrap_or_else(|_| panic!("Couldn't read directory {}", path.display()))
             .map(|entry| entry.expect("Failed to evaluate path when reading files"))
             .collect()
     }
