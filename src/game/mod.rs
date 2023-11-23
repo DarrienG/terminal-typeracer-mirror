@@ -8,7 +8,6 @@ use config::TyperacerConfig;
 use graphs::show_graphs;
 use info::show_info;
 
-
 use crate::{
     actions::Action, config, dirs::setup_dirs::get_db_path, graphs, info,
     passage_controller::PassageInfo, stats,
