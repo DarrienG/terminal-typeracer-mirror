@@ -1,11 +1,14 @@
-use config::TyperacerConfig;
+use std::{collections::HashSet, fmt, io::stdout, path::Path, time::Duration};
+
 use crossbeam_channel::Receiver;
-use graphs::show_graphs;
-use info::show_info;
-use std::{collections::HashSet, fmt, io::stdout, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, text::Span, Terminal};
 
+use config::TyperacerConfig;
+use graphs::show_graphs;
+use info::show_info;
+
+use crate::game::game_db::DbRecreationError;
 use crate::{
     actions::Action, config, dirs::setup_dirs::get_db_path, graphs, info,
     passage_controller::PassageInfo, stats,
@@ -81,6 +84,7 @@ impl From<GameMode> for i64 {
         }
     }
 }
+
 impl From<i64> for GameMode {
     fn from(i: i64) -> Self {
         match i {
@@ -285,7 +289,7 @@ pub fn play_game(
     }
 
     if let Err(e) = game_db::store_stats(&get_db_path(), stats, passage_info, game_mode) {
-        println!("{} {}", TERRIBLE_DB_FAILURE, e);
+        maybe_rebuild_db_clean(&get_db_path(), &e);
     }
 
     if game_mode == GameMode::Training {
@@ -294,12 +298,12 @@ pub fn play_game(
             &words,
             &mistaken_words,
         ) {
-            println!("{} {}", TERRIBLE_DB_FAILURE, e);
+            maybe_rebuild_db_clean(&get_db_path(), &e);
         }
     }
 
     if let Err(e) = game_db::store_mistaken_words(&get_db_path(), &mistaken_words) {
-        println!("{} {}", TERRIBLE_DB_FAILURE, e);
+        maybe_rebuild_db_clean(&get_db_path(), &e);
     }
 
     loop {
@@ -343,6 +347,18 @@ pub fn play_game(
                     .expect("Unable to get data for graph");
             }
             _ => (),
+        }
+    }
+}
+
+fn maybe_rebuild_db_clean(db_path: &Path, sqlite_err: &rusqlite::Error) {
+    match game_db::rebuild_stats_db_if_ancient(db_path) {
+        Ok(()) => {} // don't need to do anything, we have successfully recreated the database
+        Err(db_recreation_err) => {
+            println!(
+                "{} {} - recreate err {:?}",
+                TERRIBLE_DB_FAILURE, sqlite_err, db_recreation_err
+            );
         }
     }
 }

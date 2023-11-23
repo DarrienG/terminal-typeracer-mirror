@@ -1,15 +1,27 @@
-use rusqlite::{params, types::ToSql, Connection, Result};
-
-use crate::{
-    dirs::setup_dirs::get_quote_dirs, game, passage_controller::PassageInfo, stats::Stats,
-};
-use rand::Rng;
 use std::collections::HashSet;
+use std::time::Duration;
 use std::{
     convert::TryFrom,
+    fs,
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
+
+use rand::Rng;
+use rusqlite::{params, types::ToSql, Connection, Result};
+
+use crate::{
+    db, dirs::setup_dirs::get_quote_dirs, game, passage_controller::PassageInfo, stats::Stats,
+};
+
+#[derive(Debug)]
+pub enum DbRecreationError {
+    // Right now we only care if we failed or we didn't.
+    // We can get more fine grained later if we care.
+    Failure,
+    DbTooYoung,
+    DbNotAFile,
+}
 
 pub fn store_stats(
     db_path: &Path,
@@ -134,6 +146,45 @@ fn local_passage_path(absolute_passage: String) -> String {
                 .into_owned(),
         )
         .to_owned()
+}
+
+/// Delete and rebuild stats database
+/// This is not a common error, but has happened more than a few
+/// times over the last few years. It appears on very old migrations a
+/// migration may not have run, causing us to be left in a corrupted DB state.
+/// "New" installations (within the last year) do not appear to have this problem.
+/// When we run into this error, we are best off deleting and rebuilding the database.
+/// To make sure this does not run too readily, we want to make sure we only
+/// run on old database installations (e.g. created prior to January 2023).
+/// For more info, see here: https://gitlab.com/ttyperacer/terminal-typeracer/-/issues/39
+pub fn rebuild_stats_db_if_ancient(db_path: &Path) -> Result<(), DbRecreationError> {
+    // Somehow we got a bad db path. This should never happen, but let's
+    // make sure we do not delete directories.
+    if db_path.is_dir() {
+        return Err(DbRecreationError::DbNotAFile);
+    }
+    let jan_2023 = SystemTime::UNIX_EPOCH + Duration::from_secs(1672444800);
+    match fs::metadata(db_path) {
+        Ok(metadata) => {
+            if metadata.created().unwrap() < jan_2023 {
+                rebuild_stats_db(&db_path);
+                return Ok(());
+            }
+            Err(DbRecreationError::DbTooYoung)
+        }
+        Err(_) => Err(DbRecreationError::Failure),
+    }
+}
+
+fn rebuild_stats_db(db_path: &Path) {
+    match fs::remove_file(db_path) {
+        Ok(_) => {}
+        Err(e) => eprintln!("Failed to delete database during recreation, something bad is happening. Show this to a maintainer: {}", e)
+    }
+    match db::create_database(db_path) {
+        Ok(_) => {}
+        Err(e) => eprintln!("Failed to recreate database, something bad is happening. Show this to a maintainer: {}", e)
+    }
 }
 
 #[cfg(test)]

@@ -143,13 +143,13 @@ fn main() -> Result<(), Error> {
     if !db::check_stats_db() {
         match db::create_database(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
             Ok(_) => (),
-            Err(e) => return Result::Err(Error::new(ErrorKind::ConnectionRefused, e)),
+            Err(e) => return Err(Error::new(ErrorKind::ConnectionRefused, e)),
         }
     }
     if !db::check_for_migration(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
         match db::do_migration(&db::db_path(&dirs::setup_dirs::get_db_dir())) {
             Ok(_) => (),
-            Err(e) => return Result::Err(Error::new(ErrorKind::ConnectionRefused, e)),
+            Err(e) => return Err(Error::new(ErrorKind::ConnectionRefused, e)),
         }
     }
 
