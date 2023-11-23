@@ -388,7 +388,7 @@ mod tests {
         // Test that words are added in place to a set of formatted texts
         // Do not need to check correct vs incorrect. All we need to verify is that the formatted
         // texts are properly applied to the full set of formatted texts.
-        let words = vec!["the", "quick", "brown", "fox"];
+        let words = ["the", "quick", "brown", "fox"];
         let user_input = "bro";
         let current_word_idx = 2;
         let input_formatted_passage: Vec<Span> = vec![
@@ -430,7 +430,7 @@ mod tests {
 
     #[test]
     fn test_get_formatted_nonlatin_line_mode() {
-        let words = vec!["你", "好", "你", "好"];
+        let words = ["你", "好", "你", "好"];
         let user_input = "";
         let current_word_idx = 1;
 
@@ -458,7 +458,7 @@ mod tests {
 
     #[test]
     fn get_formatted_texts_nonlatin() {
-        let words = vec!["你", "好", "你", "好"];
+        let words = ["你", "好", "你", "好"];
         let user_input = "";
         let current_word_idx = 1;
 

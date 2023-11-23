@@ -104,7 +104,7 @@ mod tests {
         ];
 
         let user_results = as_user_results(&raw_user_results);
-        let expected_days = vec![2.0, 1.0, 0.0];
+        let expected_days = [2.0, 1.0, 0.0];
 
         for (result, expected) in izip!(user_results.iter(), expected_days.iter()) {
             assert_eq_float(result.days_back_played, *expected);

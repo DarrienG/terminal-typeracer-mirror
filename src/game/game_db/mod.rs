@@ -16,8 +16,6 @@ use crate::{
 
 #[derive(Debug)]
 pub enum DbRecreationError {
-    // Right now we only care if we failed or we didn't.
-    // We can get more fine grained later if we care.
     Failure,
     DbTooYoung,
     DbNotAFile,
@@ -150,7 +148,7 @@ fn local_passage_path(absolute_passage: String) -> String {
 
 /// Delete and rebuild stats database
 /// This is not a common error, but has happened more than a few
-/// times over the last few years. It appears on very old migrations a
+/// times over the last few years. It appears on very old installations. It appears a
 /// migration may not have run, causing us to be left in a corrupted DB state.
 /// "New" installations (within the last year) do not appear to have this problem.
 /// When we run into this error, we are best off deleting and rebuilding the database.
@@ -167,7 +165,7 @@ pub fn rebuild_stats_db_if_ancient(db_path: &Path) -> Result<(), DbRecreationErr
     match fs::metadata(db_path) {
         Ok(metadata) => {
             if metadata.created().unwrap() < jan_2023 {
-                rebuild_stats_db(&db_path);
+                rebuild_stats_db(db_path);
                 return Ok(());
             }
             Err(DbRecreationError::DbTooYoung)
