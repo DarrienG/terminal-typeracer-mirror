@@ -10,7 +10,7 @@ include = [
     "**/*.sql",
     "Cargo.toml",
 ]
-description="A terminal typing game. Race to see the fastest time you can get!"
+description = "A terminal typing game. Race to see the fastest time you can get!"
 repository = "https://gitlab.com/ttyperacer/terminal-typeracer"
 readme = "./README.md"
 keywords = ["typing", "terminal", "termion", "games", "fun"]
@@ -49,20 +49,20 @@ unicode-segmentation = "1.10.0"
 
 # For lang pack and config
 directories-next = "2.0.0"
-toml = "0.5.9"
+toml = "0.8.8"
 serde = { version = "1.0.149", features = ["derive"] }
 
 # For downloading lang pack
-git2 = { version = "0.15.0", default-features = false, features = [ "https", "vendored-libgit2", "vendored-openssl" ] }
+git2 = { version = "0.18.1", default-features = false, features = ["https", "vendored-libgit2", "vendored-openssl"] }
 
 # For picking random files
 rand = "0.8.5"
 
 # Command line optoins
-clap = "3.2.23"
+clap = "3.2.25"
 
 # For zipping lists
-itertools = "0.10.5"
+itertools = "0.12.0"
 
 # For persisting data
 rusqlite = { version = "0.28.0", features = ["bundled"] }
