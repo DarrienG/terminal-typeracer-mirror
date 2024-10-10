@@ -167,8 +167,7 @@ pub fn render<B: Backend>(
                         .border_style(get_border_style(&game_state, &[]));
 
                     let stats_text = game_state.stats.text();
-                    let headers = stats_text
-                        .get(0)
+                    let headers = stats_text.first()
                         .expect("Stats produced no text elements");
                     let rows = stats_text
                         .iter()

@@ -110,7 +110,7 @@ pub fn render<B: Backend>(
                     )
                     .y_axis(
                         Axis::default()
-                            .title(Span::raw(&styles::graph_title(active_mode)))
+                            .title(Span::raw(styles::graph_title(active_mode)))
                             .style(
                                 Style::default()
                                     .fg(Color::Gray)
