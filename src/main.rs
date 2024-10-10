@@ -4,10 +4,6 @@ use clap::{Arg, Command};
 use crossbeam_channel::unbounded;
 use std::io::{Error, ErrorKind};
 
-#[cfg(debug_assertions)]
-#[cfg(feature = "git-versioning")]
-use git_version::git_version;
-
 mod game;
 mod input;
 mod lang_pack;

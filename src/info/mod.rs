@@ -1,6 +1,4 @@
 use crossbeam_channel::Receiver;
-#[cfg(feature = "git-versioning")]
-use git_version::git_version;
 use info_render::render;
 use itertools::izip;
 use std::time::Duration;
@@ -110,25 +108,10 @@ pub fn show_info<B: Backend>(
     }
 }
 
-// A not "true" release build.
-// We find this out by either seeing if it is a debug build (e.g. the git version shows up twice)
-// or if we see modified in the version (e.g. built on a dirty git commit).
-#[cfg(feature = "git-versioning")]
-fn dirty_commit(version_string: &str) -> bool {
-    version_string.contains("modified") || version_string.split(git_version!()).count() > 2
-}
-
-#[cfg(not(feature = "git-versioning"))]
 fn dirty_commit(_unused: &str) -> bool {
     false
 }
 
-#[cfg(feature = "git-versioning")]
-fn get_version_string(raw_version: &str) -> String {
-    format!(" - version {} - BUILD {}\n", raw_version, git_version!())
-}
-
-#[cfg(not(feature = "git-versioning"))]
 fn get_version_string(raw_version: &str) -> String {
     format!(" - version {}\n", raw_version)
 }
